@@ -1,0 +1,186 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)\r\n"
+    "LANGUAGE 7, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\MoppDecode.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\MoppDecode.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MOPPDECODE_DIALOG DIALOGEX 0, 0, 286, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "MoppDecode"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Exit",IDOK,6,162,50,16
+    EDITTEXT        IDC_EDIT_INPUT,60,12,192,14,ES_AUTOHSCROLL
+    LTEXT           "Input-File (nif):",IDC_STATIC,6,12,48,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_EDIT_MOPPCODE,90,36,162,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_MOPPDATA,90,54,162,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_MODELFILE,90,72,162,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_CHUNKDATA,90,90,162,14,ES_AUTOHSCROLL
+    CONTROL         "  MoppCode-File:",IDC_CHECK_MOPPCODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,36,78,12
+    CONTROL         "  MoppData-File:",IDC_CHECK_MOPPDATA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,54,78,12
+    CONTROL         "  Model-File (DXView):",IDC_CHECK_MODELFILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,72,84,12
+    CONTROL         "  ChunkData-File:",IDC_CHECK_CHUNKDATA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,90,78,12
+    PUSHBUTTON      "...",IDC_BUTTON_INPUT,258,12,19,14
+    PUSHBUTTON      "...",IDC_BUTTON_MOPPCODE,258,36,19,14
+    PUSHBUTTON      "...",IDC_BUTTON_MOPPDATA,258,54,19,14
+    PUSHBUTTON      "...",IDC_BUTTON_MODELFILE,258,72,19,14
+    PUSHBUTTON      "...",IDC_BUTTON_CHUNKDATA,258,90,19,14
+    DEFPUSHBUTTON   "Convert",IDC_BUTTONCONVERT,228,162,50,16
+    LTEXT           "Step 0/0:",IDC_STATIC_PROGRESS,6,138,31,12,SS_CENTERIMAGE
+    CONTROL         "",IDC_PROGRESS,"msctls_progress32",0x0,42,138,234,12
+    CONTROL         "  FaceDef-File:",IDC_CHECK_FACEDEF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,108,78,12
+    EDITTEXT        IDC_EDIT_FACEDEF,90,108,162,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "...",IDC_BUTTON_FACEDEF,258,108,19,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "MoppDecode.exe"
+            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "OriginalFilename", "MoppDecode.exe"
+            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_MOPPDECODE_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 279
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+LANGUAGE 7, 1
+#pragma code_page(1252)
+#include "res\MoppDecode.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

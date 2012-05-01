@@ -1,0 +1,3 @@
+[submodule "niflib"]
+	path = niflib
+	url = https://skyfox69@github.com/skyfox69/niflib.git
