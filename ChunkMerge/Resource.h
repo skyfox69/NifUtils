@@ -1,9 +1,9 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by NifConvert.rc
+// Used by ChunkMerge.RC
 //
-#define IDD_NIFCONVERT_DIALOG           102
-#define IDR_MAINFRAME                   128
+#define IDR_MAINFRAME					128
+#define IDD_CHUNKMERGE_DIALOG				102
 #define IDC_EDIT_INPUT                  1000
 #define IDC_EDIT_OUTPUT                 1001
 #define IDC_BUTTON_INPUT                1002

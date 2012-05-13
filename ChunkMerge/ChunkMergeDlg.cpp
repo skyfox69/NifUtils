@@ -1,9 +1,9 @@
-// NifConvertDlg.cpp : implementation file
+// ChunkMergeDlg.cpp : implementation file
 //
 
 #include "..\Common\stdafx.h"
-#include "NifConvert.h"
-#include "NifConvertDlg.h"
+#include "ChunkMerge.h"
+#include "ChunkMergeDlg.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifConvertUtility2.h"
 
@@ -12,32 +12,39 @@
 extern CString   glPathSkyrim;
 extern CString   glPathTemplate;
 
+
 using namespace NifUtility;
 
-// CNifConvertDlg dialog
+// CChunkMergeDlg dialog
 
-CNifConvertDlg::CNifConvertDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CNifConvertDlg::IDD, pParent)
+
+
+
+CChunkMergeDlg::CChunkMergeDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CChunkMergeDlg::IDD, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void CNifConvertDlg::DoDataExchange(CDataExchange* pDX)
+void CChunkMergeDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(CNifConvertDlg, CDialog)
+BEGIN_MESSAGE_MAP(CChunkMergeDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	//}}AFX_MSG_MAP
-  ON_BN_CLICKED(IDC_BUTTON_INPUT, &CNifConvertDlg::OnBnClickedButtonInput)
-  ON_BN_CLICKED(IDC_BUTTON_OUTPUT, &CNifConvertDlg::OnBnClickedButtonOutput)
-  ON_BN_CLICKED(IDOK, &CNifConvertDlg::OnBnClickedOk)
+  ON_BN_CLICKED(IDC_BUTTON_INPUT, &CChunkMergeDlg::OnBnClickedButtonInput)
+  ON_BN_CLICKED(IDC_BUTTON_OUTPUT, &CChunkMergeDlg::OnBnClickedButtonOutput)
+  ON_BN_CLICKED(IDOK, &CChunkMergeDlg::OnBnClickedOk)
+  ON_BN_CLICKED(IDC_RADIO_COLLISION_1, &CChunkMergeDlg::OnBnClickedRadioCollision)
+  ON_BN_CLICKED(IDC_RADIO_COLLISION_2, &CChunkMergeDlg::OnBnClickedRadioCollision)
+  ON_BN_CLICKED(IDC_RADIO_COLLISION_3, &CChunkMergeDlg::OnBnClickedRadioCollision)
 END_MESSAGE_MAP()
 
 
-void CNifConvertDlg::parseDir(CString path, set<string>& directories, bool doDirs)
+void CChunkMergeDlg::parseDir(CString path, set<string>& directories, bool doDirs)
 {
   CFileFind   finder;
   BOOL        result(FALSE);
@@ -68,9 +75,9 @@ void CNifConvertDlg::parseDir(CString path, set<string>& directories, bool doDir
   }
 }
 
-// CNifConvertDlg message handlers
+// CChunkMergeDlg message handlers
 
-BOOL CNifConvertDlg::OnInitDialog()
+BOOL CChunkMergeDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
@@ -80,45 +87,30 @@ BOOL CNifConvertDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-  GetDlgItem(IDOK)               ->EnableWindow(FALSE);
-  ((CButton*) GetDlgItem(IDC_RADIO_VCREMOVE))   ->SetCheck(BST_CHECKED);
+	GetDlgItem(IDOK)->EnableWindow(FALSE);
+	((CButton*) GetDlgItem(IDC_RADIO_COLLISION_2))->SetCheck(BST_CHECKED);
 
-  //  get texture paths
-  CComboBox*  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEXTURE);
-  set<string> directories;
-  CString     pathSkyrim  (glPathSkyrim);
-  CString     pathTemplate(glPathTemplate);
+	//  get templates
+	CComboBox*  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
+	CString     pathTemplate(glPathTemplate);
+	set<string> directories;
 
-  //  go down to textures
-  pathSkyrim += "\\Data\\Textures";
-  parseDir(pathSkyrim, directories);
+	parseDir(pathTemplate, directories, false);
 
-  for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
-  {
-    pCBox->AddString(CString((*tIter).c_str()) + _T("\\"));
-  }
-  pCBox->SetCurSel(0);
+	for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
+	{
+		pCBox->AddString(CString((*tIter).c_str()));
+	}
+	pCBox->SetCurSel(0);
 
-  //  get templates
-  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
-
-  directories.clear();
-  parseDir(pathTemplate, directories, false);
-
-  for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
-  {
-    pCBox->AddString(CString((*tIter).c_str()));
-  }
-  pCBox->SetCurSel(0);
-
-  return TRUE;  // return TRUE  unless you set the focus to a control
+	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
-//  If you add a minimize button to your dialog, you will need the code below
+// If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
 
-void CNifConvertDlg::OnPaint()
+void CChunkMergeDlg::OnPaint()
 {
 	if (IsIconic())
 	{
@@ -145,13 +137,13 @@ void CNifConvertDlg::OnPaint()
 
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
-HCURSOR CNifConvertDlg::OnQueryDragIcon()
+HCURSOR CChunkMergeDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
 
-void CNifConvertDlg::OnBnClickedButtonInput()
+void CChunkMergeDlg::OnBnClickedButtonInput()
 {
   m_fileNameAry[0] = FDFileHelper::getFileOrFolder(m_fileNameAry[0], L"Nif Files (*.nif)|*.nif||", L"nif");
   GetDlgItem(IDC_EDIT_INPUT)->SetWindowText(m_fileNameAry[0]);
@@ -161,9 +153,9 @@ void CNifConvertDlg::OnBnClickedButtonInput()
   }
 }
 
-void CNifConvertDlg::OnBnClickedButtonOutput()
+void CChunkMergeDlg::OnBnClickedButtonOutput()
 {
-  m_fileNameAry[1] = FDFileHelper::getFileOrFolder(m_fileNameAry[1], L"Nif Files (*.nif)|*.nif||", L"nif", true);
+  m_fileNameAry[1] = FDFileHelper::getFileOrFolder(m_fileNameAry[1], L"Nif Files (*.nif)|*.nif||", L"nif");
   GetDlgItem(IDC_EDIT_OUTPUT)->SetWindowText(m_fileNameAry[1]);
   if (!m_fileNameAry[0].IsEmpty() && !m_fileNameAry[1].IsEmpty())
   {
@@ -171,7 +163,11 @@ void CNifConvertDlg::OnBnClickedButtonOutput()
   }
 }
 
-void CNifConvertDlg::OnBnClickedOk()
+void CChunkMergeDlg::OnBnClickedRadioCollision()
+{
+}
+
+void CChunkMergeDlg::OnBnClickedOk()
 {
   NifConvertUtility2  ncUtility;
   string              infoMessage("Nif successfully converted");
@@ -181,23 +177,18 @@ void CNifConvertDlg::OnBnClickedOk()
   GetDlgItem(IDC_EDIT_INPUT)    ->GetWindowTextW(m_fileNameAry[0]);
   GetDlgItem(IDC_EDIT_OUTPUT)   ->GetWindowTextW(m_fileNameAry[1]);
   GetDlgItem(IDC_COMBO_TEMPLATE)->GetWindowTextW(m_fileNameAry[2]);
-  GetDlgItem(IDC_COMBO_TEXTURE) ->GetWindowTextW(m_texturePath);
-
-  //  set path
-  ncUtility.setTexturePath((CStringA(m_texturePath)).GetString());
 
   //  set flags
-  ncUtility.setVertexColorHandling((VertexColorHandling) (GetCheckedRadioButton(IDC_RADIO_VCREMOVE, IDC_RADIO_VCADD) - IDC_RADIO_VCREMOVE));
+  ncUtility.setCollisionNodeHandling((CollisionNodeHandling) (GetCheckedRadioButton(IDC_RADIO_COLLISION_1, IDC_RADIO_COLLISION_2) - IDC_RADIO_COLLISION_1));
 
   //  convert nif
-  ncReturn = ncUtility.convertShape((CStringA(m_fileNameAry[0])).GetString(), (CStringA(m_fileNameAry[1])).GetString(), (CStringA(glPathTemplate + L"\\" + m_fileNameAry[2])).GetString());
+  ncReturn = ncUtility.addCollision((CStringA(m_fileNameAry[1])).GetString(), (CStringA(m_fileNameAry[0])).GetString(), (CStringA(glPathTemplate + L"\\" + m_fileNameAry[2])).GetString());
   if (ncReturn != NCU_OK)
   {
     infoMessage = "NifConverter returned code: " + ncReturn;
   }
 
   //  generate info message
-  set<string>     usedTextures = ncUtility.getUsedTextures();
   vector<string>  userMessages = ncUtility.getUserMessages();
 
   infoMessage += "\n\nMessages:\n";
@@ -206,14 +197,6 @@ void CNifConvertDlg::OnBnClickedOk()
     infoMessage += ("- " + (*texIter) + "\n");
   }
 
-  infoMessage += "\nUsed textures:\n";
-  for (set<string>::iterator texIter = usedTextures.begin(); texIter != usedTextures.end(); texIter++)
-  {
-    infoMessage += ("- " + (*texIter) + "\n");
-  }
-
   MessageBox(CString((const char*) infoMessage.c_str()), L"Convert Info", MB_OK| MB_ICONINFORMATION);
-
-
 }
 

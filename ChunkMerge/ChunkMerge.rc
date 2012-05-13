@@ -48,7 +48,7 @@ BEGIN
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)\r\n"
     "LANGUAGE 7, 1\r\n"
     "#pragma code_page(1252)\r\n"
-    "#include ""res\\NifConvert.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""res\\ChunkMerge.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
     "#include ""afxres.rc""     // Standard components\r\n"
     "#endif\r\n"
     "\0"
@@ -64,17 +64,17 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\NifConvert.ico"
+IDR_MAINFRAME           ICON                    "res\\ChunkMerge.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_NIFCONVERT_DIALOG DIALOGEX 0, 0, 298, 147
+IDD_CHUNKMERGE_DIALOG DIALOGEX 0, 0, 298, 135
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "NifConvert"
+CAPTION "ChunkMerge"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_EDIT_INPUT,84,18,180,14,ES_AUTOHSCROLL
@@ -82,17 +82,17 @@ BEGIN
     EDITTEXT        IDC_EDIT_OUTPUT,84,36,180,14,ES_AUTOHSCROLL
     PUSHBUTTON      "...",IDC_BUTTON_OUTPUT,270,36,19,14
     COMBOBOX        IDC_COMBO_TEMPLATE,84,54,180,72,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_COMBO_TEXTURE,84,72,180,72,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Remove flag",IDC_RADIO_VCREMOVE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,12,108,56,10
-    CONTROL         "Generate default color 0xFFFFFF",IDC_RADIO_VCADD,"Button",BS_AUTORADIOBUTTON,84,108,122,10
-    PUSHBUTTON      "Exit",IDCANCEL,6,126,50,16
-    DEFPUSHBUTTON   "Convert",IDOK,240,126,50,16
-    LTEXT           "In-File (Morrowind):",IDC_STATIC,12,18,69,12,SS_CENTERIMAGE
-    LTEXT           "Out-File (Skyrim):",IDC_STATIC,12,36,69,12,SS_CENTERIMAGE
+    CONTROL         "Collision data",IDC_RADIO_COLLISION_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,48,90,58,10
+    CONTROL         "Collision fallback Mesh",IDC_RADIO_COLLISION_2,"Button",BS_AUTORADIOBUTTON,114,90,86,10
+    CONTROL         "Mesh Data",IDC_RADIO_COLLISION_3,"Button",BS_AUTORADIOBUTTON,210,90,50,10
+    PUSHBUTTON      "Exit",IDCANCEL,6,114,50,16
+    DEFPUSHBUTTON   "Convert",IDOK,240,114,50,16
+    LTEXT           "Nif-File (Skyrim):",IDC_STATIC,12,18,69,12,SS_CENTERIMAGE
+    LTEXT           "Collision-File:",IDC_STATIC,12,36,69,12,SS_CENTERIMAGE
     LTEXT           "Template (Skyrim):",IDC_STATIC,12,54,69,12,SS_CENTERIMAGE
-    LTEXT           "Texture path:",IDC_STATIC,12,72,69,12,SS_CENTERIMAGE
-    GROUPBOX        " Files ",IDC_STATIC,6,6,288,84
-    GROUPBOX        " VertexColorFlag vs. VertexColors ",IDC_STATIC,6,96,288,24
+    GROUPBOX        " Files ",IDC_STATIC,6,6,288,66
+    GROUPBOX        " Collision Source ",IDC_STATIC,6,78,288,30
+    LTEXT           "In-File:",IDC_STATIC,12,90,30,8,SS_CENTERIMAGE
 END
 
 
@@ -121,9 +121,9 @@ BEGIN
             VALUE "CompanyName", "TODO: <Company name>"
             VALUE "FileDescription", "TODO: <File description>"
             VALUE "FileVersion", "1.0.0.1"
-            VALUE "InternalName", "NifConvert.exe"
+            VALUE "InternalName", "ChunkMerge.exe"
             VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
-            VALUE "OriginalFilename", "NifConvert.exe"
+            VALUE "OriginalFilename", "ChunkMerge.exe"
             VALUE "ProductName", "TODO: <Product name>"
             VALUE "ProductVersion", "1.0.0.1"
         END
@@ -143,12 +143,12 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO 
 BEGIN
-    IDD_NIFCONVERT_DIALOG, DIALOG
+    IDD_CHUNKMERGE_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 291
         TOPMARGIN, 7
-        BOTTOMMARGIN, 140
+        BOTTOMMARGIN, 128
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -171,7 +171,7 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
 LANGUAGE 7, 1
 #pragma code_page(1252)
-#include "res\NifConvert.rc2"  // non-Microsoft Visual C++ edited resources
+#include "res\ChunkMerge.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"     // Standard components
 #endif
 

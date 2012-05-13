@@ -1,10 +1,9 @@
-// NifConvert.cpp : Defines the class behaviors for the application.
+// ChunkMerge.cpp : Defines the class behaviors for the application.
 //
 
 #include "..\Common\stdafx.h"
-#include "NifConvert.h"
-#include "NifConvertDlg.h"
-
+#include "ChunkMerge.h"
+#include "ChunkMergeDlg.h"
 #include "..\Common\HavokUtilities.hpp"
 
 #ifdef _DEBUG
@@ -18,34 +17,35 @@
 extern "C" int __cdecl ADP_Close( void );
 #endif
 
+
 CString   glPathSkyrim;
 CString   glPathTemplate;
 
 
-// CNifConvertApp
+// CChunkMergeApp
 
-BEGIN_MESSAGE_MAP(CNifConvertApp, CWinApp)
+BEGIN_MESSAGE_MAP(CChunkMergeApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
 
-// CNifConvertApp construction
+// CChunkMergeApp construction
 
-CNifConvertApp::CNifConvertApp()
+CChunkMergeApp::CChunkMergeApp()
 {
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
 }
 
 
-// The one and only CNifConvertApp object
+// The one and only CChunkMergeApp object
 
-CNifConvertApp theApp;
+CChunkMergeApp theApp;
 
 
-// CNifConvertApp initialization
+// CChunkMergeApp initialization
 
-BOOL CNifConvertApp::InitInstance()
+BOOL CChunkMergeApp::InitInstance()
 {
 	// InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
@@ -86,7 +86,7 @@ BOOL CNifConvertApp::InitInstance()
 
   LocalFree(argv);
 
-	CNifConvertDlg dlg;
+	CChunkMergeDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
@@ -99,9 +99,6 @@ BOOL CNifConvertApp::InitInstance()
 		// TODO: Place code here to handle when the dialog is
 		//  dismissed with Cancel
 	}
-
-  //  clean up Havok
-  //delete havokUtilities;
 
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.

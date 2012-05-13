@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="NifConvert"
-	ProjectGUID="{9196D38A-CC82-474A-9730-73D3494A8DAA}"
-	RootNamespace="NifConvert"
+	Name="ChunkMerge"
+	ProjectGUID="{114EB366-06EC-42C1-AB0D-F4413341AF27}"
+	RootNamespace="ChunkMerge"
 	Keyword="MFCProj"
 	>
 	<Platforms>
@@ -132,8 +132,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\niflib\include"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG,HK_CONFIG_SIMD=2,_SCL_SECURE_NO_WARNINGS,_CRT_SECURE_NO_WARNINGS,NIFLIB_STATIC_LINK"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;HK_CONFIG_SIMD=2;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;NIFLIB_STATIC_LINK"
 				MinimalRebuild="true"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -200,11 +201,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\NifConvert.cpp"
+				RelativePath=".\ChunkMerge.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\NifConvertDlg.cpp"
+				RelativePath=".\ChunkMergeDlg.cpp"
 				>
 			</File>
 			<Filter
@@ -234,11 +235,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\NifConvert.h"
+				RelativePath=".\ChunkMerge.h"
 				>
 			</File>
 			<File
-				RelativePath=".\NifConvertDlg.h"
+				RelativePath=".\ChunkMergeDlg.h"
 				>
 			</File>
 			<File
@@ -280,15 +281,15 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\res\NifConvert.ico"
+				RelativePath=".\res\ChunkMerge.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\NifConvert.rc"
+				RelativePath=".\ChunkMerge.rc"
 				>
 			</File>
 			<File
-				RelativePath=".\res\NifConvert.rc2"
+				RelativePath=".\res\ChunkMerge.rc2"
 				>
 			</File>
 		</Filter>
@@ -300,7 +301,7 @@
 	<Globals>
 		<Global
 			Name="RESOURCE_FILE"
-			Value="NifConvert.rc"
+			Value="ChunkMerge.rc"
 		/>
 	</Globals>
 </VisualStudioProject>
