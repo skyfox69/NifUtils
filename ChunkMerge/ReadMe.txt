@@ -1,5 +1,5 @@
-Utility for creating correct model data NIF file (Skyrim version) from NIF file (Morrowind?
-version) and 2nd NIF (Skyrim version) used as template.
+Utility for adding collision data to NIF file (Skyrim version) from NIF file (Morrowind?
+version / NiTriShape data) or OBJ file using 2nd NIF file (Skyrim version) as template.
 
 --------------------------------------------------------------------------------------------
 SOFTWARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
@@ -40,11 +40,9 @@ USAGE:
 
 NifConvert <path to Skyrim> <path to templates>
 
-1. Choose NIF-file (Morrowind version?) containing model.
-2. Choose NIF-File (Skyrim version) for output
+1. Choose NIF-File (Skyrim version) collision data should be injected
+2. Choose NIF-file for collision source
 3. Select template from ComboBox
-4. Select texture directory from ComboBox
-5. Select handling for missing vertex colors
+4. Select handling of collission source (collision data or shape meshes)
 6. Press Convert-button
-7. optional: use ChunkMerge to add collision data
 
