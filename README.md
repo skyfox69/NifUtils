@@ -28,10 +28,16 @@ THANKS TO:
 PREREQUISITES:
 
 - Havok SDK (http://software.intel.com/sites/havok/en/)
+
   Havok_Physics_Animation_2010-2-0_PC_XS_win32_VS2005_keycode_perpetual_20101115.zip
+
 - MS DirectX9 SDK (http://www.microsoft.com/en-us/download/details.aspx?id=6812)
+
   DXSDK_Jun10.exe
+
 - MS Visual Studio 2005
+
 - NifUtils (https://github.com/skyfox69/NifUtils)
-  git clone --recursive git://skyfox69@github.com/skyfox69/NifUtils.git
+
+  git clone --recursive git://github.com/skyfox69/NifUtils.git
 
