@@ -33,12 +33,12 @@ PREREQUISITES:
   DXSDK_Jun10.exe
 - MS Visual Studio 2005
 - NifUtils (https://github.com/skyfox69/NifUtils)
-  git clone --recursive https://skyfox69@github.com/skyfox69/NifUtils.git
+  git clone --recursive git://skyfox69@github.com/skyfox69/NifUtils.git
 
 
 USAGE:
 
-NifConvert <path to Skyrim> <path to templates>
+ChunkMerge <path to Skyrim> <path to templates>
 
 1. Choose NIF-File (Skyrim version) collision data should be injected
 2. Choose NIF-file for collision source

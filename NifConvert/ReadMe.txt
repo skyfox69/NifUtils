@@ -33,7 +33,7 @@ PREREQUISITES:
   DXSDK_Jun10.exe
 - MS Visual Studio 2005
 - NifUtils (https://github.com/skyfox69/NifUtils)
-  git clone --recursive https://skyfox69@github.com/skyfox69/NifUtils.git
+  git clone --recursive git://skyfox69@github.com/skyfox69/NifUtils.git
 
 
 USAGE:
