@@ -155,7 +155,7 @@ void CChunkMergeDlg::OnBnClickedButtonInput()
 
 void CChunkMergeDlg::OnBnClickedButtonOutput()
 {
-  m_fileNameAry[1] = FDFileHelper::getFileOrFolder(m_fileNameAry[1], L"Nif Files (*.nif)|*.nif||", L"nif");
+  m_fileNameAry[1] = FDFileHelper::getFileOrFolder(m_fileNameAry[1], L"Nif Files (*.nif)|*.nif|Object Files (*.obj)|*.obj||", L"nif");
   GetDlgItem(IDC_EDIT_OUTPUT)->SetWindowText(m_fileNameAry[1]);
   if (!m_fileNameAry[0].IsEmpty() && !m_fileNameAry[1].IsEmpty())
   {
