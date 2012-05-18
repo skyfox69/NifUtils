@@ -967,7 +967,7 @@ bool NifConvertUtility2::updateTangentSpace(NiTriShapeDataRef pDataObj)
 	vector<TexCoord>	vecTexCoords(pDataObj->GetUVSet(0));
 
 	//  check on valid input data
-	if (vecVertices.empty() || vecTriangles.empty() || vecNormals.size() != vecVertices.size() || vecVxColors.size() != vecTexCoords.size())
+	if (vecVertices.empty() || vecTriangles.empty() || vecNormals.size() != vecVertices.size() || vecVertices.size() != vecTexCoords.size())
 	{
 		_userMessages.push_back("UpdateTangentSpace: No vertices, normals, coords or faces defined.");
 		return false;
