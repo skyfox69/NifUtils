@@ -32,9 +32,10 @@ using namespace NifUtility;
 
 /*---------------------------------------------------------------------------*/
 NifConvertUtility2::NifConvertUtility2()
-	:	_vcDefaultColor(1.0f, 1.0f, 1.0f, 1.0f),
-		_vcHandling    (NCU_VC_REMOVE_FLAG),
-		_cnHandling    (NCU_CN_FALLBACK)
+	:	_vcDefaultColor    (1.0f, 1.0f, 1.0f, 1.0f),
+		_vcHandling        (NCU_VC_REMOVE_FLAG),
+		_cnHandling        (NCU_CN_FALLBACK),
+		_updateTangentSpace(true)
 {
 
 }
@@ -379,10 +380,25 @@ NiTriShapeRef NifConvertUtility2::convertNiTriShape(NiTriShapeRef pSrcNode, NiTr
 	pDstNode->SetFlags          (14);    //  ???
 
 	//  data node
-	if ((pDstGeo != NULL) && (pTmplNode->GetData() != NULL))
+	if (pDstGeo != NULL)
 	{
-		pDstGeo->SetConsistencyFlags(pTmplNode->GetData()->GetConsistencyFlags());  //  nessessary ???
-	}
+		//  set flags
+		if (pTmplNode->GetData() != NULL)
+		{
+			pDstGeo->SetConsistencyFlags(pTmplNode->GetData()->GetConsistencyFlags());  //  nessessary ???
+		}
+
+		//  update tangent space?
+		if ((_updateTangentSpace) && (DynamicCast<NiTriShapeData>(pDstGeo) != NULL))
+		{
+			//  enable tangent space
+			pDstGeo->SetUVSetCount(pDstGeo->GetUVSetCount() | 0x8000);
+
+			//  update tangent space
+			updateTangentSpace(DynamicCast<NiTriShapeData>(pDstGeo));
+
+		}  //  if (_updateTangentSpace)
+	}  //  if (pDstGeo != NULL)
 
 	//  properties - get them from template
 	for (short index(0); index < 2; ++index)
@@ -940,6 +956,74 @@ bool NifConvertUtility2::injectCollisionData(vector<hkGeometry*>& geometryAry, b
 }
 
 /*---------------------------------------------------------------------------*/
+bool NifConvertUtility2::updateTangentSpace(NiTriShapeDataRef pDataObj)
+{
+	vector<Vector3>		vecBiNormals(pDataObj->GetBinormals());
+	vector<Vector3>		vecNormals  (pDataObj->GetNormals());
+	vector<Vector3>		vecTangents (pDataObj->GetTangents());
+	vector<Vector3>		vecVertices (pDataObj->GetVertices());
+	vector<Triangle>	vecTriangles(pDataObj->GetTriangles());
+	vector<Color4>		vecVxColors (pDataObj->GetColors());
+	vector<TexCoord>	vecTexCoords(pDataObj->GetUVSet(0));
+
+	//  check on valid input data
+	if (vecVertices.empty() || vecTriangles.empty() || vecNormals.size() != vecVertices.size() || vecVxColors.size() != vecTexCoords.size())
+	{
+		_userMessages.push_back("UpdateTangentSpace: No vertices, normals, coords or faces defined.");
+		return false;
+	}
+
+	//  check on existing tangents and binormals
+	if ((vecTangents.size() > 0) && (vecBiNormals.size() > 0))
+	{
+		_userMessages.push_back("UpdateTangentSpace: No work todo, tangents and binormals exist.");
+		return true;
+	}
+
+	//  prepare result vectors
+	vecTangents.clear();
+	vecBiNormals.clear();
+	vecTangents.resize(vecVertices.size());
+	vecBiNormals.resize(vecVertices.size());
+
+	//  prepare tangents and binormals
+	for (unsigned int idxTri(0); idxTri < vecTriangles.size(); ++idxTri)
+	{
+		Vector3		vec21 (vecVertices [vecTriangles[idxTri].v2] - vecVertices [vecTriangles[idxTri].v1]);
+		Vector3		vec31 (vecVertices [vecTriangles[idxTri].v3] - vecVertices [vecTriangles[idxTri].v1]);
+		TexCoord	txc21 (vecTexCoords[vecTriangles[idxTri].v2] - vecTexCoords[vecTriangles[idxTri].v1]);
+		TexCoord	txc31 (vecTexCoords[vecTriangles[idxTri].v3] - vecTexCoords[vecTriangles[idxTri].v1]);
+		float		radius((((txc21.u * txc31.v) - (txc31.u - txc21.v)) >= 0.0f) ? +1.0f : -1.0f);
+
+		Vector3		sDir(((txc31.v * vec21.x) - (txc21.v * vec31.x)) * radius,
+					     ((txc31.v * vec21.y) - (txc21.v * vec31.y)) * radius,
+					     ((txc31.v * vec21.z) - (txc21.v * vec31.z)) * radius
+						);
+		Vector3		tDir(((txc21.v * vec31.x) - (txc31.v * vec21.x)) * radius,
+					     ((txc21.v * vec31.y) - (txc31.v * vec21.y)) * radius,
+					     ((txc21.v * vec31.z) - (txc31.v * vec21.z)) * radius
+						);
+
+		//  normalize vertices
+		sDir = sDir.Normalized();
+		tDir = tDir.Normalized();
+
+		//  calculate tangent and binormal
+		for (short idx(0); idx < 3; ++idx)
+		{
+			vecTangents [vecTriangles[idxTri][idx]] += tDir;
+			vecBiNormals[vecTriangles[idxTri][idx]] += sDir;
+		}
+	}  //  for (unsigned int idxTri(0); idxTri < vecTriangles.size(); ++idxTri)
+
+	//  set tangents and binormals to object
+	pDataObj->SetBinormals(vecBiNormals);
+	pDataObj->SetTangents (vecTangents);
+
+	return true;
+}
+
+/*---------------------------------------------------------------------------*/
 void NifConvertUtility2::setTexturePath(string pathTexture)
 {
 	_pathTexture = pathTexture;
@@ -961,6 +1045,12 @@ void NifConvertUtility2::setCollisionNodeHandling(CollisionNodeHandling cnHandli
 void NifConvertUtility2::setDefaultVertexColor(Color4 defaultColor)
 {
 	_vcDefaultColor = defaultColor;
+}
+
+/*---------------------------------------------------------------------------*/
+void NifConvertUtility2::setUpdateTangentSpace(bool doUpdate)
+{
+	_updateTangentSpace = doUpdate;
 }
 
 /*---------------------------------------------------------------------------*/

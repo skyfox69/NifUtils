@@ -23,6 +23,7 @@
 #include "obj/nialphaproperty.h"
 #include "obj/bhkMoppBvTreeShape.h"
 #include "obj/bhkCompressedMeshShapeData.h"
+#include "obj/NiTriShapeData.h"
 
 //  Havok includes
 #include <Common/Base/Types/Geometry/hkGeometry.h>
@@ -106,6 +107,12 @@ namespace NifUtility
 		virtual void setDefaultVertexColor(Color4 defaultColor);
 
 		/**
+		 * 
+		 * @param doUpdate    in: true: update tangent space
+		 */
+		virtual void setUpdateTangentSpace(bool doUpdate);
+
+		/**
 		 * Get list of user messages
 		 */
 		virtual vector<string>& getUserMessages();
@@ -145,6 +152,11 @@ namespace NifUtility
 		 * default vertex color
 		 */
 		Color4 _vcDefaultColor;
+
+		/**
+		 * update tangent space
+		 */
+		bool _updateTangentSpace;
 
 		/**
 		 * Get geometry from NiTriShape
@@ -227,6 +239,13 @@ namespace NifUtility
 		 * @param pData    in: CompressedMeshShapeData getting chunks and tris
 		 */
 		virtual bool injectCollisionData(vector<hkGeometry*>& geometryAry, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData);
+
+		/**
+		 * Create tangent space data
+		 * 
+		 * @param pDataObj    in: data object
+		 */
+		virtual bool updateTangentSpace(NiTriShapeDataRef pDataObj);
 	};
 
 }

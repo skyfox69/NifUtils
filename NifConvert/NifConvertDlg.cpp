@@ -80,8 +80,9 @@ BOOL CNifConvertDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-  GetDlgItem(IDOK)               ->EnableWindow(FALSE);
-  ((CButton*) GetDlgItem(IDC_RADIO_VCREMOVE))   ->SetCheck(BST_CHECKED);
+  GetDlgItem(IDOK)                               ->EnableWindow(FALSE);
+  ((CButton*) GetDlgItem(IDC_RADIO_VCREMOVE))    ->SetCheck(BST_CHECKED);
+  ((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))->SetCheck(BST_CHECKED);
 
   //  get texture paths
   CComboBox*  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEXTURE);
@@ -188,6 +189,7 @@ void CNifConvertDlg::OnBnClickedOk()
 
   //  set flags
   ncUtility.setVertexColorHandling((VertexColorHandling) (GetCheckedRadioButton(IDC_RADIO_VCREMOVE, IDC_RADIO_VCADD) - IDC_RADIO_VCREMOVE));
+  ncUtility.setUpdateTangentSpace (((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))->GetCheck() != FALSE);
 
   //  convert nif
   ncReturn = ncUtility.convertShape((CStringA(m_fileNameAry[0])).GetString(), (CStringA(m_fileNameAry[1])).GetString(), (CStringA(glPathTemplate + L"\\" + m_fileNameAry[2])).GetString());
