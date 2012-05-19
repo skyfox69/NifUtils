@@ -391,12 +391,12 @@ NiTriShapeRef NifConvertUtility2::convertNiTriShape(NiTriShapeRef pSrcNode, NiTr
 		//  update tangent space?
 		if ((_updateTangentSpace) && (DynamicCast<NiTriShapeData>(pDstGeo) != NULL))
 		{
-			//  enable tangent space
-			pDstGeo->SetUVSetCount(pDstGeo->GetUVSetCount() | 0x8000);
-
 			//  update tangent space
-			updateTangentSpace(DynamicCast<NiTriShapeData>(pDstGeo));
-
+			if (updateTangentSpace(DynamicCast<NiTriShapeData>(pDstGeo)))
+			{
+				//  enable tangent space
+				pDstGeo->SetTspaceFlag(0x10);
+			}
 		}  //  if (_updateTangentSpace)
 	}  //  if (pDstGeo != NULL)
 
@@ -958,13 +958,10 @@ bool NifConvertUtility2::injectCollisionData(vector<hkGeometry*>& geometryAry, b
 /*---------------------------------------------------------------------------*/
 bool NifConvertUtility2::updateTangentSpace(NiTriShapeDataRef pDataObj)
 {
-	vector<Vector3>		vecBiNormals(pDataObj->GetBinormals());
-	vector<Vector3>		vecNormals  (pDataObj->GetNormals());
-	vector<Vector3>		vecTangents (pDataObj->GetTangents());
 	vector<Vector3>		vecVertices (pDataObj->GetVertices());
-	vector<Triangle>	vecTriangles(pDataObj->GetTriangles());
-	vector<Color4>		vecVxColors (pDataObj->GetColors());
+	vector<Vector3>		vecNormals  (pDataObj->GetNormals());
 	vector<TexCoord>	vecTexCoords(pDataObj->GetUVSet(0));
+	vector<Triangle>	vecTriangles(pDataObj->GetTriangles());
 
 	//  check on valid input data
 	if (vecVertices.empty() || vecTriangles.empty() || vecNormals.size() != vecVertices.size() || vecVertices.size() != vecTexCoords.size())
@@ -973,48 +970,62 @@ bool NifConvertUtility2::updateTangentSpace(NiTriShapeDataRef pDataObj)
 		return false;
 	}
 
-	//  check on existing tangents and binormals
-	if ((vecTangents.size() > 0) && (vecBiNormals.size() > 0))
-	{
-		_userMessages.push_back("UpdateTangentSpace: No work todo, tangents and binormals exist.");
-		return true;
-	}
-
 	//  prepare result vectors
-	vecTangents.clear();
-	vecBiNormals.clear();
-	vecTangents.resize(vecVertices.size());
-	vecBiNormals.resize(vecVertices.size());
+	vector<Vector3>		vecTangents  = vector<Vector3>(vecVertices.size(), Vector3(0.0f, 0.0f, 0.0f));
+	vector<Vector3>		vecBiNormals = vector<Vector3>(vecVertices.size(), Vector3(0.0f, 0.0f, 0.0f));
 
-	//  prepare tangents and binormals
-	for (unsigned int idxTri(0); idxTri < vecTriangles.size(); ++idxTri)
+	for (unsigned int t(0); t < vecTriangles.size(); ++t)
 	{
-		Vector3		vec21 (vecVertices [vecTriangles[idxTri].v2] - vecVertices [vecTriangles[idxTri].v1]);
-		Vector3		vec31 (vecVertices [vecTriangles[idxTri].v3] - vecVertices [vecTriangles[idxTri].v1]);
-		TexCoord	txc21 (vecTexCoords[vecTriangles[idxTri].v2] - vecTexCoords[vecTriangles[idxTri].v1]);
-		TexCoord	txc31 (vecTexCoords[vecTriangles[idxTri].v3] - vecTexCoords[vecTriangles[idxTri].v1]);
-		float		radius((((txc21.u * txc31.v) - (txc31.u - txc21.v)) >= 0.0f) ? +1.0f : -1.0f);
+		Vector3		vec21(vecVertices[vecTriangles[t][1]] - vecVertices[vecTriangles[t][0]]);
+		Vector3		vec31(vecVertices[vecTriangles[t][2]] - vecVertices[vecTriangles[t][0]]);
+		TexCoord	txc21(vecTexCoords[vecTriangles[t][1]] - vecTexCoords[vecTriangles[t][0]]);
+		TexCoord	txc31(vecTexCoords[vecTriangles[t][2]] - vecTexCoords[vecTriangles[t][0]]);
+		float		radius(((txc21.u * txc31.v - txc31.u * txc21.v) >= 0.0f ? +1.0f : -1.0f));
 
-		Vector3		sDir(((txc31.v * vec21.x) - (txc21.v * vec31.x)) * radius,
-					     ((txc31.v * vec21.y) - (txc21.v * vec31.y)) * radius,
-					     ((txc31.v * vec21.z) - (txc21.v * vec31.z)) * radius
-						);
-		Vector3		tDir(((txc21.v * vec31.x) - (txc31.v * vec21.x)) * radius,
-					     ((txc21.v * vec31.y) - (txc31.v * vec21.y)) * radius,
-					     ((txc21.v * vec31.z) - (txc31.v * vec21.z)) * radius
-						);
+		Vector3		sdir(( txc31.v * vec21[0] - txc21.v * vec31[0] ) * radius,
+					     ( txc31.v * vec21[1] - txc21.v * vec31[1] ) * radius,
+					     ( txc31.v * vec21[2] - txc21.v * vec31[2] ) * radius);
+		Vector3		tdir(( txc21.u * vec31[0] - txc31.u * vec21[0] ) * radius,
+					     ( txc21.u * vec31[1] - txc31.u * vec21[1] ) * radius,
+					     ( txc21.u * vec31[2] - txc31.u * vec21[2] ) * radius);
 
-		//  normalize vertices
-		sDir = sDir.Normalized();
-		tDir = tDir.Normalized();
+		//  normalize
+		sdir = sdir.Normalized();
+		tdir = tdir.Normalized();
 
-		//  calculate tangent and binormal
-		for (short idx(0); idx < 3; ++idx)
+		for (int j(0); j < 3; ++j)
 		{
-			vecTangents [vecTriangles[idxTri][idx]] += tDir;
-			vecBiNormals[vecTriangles[idxTri][idx]] += sDir;
+			vecTangents [vecTriangles[t][j]] += tdir;
+			vecBiNormals[vecTriangles[t][j]] += sdir;
 		}
-	}  //  for (unsigned int idxTri(0); idxTri < vecTriangles.size(); ++idxTri)
+	}  //  for (unsigned int t(0); t < vecTriangles.size(); ++t)
+
+	for (unsigned int i(0); i < vecVertices.size(); ++i)
+	{
+		Vector3&	n(vecNormals[i]);
+		Vector3&	t(vecTangents [i]);
+		Vector3&	b(vecBiNormals[i]);
+
+		if ((t == Vector3()) || (b == Vector3()))
+		{
+			t[0] = n[1];
+			t[1] = n[2];
+			t[2] = n[0];
+
+			b = n.CrossProduct(t);
+		}
+		else
+		{
+			t = t.Normalized();
+			t = (t - n * n.DotProduct(t));
+			t = t.Normalized();
+
+			b = b.Normalized();
+			b = (b - n * n.DotProduct(b));
+			b = (b - t * t.DotProduct(b));
+			b = b.Normalized();
+		}
+	}  //  for (unsigned int i(0); i < vecVertices.size(); ++i)
 
 	//  set tangents and binormals to object
 	pDataObj->SetBinormals(vecBiNormals);
