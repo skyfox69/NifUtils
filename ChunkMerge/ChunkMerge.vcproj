@@ -164,7 +164,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				TargetMachine="1"
+				TargetMachine="0"
 			/>
 			<Tool
 				Name="VCALinkTool"

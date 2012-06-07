@@ -35,7 +35,9 @@ NifConvertUtility2::NifConvertUtility2()
 	:	_vcDefaultColor    (1.0f, 1.0f, 1.0f, 1.0f),
 		_vcHandling        (NCU_VC_REMOVE_FLAG),
 		_cnHandling        (NCU_CN_FALLBACK),
-		_updateTangentSpace(true)
+		_updateTangentSpace(true),
+		_reorderProperties (true),
+		_logCallback       (NULL)
 {
 
 }
@@ -477,11 +479,21 @@ NiTriShapeRef NifConvertUtility2::convertNiTriShape(NiTriShapeRef pSrcNode, NiTr
 			pDstSText->setTexture(0, fileName);
 
 			_usedTextures.insert(fileName);
+			if (!checkFileExists(fileName))
+			{
+				_newTextures.insert(fileName);
+			}
+
 			fileName[strlen(fileName) - 4] = 0;
 			strcat(fileName, "_n.dds");
 
 			//  set new normal map
 			pDstSText->setTexture(1, fileName);
+
+			if (!checkFileExists(fileName))
+			{
+				_newTextures.insert(fileName);
+			}
 
 			//  add texture set to texture property
 			pDstLShader->setTextureSet(pDstSText);
@@ -542,6 +554,22 @@ NiTriShapeRef NifConvertUtility2::convertNiTriShape(NiTriShapeRef pSrcNode, NiTr
 		pDstGeo->SetVertexColors(vector<Color4>(pDstGeo->GetVertexCount(), _vcDefaultColor));
 	}
 
+	//  reorder properties
+	if (_reorderProperties)
+	{
+		NiPropertyRef	tProp01(pDstNode->getBSProperty(0));
+		NiPropertyRef	tProp02(pDstNode->getBSProperty(1));
+
+		//  make sure BSLightingShaderProperty comes before NiAlphaProperty - seems a 'must be'
+		if ((tProp01->GetType().GetTypeName() == "NiAlphaProperty") &&
+			(tProp02->GetType().GetTypeName() == "BSLightingShaderProperty")
+		   )
+		{
+			pDstNode->setBSProperty(0, tProp02);
+			pDstNode->setBSProperty(1, tProp01);
+		}
+	}  //  if (_reorderProperties)
+
 	return  pDstNode;
 }
 
@@ -569,6 +597,7 @@ unsigned int NifConvertUtility2::convertShape(string fileNameSrc, string fileNam
 
 	//  initialize used texture list
 	_usedTextures.clear();
+	_newTextures.clear();
 
 	//  read input NIF
 	if ((pRootInput = getRootNodeFromNifFile(fileNameSrc, "source", fakedRoot)) == NULL)
@@ -613,14 +642,11 @@ unsigned int NifConvertUtility2::convertShape(string fileNameSrc, string fileNam
 		{
 			pRootOutput->AddChild(&(*convertNiTriShape(DynamicCast<NiTriShape>(*ppIter), pNiTriShapeTmpl)));
 		}
-/*
 		//  RootCollisionNode
-		else if ((DynamicCast<RootCollisionNode>(*ppIter) != NULL) && ((_cnHandling == NCU_CN_INPUT_COLLISION) || (_cnHandling == NCU_CN_INPUT_COL_FB_SHAPE)))
+		else if (DynamicCast<RootCollisionNode>(*ppIter) != NULL)
 		{
-			pRootOutput->SetCollisionObject(convertCollNode(DynamicCast<NiNode>(*ppIter), pCollNodeTmpl, &(*pRootOutput)));
-			hasCollNode = (pRootOutput->GetCollisionObject() != NULL);
+			//  ignore node
 		}
-*/
 		//  NiNode (and derived classes?)
 		else if (DynamicCast<NiNode>(*ppIter) != NULL)
 		{
@@ -1041,6 +1067,12 @@ void NifConvertUtility2::setTexturePath(string pathTexture)
 }
 
 /*---------------------------------------------------------------------------*/
+void NifConvertUtility2::setSkyrimPath(string pathSkyrim)
+{
+	_pathSkyrim = pathSkyrim;
+}
+
+/*---------------------------------------------------------------------------*/
 void NifConvertUtility2::setVertexColorHandling(VertexColorHandling vcHandling)
 {
 	_vcHandling = vcHandling;
@@ -1065,6 +1097,12 @@ void NifConvertUtility2::setUpdateTangentSpace(bool doUpdate)
 }
 
 /*---------------------------------------------------------------------------*/
+void NifConvertUtility2::setReorderProperties(bool doReorder)
+{
+	_reorderProperties = doReorder;
+}
+
+/*---------------------------------------------------------------------------*/
 vector<string>& NifConvertUtility2::getUserMessages()
 {
 	return _userMessages;
@@ -1076,3 +1114,53 @@ set<string>& NifConvertUtility2::getUsedTextures()
 	return _usedTextures;
 }
 
+/*---------------------------------------------------------------------------*/
+set<string>& NifConvertUtility2::getNewTextures()
+{
+	return _newTextures;
+}
+
+/*---------------------------------------------------------------------------*/
+void NifConvertUtility2::setLogCallback(void (*logCallback) (const int type, const char* pMessage))
+{
+	_logCallback = logCallback;
+}
+
+/*---------------------------------------------------------------------------*/
+void NifConvertUtility2::logMessage(int type, string text)
+{
+	//  add message to internal storages
+	switch (type)
+	{
+		default:
+		case NCU_MSG_TYPE_INFO:
+		case NCU_MSG_TYPE_WARNING:
+		case NCU_MSG_TYPE_ERROR:
+		{
+			_userMessages.push_back(text);
+			break;
+		}
+
+		case NCU_MSG_TYPE_TEXTURE:
+		{
+			_usedTextures.insert(text);
+			break;
+		}
+	}
+
+	//  send message to callback if given
+	if (_logCallback != NULL)
+	{
+		(*_logCallback)(type, text.c_str());
+	}
+}
+
+/*---------------------------------------------------------------------------*/
+bool NifConvertUtility2::checkFileExists(string fileName)
+{
+	string		path   (_pathSkyrim + "\\Data\\" + fileName);
+	ifstream	iStream(path.c_str());
+
+	//  return exitance of file
+	return iStream.good();
+}

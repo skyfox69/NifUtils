@@ -80,9 +80,10 @@ BOOL CNifConvertDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-  GetDlgItem(IDOK)                               ->EnableWindow(FALSE);
-  ((CButton*) GetDlgItem(IDC_RADIO_VCREMOVE))    ->SetCheck(BST_CHECKED);
-  ((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))->SetCheck(BST_CHECKED);
+  GetDlgItem(IDOK)                                       ->EnableWindow(FALSE);
+  ((CButton*) GetDlgItem(IDC_RADIO_VCREMOVE))            ->SetCheck(BST_CHECKED);
+  ((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))        ->SetCheck(BST_CHECKED);
+  ((CButton*) GetDlgItem(IDC_CHECK_NITRISHAPEPROPERTIES))->SetCheck(BST_CHECKED);
 
   //  get texture paths
   CComboBox*  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEXTURE);
@@ -190,6 +191,7 @@ void CNifConvertDlg::OnBnClickedOk()
   //  set flags
   ncUtility.setVertexColorHandling((VertexColorHandling) (GetCheckedRadioButton(IDC_RADIO_VCREMOVE, IDC_RADIO_VCADD) - IDC_RADIO_VCREMOVE));
   ncUtility.setUpdateTangentSpace (((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))->GetCheck() != FALSE);
+  ncUtility.setReorderProperties  (((CButton*) GetDlgItem(IDC_CHECK_NITRISHAPEPROPERTIES))->GetCheck() != FALSE);
 
   //  convert nif
   ncReturn = ncUtility.convertShape((CStringA(m_fileNameAry[0])).GetString(), (CStringA(m_fileNameAry[1])).GetString(), (CStringA(glPathTemplate + L"\\" + m_fileNameAry[2])).GetString());
@@ -200,6 +202,7 @@ void CNifConvertDlg::OnBnClickedOk()
 
   //  generate info message
   set<string>     usedTextures = ncUtility.getUsedTextures();
+  set<string>     missTextures = ncUtility.getNewTextures();
   vector<string>  userMessages = ncUtility.getUserMessages();
 
   infoMessage += "\n\nMessages:\n";
@@ -210,6 +213,12 @@ void CNifConvertDlg::OnBnClickedOk()
 
   infoMessage += "\nUsed textures:\n";
   for (set<string>::iterator texIter = usedTextures.begin(); texIter != usedTextures.end(); texIter++)
+  {
+    infoMessage += ("- " + (*texIter) + "\n");
+  }
+
+  infoMessage += "\nMissing textures:\n";
+  for (set<string>::iterator texIter = missTextures.begin(); texIter != missTextures.end(); texIter++)
   {
     infoMessage += ("- " + (*texIter) + "\n");
   }

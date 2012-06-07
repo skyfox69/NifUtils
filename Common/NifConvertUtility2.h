@@ -41,6 +41,13 @@ using namespace std;
 #define   NCU_ERROR_CANT_OPEN_OUTPUT        0x05
 #define   NCU_ERROR_CANT_GET_GEOMETRY       0x06
 
+//  message types
+#define   NCU_MSG_TYPE_INFO                 0x00
+#define   NCU_MSG_TYPE_WARNING              0x01
+#define   NCU_MSG_TYPE_ERROR                0x02
+#define   NCU_MSG_TYPE_TEXTURE              0x03
+
+
 namespace NifUtility
 {
 	/**
@@ -89,6 +96,14 @@ namespace NifUtility
 		virtual void setTexturePath(string pathTexture);
 
 		/**
+		 * set Skyrim path
+		 * 
+		 * @param pathSkyrim    in: path to Skyrim base directory
+		 * of textures
+		 */
+		virtual void setSkyrimPath(string pathSkyrim);
+
+		/**
 		 * 
 		 * @param vcHandling    in: handling of vertex colors when missing in source NIF
 		 */
@@ -113,6 +128,12 @@ namespace NifUtility
 		virtual void setUpdateTangentSpace(bool doUpdate);
 
 		/**
+		 * 
+		 * @param doReorder    in: true: reorder NiTriShape properties
+		 */
+		virtual void setReorderProperties(bool doReorder);
+
+		/**
 		 * Get list of user messages
 		 */
 		virtual vector<string>& getUserMessages();
@@ -122,11 +143,29 @@ namespace NifUtility
 		 */
 		virtual set<string>& getUsedTextures();
 
-	protected:
 		/**
-		 * path to texture file
+		 * Get list of non existing textures
+		 */
+		virtual set<string>& getNewTextures();
+
+		/**
+		 * Set callback function for logging info
+		 */
+		virtual void setLogCallback(void (*logCallback) (const int type, const char* pMessage));
+
+	protected:
+
+		void (*_logCallback) (const int, const char*);
+
+		/**
+		 * path to texture files
 		 */
 		string _pathTexture;
+
+		/**
+		 * path to Skyrim files
+		 */
+		string _pathSkyrim;
 
 		/**
 		 * log messages for user
@@ -137,6 +176,11 @@ namespace NifUtility
 		 * list of used textures
 		 */
 		set<string> _usedTextures;
+
+		/**
+		 * list of non existing textures
+		 */
+		set<string> _newTextures;
 
 		/**
 		 * handling of vertex colors
@@ -157,6 +201,11 @@ namespace NifUtility
 		 * update tangent space
 		 */
 		bool _updateTangentSpace;
+
+		/**
+		 * reorder NiTriShape properties
+		 */
+		bool _reorderProperties;
 
 		/**
 		 * Get geometry from NiTriShape
@@ -246,6 +295,21 @@ namespace NifUtility
 		 * @param pDataObj    in: data object
 		 */
 		virtual bool updateTangentSpace(NiTriShapeDataRef pDataObj);
+
+		/**
+		 * Log messages
+		 * 
+		 * @param type    in: message type
+		 * @param text    in: message text
+		 */
+		virtual void logMessage(int type, string text);
+
+		/**
+		 * Check of existence of file
+		 * 
+		 * @param fileName    in: path and name of file to check
+		 */
+		virtual bool checkFileExists(string fileName);
 	};
 
 }

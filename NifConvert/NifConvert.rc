@@ -95,6 +95,8 @@ BEGIN
     GROUPBOX        " VertexColorFlag vs. VertexColors ",IDC_STATIC,6,96,132,36
     GROUPBOX        " Various flags ",IDC_STATIC,144,96,150,36
     CONTROL         "Update tangent space",IDC_CHECK_TANGENTSPACE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,108,87,10
+    CONTROL         "Reorder NiTriShape Properties",IDC_CHECK_NITRISHAPEPROPERTIES,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,120,113,10
 END
 
 

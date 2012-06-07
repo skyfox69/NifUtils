@@ -24,8 +24,9 @@
 #define IDC_RADIO_COLLISION_4           1014
 #define IDC_RADIO_COLLISION_5           1015
 #define IDC_RADIO_COLLISION_6           1016
-#define IDC_CHECK1                      1017
 #define IDC_CHECK_TANGENTSPACE          1017
+#define IDC_CHECK_TANGENTSPACE2         1018
+#define IDC_CHECK_NITRISHAPEPROPERTIES  1018
 
 // Next default values for new objects
 // 
