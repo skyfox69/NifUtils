@@ -224,6 +224,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\Common\MaterialDefinitions.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\Common\NifConvertUtility2.cpp"
 					>
 				</File>
@@ -263,6 +267,14 @@
 				</File>
 				<File
 					RelativePath="..\Common\FDFileHelper.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\MaterialDefinitions.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\MaterialTypeHandling.h"
 					>
 				</File>
 				<File

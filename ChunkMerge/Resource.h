@@ -1,9 +1,9 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by ChunkMerge.RC
+// Used by ChunkMerge.rc
 //
-#define IDR_MAINFRAME					128
-#define IDD_CHUNKMERGE_DIALOG				102
+#define IDD_CHUNKMERGE_DIALOG           102
+#define IDR_MAINFRAME                   128
 #define IDC_EDIT_INPUT                  1000
 #define IDC_EDIT_OUTPUT                 1001
 #define IDC_BUTTON_INPUT                1002
@@ -22,8 +22,13 @@
 #define IDC_RADIO_COLLISION_2           1012
 #define IDC_RADIO_COLLISION_3           1013
 #define IDC_RADIO_COLLISION_4           1014
+#define IDC_RADIO_COLLMAT_1             1014
 #define IDC_RADIO_COLLISION_5           1015
+#define IDC_RADIO_COLLMAT_2             1015
 #define IDC_RADIO_COLLISION_6           1016
+#define IDC_RADIO_COLLMAT_3             1016
+#define IDC_BUTTON_COLLMAT              1019
+#define IDC_COMBO_COLLMAT               1020
 
 // Next default values for new objects
 // 

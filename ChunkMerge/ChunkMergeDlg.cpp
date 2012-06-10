@@ -6,6 +6,7 @@
 #include "ChunkMergeDlg.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifConvertUtility2.h"
+#include "..\Common\MaterialDefinitions.h"
 
 
 
@@ -89,6 +90,11 @@ BOOL CChunkMergeDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	GetDlgItem(IDOK)->EnableWindow(FALSE);
 	((CButton*) GetDlgItem(IDC_RADIO_COLLISION_2))->SetCheck(BST_CHECKED);
+	((CButton*) GetDlgItem(IDC_RADIO_COLLMAT_1))  ->SetCheck(BST_CHECKED);
+
+	//  temp. until working
+	GetDlgItem(IDC_RADIO_COLLMAT_3)->EnableWindow(FALSE);
+	GetDlgItem(IDC_BUTTON_COLLMAT) ->EnableWindow(FALSE);
 
 	//  get templates
 	CComboBox*  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
@@ -102,6 +108,16 @@ BOOL CChunkMergeDlg::OnInitDialog()
 		pCBox->AddString(CString((*tIter).c_str()));
 	}
 	pCBox->SetCurSel(0);
+
+	//  initialize materials
+	pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_COLLMAT);
+
+	for (size_t t(0); t < glMaterialListSize; ++t)
+	{
+		pCBox->InsertString  (t, CString(glMaterialList[t]._name.c_str()));
+		pCBox->SetItemDataPtr(t, (void*) glMaterialList[t]._code);
+	}
+	pCBox->SelectString(-1, _T("Stone"));
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -169,17 +185,44 @@ void CChunkMergeDlg::OnBnClickedRadioCollision()
 
 void CChunkMergeDlg::OnBnClickedOk()
 {
-  NifConvertUtility2  ncUtility;
-  string              infoMessage("Nif successfully converted");
-  unsigned short      ncReturn   (NCU_OK);
+  NifConvertUtility2		ncUtility;
+  map<int, unsigned int>	materialMap;
+  string					infoMessage("Nif successfully converted");
+  unsigned short			ncReturn   (NCU_OK);
 
   //  copy strings from input
   GetDlgItem(IDC_EDIT_INPUT)    ->GetWindowTextW(m_fileNameAry[0]);
   GetDlgItem(IDC_EDIT_OUTPUT)   ->GetWindowTextW(m_fileNameAry[1]);
   GetDlgItem(IDC_COMBO_TEMPLATE)->GetWindowTextW(m_fileNameAry[2]);
 
+  //  get material handling
+  MaterialTypeHandling	matHandling((MaterialTypeHandling) (GetCheckedRadioButton(IDC_RADIO_COLLMAT_1, IDC_RADIO_COLLMAT_3) - IDC_RADIO_COLLMAT_1));
+
+  switch (matHandling)
+  {
+	case NCU_MT_SINGLE:
+	{
+		CComboBox*	pCBox((CComboBox*) GetDlgItem(IDC_COMBO_COLLMAT));
+
+		materialMap[-1] = ((unsigned int) pCBox->GetItemDataPtr(pCBox->GetCurSel()));
+		break;
+	}
+
+	case NCU_MT_NITRISHAPE_NAME:
+	{
+		break;
+	}
+
+	case NCU_MT_MATMAP:
+	{
+		//  take material map from extra dialog
+		break;
+	}
+  }
+
   //  set flags
   ncUtility.setCollisionNodeHandling((CollisionNodeHandling) (GetCheckedRadioButton(IDC_RADIO_COLLISION_1, IDC_RADIO_COLLISION_2) - IDC_RADIO_COLLISION_1));
+  ncUtility.setMaterialTypeHandling (matHandling, materialMap);
 
   //  convert nif
   ncReturn = ncUtility.addCollision((CStringA(m_fileNameAry[1])).GetString(), (CStringA(m_fileNameAry[0])).GetString(), (CStringA(glPathTemplate + L"\\" + m_fileNameAry[2])).GetString());

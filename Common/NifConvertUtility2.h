@@ -14,6 +14,7 @@
 //  NifUtiliy includes
 #include "VertexColorHandling.h"
 #include "CollisionNodeHandling.h"
+#include "MaterialTypeHandling.h"
 
 //  Niflib includes
 #include "obj/nitrishape.h"
@@ -46,6 +47,11 @@ using namespace std;
 #define   NCU_MSG_TYPE_WARNING              0x01
 #define   NCU_MSG_TYPE_ERROR                0x02
 #define   NCU_MSG_TYPE_TEXTURE              0x03
+
+//  internal mode
+#define   NCU_IMD_NONE                      0x00
+#define   NCU_IMD_SHAPE                     0x01
+#define   NCU_IMD_COLLISION                 0x02
 
 
 namespace NifUtility
@@ -117,6 +123,13 @@ namespace NifUtility
 
 		/**
 		 * 
+		 * @param mtHandling    in: handling of material type
+		 * @param mtMap         in: map of material types: key=NodeID, value=MatType
+		 */
+		virtual void setMaterialTypeHandling(MaterialTypeHandling mtHandling, map<int, unsigned int>& mtMapping);
+
+		/**
+		 * 
 		 * @param defaultColor    in: RGB color
 		 */
 		virtual void setDefaultVertexColor(Color4 defaultColor);
@@ -158,6 +171,11 @@ namespace NifUtility
 		void (*_logCallback) (const int, const char*);
 
 		/**
+		 * internal mode
+		 */
+		unsigned char _internalMode;
+
+		/**
 		 * path to texture files
 		 */
 		string _pathTexture;
@@ -193,6 +211,16 @@ namespace NifUtility
 		CollisionNodeHandling _cnHandling;
 
 		/**
+		 * handling of material type
+		 */
+		MaterialTypeHandling _mtHandling;
+
+		/**
+		 * mapping of material per NiTriShape; key: nif node number, value: material id
+		 */
+		map<int, unsigned int> _mtMapping;
+
+		/**
 		 * default vertex color
 		 */
 		Color4 _vcDefaultColor;
@@ -214,7 +242,7 @@ namespace NifUtility
 		 * @param geometryAry    out: reference to vector of hkGeometry read geometries
 		 * are inserted in
 		 */
-		virtual unsigned int getGeometryFromTriShape(NiTriShapeRef pShape, vector<hkGeometry*>& geometryAry, vector<Matrix44>& transformAry);
+		virtual unsigned int getGeometryFromTriShape(NiTriShapeRef pShape, map<int, hkGeometry*>& geometryMap, vector<Matrix44>& transformAry);
 
 		/**
 		 * Get geometry from NiNode
@@ -223,7 +251,7 @@ namespace NifUtility
 		 * @param geometryAry    out: reference to vector of hkGeometry read geometries
 		 * are inserted in
 		 */
-		virtual unsigned int getGeometryFromNode(NiNodeRef pNode, vector<hkGeometry*>& geometryAry, vector<Matrix44>& transformAry);
+		virtual unsigned int getGeometryFromNode(NiNodeRef pNode, map<int, hkGeometry*>& geometryMap, vector<Matrix44>& transformAry);
 
 		/**
 		 * Get geometry from OBJ-file
@@ -232,7 +260,7 @@ namespace NifUtility
 		 * @param geometryAry    out: reference to vector of hkGeometry read geometries
 		 * are inserted in
 		 */
-		virtual unsigned int getGeometryFromObjFile(string fileName, vector<hkGeometry*>& geometryAry);
+		virtual unsigned int getGeometryFromObjFile(string fileName, map<int, hkGeometry*>& geometryMap);
 
 		/**
 		 * Get geometry from NIF-file
@@ -241,7 +269,7 @@ namespace NifUtility
 		 * @param geometryAry    out: reference to vector of hkGeometry read geometries
 		 * are inserted in
 		 */
-		virtual unsigned int getGeometryFromNifFile(string fileName, vector<hkGeometry*>& geometryAry);
+		virtual unsigned int getGeometryFromNifFile(string fileName, map<int, hkGeometry*>& geometryMap);
 
 		/**
 		 * Get NiNode from NIF-file
@@ -278,7 +306,7 @@ namespace NifUtility
 		 * @param tmplNode    in: Template bhkCollisionObject
 		 * @param rootNode    in: Root node of NIF tree
 		 */
-		virtual bhkCollisionObjectRef createCollNode(vector<hkGeometry*>& geometryAry, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode);
+		virtual bhkCollisionObjectRef createCollNode(map<int, hkGeometry*>& geometryMap, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode);
 
 		/**
 		 * Create HAVOK specific collision data and inject into model
@@ -287,7 +315,7 @@ namespace NifUtility
 		 * @param pMoppShape    in: MoppBvTreeShape to inject MoppCode into
 		 * @param pData    in: CompressedMeshShapeData getting chunks and tris
 		 */
-		virtual bool injectCollisionData(vector<hkGeometry*>& geometryAry, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData);
+		virtual bool injectCollisionData(map<int, hkGeometry*>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData);
 
 		/**
 		 * Create tangent space data
