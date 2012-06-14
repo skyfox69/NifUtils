@@ -6,15 +6,14 @@
 #include "ChunkMergeDlg.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifConvertUtility2.h"
-#include "..\Common\MaterialDefinitions.h"
-
-
-
-extern CString   glPathSkyrim;
-extern CString   glPathTemplate;
+#include "..\Common\NifUtlMaterial.h"
 
 
 using namespace NifUtility;
+
+extern CString					glPathSkyrim;
+extern CString					glPathTemplate;
+extern NifUtlMaterialList		glMaterialList;
 
 // CChunkMergeDlg dialog
 
@@ -110,12 +109,15 @@ BOOL CChunkMergeDlg::OnInitDialog()
 	pCBox->SetCurSel(0);
 
 	//  initialize materials
+	map<string, NifUtlMaterial>		mapMap(glMaterialList.getMaterialMap());
+	short							t(0);
+
 	pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_COLLMAT);
 
-	for (size_t t(0); t < glMaterialListSize; ++t)
+	for (map<string, NifUtlMaterial>::iterator pIter = mapMap.begin(); pIter != mapMap.end(); pIter++, t++)
 	{
-		pCBox->InsertString  (t, CString(glMaterialList[t]._name.c_str()));
-		pCBox->SetItemDataPtr(t, (void*) glMaterialList[t]._code);
+		pCBox->InsertString  (t, CString(pIter->second._name.c_str()));
+		pCBox->SetItemDataPtr(t, (void*) (pIter->second._code));
 	}
 	pCBox->SelectString(-1, _T("Stone"));
 
@@ -185,7 +187,7 @@ void CChunkMergeDlg::OnBnClickedRadioCollision()
 
 void CChunkMergeDlg::OnBnClickedOk()
 {
-  NifConvertUtility2		ncUtility;
+  NifConvertUtility2		ncUtility(glMaterialList);
   map<int, unsigned int>	materialMap;
   string					infoMessage("Nif successfully converted");
   unsigned short			ncReturn   (NCU_OK);

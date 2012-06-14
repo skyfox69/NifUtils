@@ -7,7 +7,6 @@
 
 //  Common includes
 #include "NifConvertUtility2.h"
-#include "../Common/MaterialDefinitions.h"
 
 //  Niflib includes
 #include "niflib.h"
@@ -29,10 +28,8 @@
 //  used namespaces
 using namespace NifUtility;
 
-
-
 /*---------------------------------------------------------------------------*/
-NifConvertUtility2::NifConvertUtility2()
+NifConvertUtility2::NifConvertUtility2(NifUtlMaterialList& materialList)
 	:	_vcDefaultColor    (1.0f, 1.0f, 1.0f, 1.0f),
 		_vcHandling        (NCU_VC_REMOVE_FLAG),
 		_cnHandling        (NCU_CN_FALLBACK),
@@ -40,15 +37,14 @@ NifConvertUtility2::NifConvertUtility2()
 		_updateTangentSpace(true),
 		_reorderProperties (true),
 		_logCallback       (NULL),
+		_materialList      (materialList),
 		_internalMode      (NCU_IMD_NONE)
 {
-
 }
 
 /*---------------------------------------------------------------------------*/
 NifConvertUtility2::~NifConvertUtility2()
 {
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -111,18 +107,15 @@ unsigned int NifConvertUtility2::getGeometryFromTriShape(NiTriShapeRef pShape, m
 		//  get material type by name?
 		if ((_internalMode == NCU_IMD_COLLISION) && (_mtHandling == NCU_MT_NITRISHAPE_NAME))
 		{
-			//  get material from name
-			for (size_t tIdx(0); tIdx < glMaterialListSize; ++tIdx)
-			{
-				//  material found => add to map
-				if (glMaterialList[tIdx]._defName == pShape->GetName())
-				{
-					_mtMapping[pShape->internal_block_number] = glMaterialList[tIdx]._code;
-					break;
-				}
-			}  //  for (size_t tIdx(0); tIdx < glMaterialListSize; ++tIdx)
-		}  //  if ((_internalMode == NCU_IMD_COLLISION) && (_mtHandling == NCU_MT_NITRISHAPE_NAME))
+			//  get material code from name
+			_mtMapping[pShape->internal_block_number] = _materialList.getMaterialCode(pShape->GetName());
 
+			//  unknown material => use default one
+			if (_mtMapping[pShape->internal_block_number] == 0)
+			{
+				_mtMapping[pShape->internal_block_number] = NCU_NUM_DEFAULT_MATERIAL;
+			}
+		}  //  if ((_internalMode == NCU_IMD_COLLISION) && (_mtHandling == NCU_MT_NITRISHAPE_NAME))
 	}  //  if (pData != NULL)
 
 	return geometryMap.size();
@@ -725,7 +718,7 @@ unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fil
 	//  initialize user messages
 	_userMessages.clear();
 	_userMessages.push_back("CollSource:\n  "   + fileNameCollSrc);
-	_userMessages.push_back("VollTemplate:\n  " + fileNameCollTmpl);
+	_userMessages.push_back("CollTemplate:\n  " + fileNameCollTmpl);
 	_userMessages.push_back("Destination:\n  "  + fileNameNifDst);
 
 	//  get geometry data
@@ -1296,6 +1289,7 @@ bool NifConvertUtility2::checkFileExists(string fileName)
 	string		path   (_pathSkyrim + "\\Data\\" + fileName);
 	ifstream	iStream(path.c_str());
 
-	//  return exitance of file
+	//  return existance of file
 	return iStream.good();
 }
+

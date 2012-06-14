@@ -4,11 +4,12 @@
 #include "..\Common\stdafx.h"
 #include "ChunkMerge.h"
 #include "ChunkMergeDlg.h"
+#include "..\Common\NifUtlMaterial.h"
+
 #include "..\Common\HavokUtilities.hpp"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#endif
+//  used namespaces
+using namespace NifUtility;
 
 #define HK_MAIN_CALL _cdecl
 
@@ -18,8 +19,9 @@ extern "C" int __cdecl ADP_Close( void );
 #endif
 
 
-CString   glPathSkyrim;
-CString   glPathTemplate;
+CString					glPathSkyrim;
+CString					glPathTemplate;
+NifUtlMaterialList		glMaterialList;
 
 
 // CChunkMergeApp
@@ -75,14 +77,19 @@ BOOL CChunkMergeApp::InitInstance()
 
   argv = CommandLineToArgvW(m_lpCmdLine, &argc);
 
-  if (argc >= 2)
-  {
-    glPathTemplate = argv[1];
-  }
-  if (argc >= 1)
-  {
-    glPathSkyrim = argv[0];
-  }
+	if (argc >= 3)
+	{
+		//  initialize material map
+		glMaterialList.initializeMaterialMap((const char*) CStringA(argv[2]));
+	}
+	if (argc >= 2)
+	{
+	glPathTemplate = argv[1];
+	}
+	if (argc >= 1)
+	{
+	glPathSkyrim = argv[0];
+	}
 
   LocalFree(argv);
 

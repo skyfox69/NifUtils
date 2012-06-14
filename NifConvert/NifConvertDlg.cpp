@@ -6,13 +6,13 @@
 #include "NifConvertDlg.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifConvertUtility2.h"
-
-
-
-extern CString   glPathSkyrim;
-extern CString   glPathTemplate;
+#include "..\Common\NifUtlMaterial.h"
 
 using namespace NifUtility;
+
+extern CString					glPathSkyrim;
+extern CString					glPathTemplate;
+extern NifUtlMaterialList		glMaterialList;
 
 // CNifConvertDlg dialog
 
@@ -175,7 +175,7 @@ void CNifConvertDlg::OnBnClickedButtonOutput()
 
 void CNifConvertDlg::OnBnClickedOk()
 {
-  NifConvertUtility2  ncUtility;
+  NifConvertUtility2  ncUtility(glMaterialList);
   string              infoMessage("Nif successfully converted");
   unsigned short      ncReturn   (NCU_OK);
 

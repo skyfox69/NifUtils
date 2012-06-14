@@ -15,6 +15,7 @@
 #include "VertexColorHandling.h"
 #include "CollisionNodeHandling.h"
 #include "MaterialTypeHandling.h"
+#include "NifUtlMaterial.h"
 
 //  Niflib includes
 #include "obj/nitrishape.h"
@@ -68,7 +69,7 @@ namespace NifUtility
 		/**
 		 * Default Constructor
 		 */
-		NifConvertUtility2();
+		NifConvertUtility2(NifUtlMaterialList& materialList);
 
 		/**
 		 * Destructor
@@ -234,6 +235,11 @@ namespace NifUtility
 		 * reorder NiTriShape properties
 		 */
 		bool _reorderProperties;
+
+		/**
+		 * reference to material list (injected)
+		 */
+		NifUtlMaterialList& _materialList;
 
 		/**
 		 * Get geometry from NiTriShape
