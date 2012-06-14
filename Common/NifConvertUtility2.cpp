@@ -240,6 +240,19 @@ unsigned int NifConvertUtility2::getGeometryFromObjFile(string fileName, map<int
 		}
 	}  //  while (inFile.good())
 
+	//  existing last/only face? => create new geometry
+	if (hasFace)
+	{
+		//  create new geometry from vertices and triangles
+		pTmpGeo = new hkGeometry();
+		pTmpGeo->m_triangles = triAry;
+		pTmpGeo->m_vertices  = vertAry;
+
+		//  add geometry to result array
+		geometryMap[idxObject++] = pTmpGeo;
+
+	}  //  if (hasFace)
+
 	//  close file
 	inFile.close();
 
