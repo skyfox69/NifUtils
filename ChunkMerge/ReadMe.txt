@@ -38,7 +38,7 @@ PREREQUISITES:
 
 USAGE:
 
-ChunkMerge <path to Skyrim> <path to templates>
+ChunkMerge <path to Skyrim> <path to templates> <path to nif.xml>
 
 1. Choose NIF-File (Skyrim version) collision data should be injected
 2. Choose NIF-file for collision source
