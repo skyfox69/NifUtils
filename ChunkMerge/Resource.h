@@ -29,6 +29,7 @@
 #define IDC_RADIO_COLLMAT_3             1016
 #define IDC_BUTTON_COLLMAT              1019
 #define IDC_COMBO_COLLMAT               1020
+#define IDC_RICHEDIT_LOG                1021
 
 // Next default values for new objects
 // 

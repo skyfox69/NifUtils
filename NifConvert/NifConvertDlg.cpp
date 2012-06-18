@@ -6,13 +6,20 @@
 #include "NifConvertDlg.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifConvertUtility2.h"
-#include "..\Common\NifUtlMaterial.h"
+
 
 using namespace NifUtility;
 
-extern CString					glPathSkyrim;
-extern CString					glPathTemplate;
+extern	CString					glPathSkyrim;
+extern	CString					glPathTemplate;
+extern	CNifConvertDlg			dlg;
 extern NifUtlMaterialList		glMaterialList;
+
+//  static wrapper function
+void logCallback(const int type, const char* pMessage)
+{
+	dlg.logMessage(type, pMessage);
+}
 
 // CNifConvertDlg dialog
 
@@ -25,6 +32,7 @@ CNifConvertDlg::CNifConvertDlg(CWnd* pParent /*=NULL*/)
 void CNifConvertDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_RICHEDIT_LOG, m_logView);
 }
 
 BEGIN_MESSAGE_MAP(CNifConvertDlg, CDialog)
@@ -84,6 +92,9 @@ BOOL CNifConvertDlg::OnInitDialog()
   ((CButton*) GetDlgItem(IDC_RADIO_VCREMOVE))            ->SetCheck(BST_CHECKED);
   ((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))        ->SetCheck(BST_CHECKED);
   ((CButton*) GetDlgItem(IDC_CHECK_NITRISHAPEPROPERTIES))->SetCheck(BST_CHECKED);
+
+	m_logView.SetBackgroundColor(FALSE, RGB(0x00, 0x00, 0x00));
+	m_logView.SetReadOnly       (TRUE);
 
   //  get texture paths
   CComboBox*  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEXTURE);
@@ -176,7 +187,6 @@ void CNifConvertDlg::OnBnClickedButtonOutput()
 void CNifConvertDlg::OnBnClickedOk()
 {
   NifConvertUtility2  ncUtility(glMaterialList);
-  string              infoMessage("Nif successfully converted");
   unsigned short      ncReturn   (NCU_OK);
 
   //  copy strings from input
@@ -188,6 +198,9 @@ void CNifConvertDlg::OnBnClickedOk()
   //  set path
   ncUtility.setTexturePath((CStringA(m_texturePath)).GetString());
 
+  //  set callback for log info
+  ncUtility.setLogCallback(logCallback);
+
   //  set flags
   ncUtility.setVertexColorHandling((VertexColorHandling) (GetCheckedRadioButton(IDC_RADIO_VCREMOVE, IDC_RADIO_VCADD) - IDC_RADIO_VCREMOVE));
   ncUtility.setUpdateTangentSpace (((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))->GetCheck() != FALSE);
@@ -197,34 +210,75 @@ void CNifConvertDlg::OnBnClickedOk()
   ncReturn = ncUtility.convertShape((CStringA(m_fileNameAry[0])).GetString(), (CStringA(m_fileNameAry[1])).GetString(), (CStringA(glPathTemplate + L"\\" + m_fileNameAry[2])).GetString());
   if (ncReturn != NCU_OK)
   {
-    infoMessage = "NifConverter returned code: " + ncReturn;
+    logMessage(NCU_MSG_TYPE_ERROR, "NifConverter returned code: " + ncReturn);
   }
-
-  //  generate info message
-  set<string>     usedTextures = ncUtility.getUsedTextures();
-  set<string>     missTextures = ncUtility.getNewTextures();
-  vector<string>  userMessages = ncUtility.getUserMessages();
-
-  infoMessage += "\n\nMessages:\n";
-  for (vector<string>::iterator texIter = userMessages.begin(); texIter != userMessages.end(); texIter++)
+  else
   {
-    infoMessage += ("- " + (*texIter) + "\n");
+    logMessage(NCU_MSG_TYPE_ERROR, "Nif converted successfully");
   }
-
-  infoMessage += "\nUsed textures:\n";
-  for (set<string>::iterator texIter = usedTextures.begin(); texIter != usedTextures.end(); texIter++)
-  {
-    infoMessage += ("- " + (*texIter) + "\n");
-  }
-
-  infoMessage += "\nMissing textures:\n";
-  for (set<string>::iterator texIter = missTextures.begin(); texIter != missTextures.end(); texIter++)
-  {
-    infoMessage += ("- " + (*texIter) + "\n");
-  }
-
-  MessageBox(CString((const char*) infoMessage.c_str()), L"Convert Info", MB_OK| MB_ICONINFORMATION);
-
-
+	logMessage(NCU_MSG_TYPE_INFO, "- - - - - - - - - -");
 }
 
+void CNifConvertDlg::logMessage(const int type, const char* pMessage)
+{
+	CHARFORMAT	charFormat;
+	COLORREF	color       (RGB(0x00, 0xD0, 0x00));
+	CString		text        (pMessage);
+	int			lineCountOld(m_logView.GetLineCount());
+	int			tType       (type);
+
+	//  special handling of type settings
+	if (pMessage[0] == '^')
+	{
+		tType = atoi(pMessage+1);
+		text  = (pMessage+2);
+	}
+
+	//  append of newline necessary?
+	if (pMessage[strlen(pMessage) - 1] != '\n')
+	{
+		text += _T("\r\n");
+	}
+
+	//  get color by type
+	switch (tType)
+	{
+		case NCU_MSG_TYPE_ERROR:
+		{
+			color = RGB(0xFF, 0x00, 0x00);
+			break;
+		}
+
+		case NCU_MSG_TYPE_WARNING:
+		{
+			color = RGB(0xFF, 0xFF, 0x00);
+			break;
+		}
+
+		case NCU_MSG_TYPE_TEXTURE:
+		{
+			color = RGB(0x50, 0x50, 0xFF);
+			break;
+		}
+
+		case NCU_MSG_TYPE_SUB_INFO:
+		{
+			color = RGB(0x00, 0x60, 0x00);
+			break;
+		}
+	}
+
+	//  character format
+	charFormat.cbSize      = sizeof(charFormat);
+	charFormat.dwMask      = CFM_COLOR;
+	charFormat.dwEffects   = 0;
+	charFormat.crTextColor = color;
+
+	//  select  nothing, set format and append new text
+	m_logView.SetSel(-1, -1);
+	m_logView.SetSelectionCharFormat(charFormat);
+	m_logView.ReplaceSel(text);
+
+	//  scroll to end of text
+	m_logView.LineScroll(m_logView.GetLineCount() - lineCountOld);
+}

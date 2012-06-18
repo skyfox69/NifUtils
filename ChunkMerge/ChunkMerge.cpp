@@ -22,6 +22,7 @@ extern "C" int __cdecl ADP_Close( void );
 CString					glPathSkyrim;
 CString					glPathTemplate;
 NifUtlMaterialList		glMaterialList;
+CChunkMergeDlg			dlg;
 
 
 // CChunkMergeApp
@@ -61,6 +62,8 @@ BOOL CChunkMergeApp::InitInstance()
 
 	CWinApp::InitInstance();
 
+	AfxInitRichEdit2();
+
 	// Standard initialization
 	// If you are not using these features and wish to reduce the size
 	// of your final executable, you should remove from the following
@@ -93,7 +96,6 @@ BOOL CChunkMergeApp::InitInstance()
 
   LocalFree(argv);
 
-	CChunkMergeDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

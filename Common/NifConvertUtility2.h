@@ -48,6 +48,7 @@ using namespace std;
 #define   NCU_MSG_TYPE_WARNING              0x01
 #define   NCU_MSG_TYPE_ERROR                0x02
 #define   NCU_MSG_TYPE_TEXTURE              0x03
+#define   NCU_MSG_TYPE_SUB_INFO             0x04
 
 //  internal mode
 #define   NCU_IMD_NONE                      0x00

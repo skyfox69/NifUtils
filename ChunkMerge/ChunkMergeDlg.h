@@ -24,9 +24,10 @@ public:
 // Implementation
 protected:
 	HICON           m_hIcon;
-  CString         m_fileNameAry[3];
-  CString         m_texturePath;
-  CString         m_collObjPath;
+	CString         m_fileNameAry[3];
+	CString         m_texturePath;
+	CString         m_collObjPath;
+	CRichEditCtrl	m_logView;
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
@@ -41,4 +42,6 @@ public:
   afx_msg void OnBnClickedButtonOutput();
   afx_msg void OnBnClickedOk();
   afx_msg void OnBnClickedRadioCollision();
+
+	virtual void logMessage(const int type, const char* pMessage);
 };

@@ -21,7 +21,7 @@ extern "C" int __cdecl ADP_Close( void );
 CString					glPathSkyrim;
 CString					glPathTemplate;
 NifUtlMaterialList		glMaterialList;
-
+CNifConvertDlg			dlg;
 
 // CNifConvertApp
 
@@ -60,6 +60,7 @@ BOOL CNifConvertApp::InitInstance()
 
 	CWinApp::InitInstance();
 
+	AfxInitRichEdit2();
 	// Standard initialization
 	// If you are not using these features and wish to reduce the size
 	// of your final executable, you should remove from the following

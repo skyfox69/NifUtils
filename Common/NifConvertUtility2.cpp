@@ -324,7 +324,7 @@ NiNodeRef NifConvertUtility2::getRootNodeFromNifFile(string fileName, string log
 	if (DynamicCast<NiNode>(pRootTree) != NULL)
 	{
 		pRootInput = DynamicCast<NiNode>(pRootTree);
-		_userMessages.push_back(logPreText + " root is NiNode.");
+		logMessage(NCU_MSG_TYPE_INFO, logPreText + " root is NiNode.");
 	}
 	//  NiTriShape as root
 	else if (DynamicCast<NiTriShape>(pRootTree) != NULL)
@@ -338,13 +338,13 @@ NiNodeRef NifConvertUtility2::getRootNodeFromNifFile(string fileName, string log
 		//  mark faked root node
 		fakedRoot = true;
 
-		_userMessages.push_back(logPreText + " root is NiTriShape.");
+		logMessage(NCU_MSG_TYPE_INFO, logPreText + " root is NiTriShape.");
 	}
 
 	//  no known root type found
 	if (pRootInput == NULL)
 	{
-		_userMessages.push_back(logPreText + " root has unhandled type: " + pRootTree->GetType().GetTypeName());
+		logMessage(NCU_MSG_TYPE_WARNING, logPreText + " root has unhandled type: " + pRootTree->GetType().GetTypeName());
 	}
 
 	return pRootInput;
@@ -503,7 +503,7 @@ NiTriShapeRef NifConvertUtility2::convertNiTriShape(NiTriShapeRef pSrcNode, NiTr
 			//  set new texture map
 			pDstSText->setTexture(0, fileName);
 
-			_usedTextures.insert(fileName);
+			logMessage(NCU_MSG_TYPE_TEXTURE, fileName);
 			if (!checkFileExists(fileName))
 			{
 				_newTextures.insert(fileName);
@@ -618,10 +618,10 @@ unsigned int NifConvertUtility2::convertShape(string fileNameSrc, string fileNam
 
 	//  initialize user messages
 	_userMessages.clear();
-	_userMessages.push_back("Source:\n  "      + fileNameSrc);
-	_userMessages.push_back("Template:\n  "    + fileNameTmpl);
-	_userMessages.push_back("Destination:\n  " + fileNameDst);
-	_userMessages.push_back("Texture:\n  "     + _pathTexture);
+	logMessage(NCU_MSG_TYPE_INFO, "Source:  "      + (fileNameSrc.empty() ? "- none -" : fileNameSrc));
+	logMessage(NCU_MSG_TYPE_INFO, "Template:  "    + (fileNameTmpl.empty() ? "- none -" : fileNameTmpl));
+	logMessage(NCU_MSG_TYPE_INFO, "Destination:  " + (fileNameDst.empty() ? "- none -" : fileNameDst));
+	logMessage(NCU_MSG_TYPE_INFO, "Texture:  "     + (_pathTexture.empty() ? "- none -" : _pathTexture));
 
 	//  initialize used texture list
 	_usedTextures.clear();
@@ -630,6 +630,7 @@ unsigned int NifConvertUtility2::convertShape(string fileNameSrc, string fileNam
 	//  read input NIF
 	if ((pRootInput = getRootNodeFromNifFile(fileNameSrc, "source", fakedRoot)) == NULL)
 	{
+		logMessage(NCU_MSG_TYPE_ERROR, "Can't open '" + fileNameSrc + "' as input");
 		return NCU_ERROR_CANT_OPEN_INPUT;
 	}
 
@@ -637,6 +638,7 @@ unsigned int NifConvertUtility2::convertShape(string fileNameSrc, string fileNam
 	pRootTemplate = DynamicCast<BSFadeNode>(ReadNifTree((const char*) fileNameTmpl.c_str()));
 	if (pRootTemplate == NULL)
 	{
+		logMessage(NCU_MSG_TYPE_ERROR, "Can't open '" + fileNameTmpl + "' as template");
 		return NCU_ERROR_CANT_OPEN_TEMPLATE;
 	}
 
@@ -645,7 +647,7 @@ unsigned int NifConvertUtility2::convertShape(string fileNameSrc, string fileNam
 	pNiTriShapeTmpl = DynamicCast<NiTriShape>(pRootTemplate->GetChildren().at(0));
 	if (pNiTriShapeTmpl == NULL)
 	{
-		_userMessages.push_back("Template has no NiTriShape.");
+		logMessage(NCU_MSG_TYPE_INFO, "Template has no NiTriShape.");
 	}
 
 	//  template root is used as root of output
@@ -717,9 +719,9 @@ unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fil
 
 	//  initialize user messages
 	_userMessages.clear();
-	_userMessages.push_back("CollSource:\n  "   + fileNameCollSrc);
-	_userMessages.push_back("CollTemplate:\n  " + fileNameCollTmpl);
-	_userMessages.push_back("Destination:\n  "  + fileNameNifDst);
+	logMessage(NCU_MSG_TYPE_INFO, "CollSource:  "   + (fileNameCollSrc.empty() ? "- none -" : fileNameCollSrc));
+	logMessage(NCU_MSG_TYPE_INFO, "CollTemplate:  " + (fileNameCollTmpl.empty() ? "- none -" : fileNameCollTmpl));
+	logMessage(NCU_MSG_TYPE_INFO, "Destination:  "  + (fileNameNifDst.empty() ? "- none -" : fileNameNifDst));
 
 	//  get geometry data
 	switch (fileNameCollSrc[fileNameCollSrc.size() - 3])
@@ -728,7 +730,7 @@ unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fil
 		case 'O':
 		case 'o':
 		{
-			_userMessages.push_back("Getting geometry from OBJ.");
+			logMessage(NCU_MSG_TYPE_INFO, "Getting geometry from OBJ.");
 			getGeometryFromObjFile(fileNameCollSrc, geometryMap);
 			break;
 		}
@@ -736,7 +738,7 @@ unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fil
 		case 'N':
 		case 'n':
 		{
-			_userMessages.push_back("Getting geometry from NIF.");
+			logMessage(NCU_MSG_TYPE_INFO, "Getting geometry from NIF.");
 			getGeometryFromNifFile(fileNameCollSrc, geometryMap);
 			break;
 		}
@@ -744,7 +746,7 @@ unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fil
 		case '3':
 		{
 			//  would be nice ;-)
-			_userMessages.push_back("Getting geometry from 3DS.");
+			logMessage(NCU_MSG_TYPE_INFO, "Getting geometry from 3DS.");
 			break;
 		}
 	}  //  switch (fileNameCollSrc[fileNameCollSrc.size() - 3])
@@ -752,7 +754,7 @@ unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fil
 	//  early break on missing geometry data
 	if (geometryMap.size() <= 0)
 	{
-		_userMessages.push_back("Can't get geometry from input file.");
+		logMessage(NCU_MSG_TYPE_ERROR, "Can't get geometry from input file.");
 		return NCU_ERROR_CANT_GET_GEOMETRY;
 	}
 
@@ -760,6 +762,7 @@ unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fil
 	pRootTemplate = DynamicCast<BSFadeNode>(ReadNifTree((const char*) fileNameCollTmpl.c_str()));
 	if (pRootTemplate == NULL)
 	{
+		logMessage(NCU_MSG_TYPE_ERROR, "Can't open '" + fileNameCollTmpl + "' as template");
 		return NCU_ERROR_CANT_OPEN_TEMPLATE;
 	}
 
@@ -768,13 +771,14 @@ unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fil
 	pCollNodeTmpl = DynamicCast<bhkCollisionObject>(pRootTemplate->GetCollisionObject());
 	if (pCollNodeTmpl == NULL)
 	{
-		_userMessages.push_back("Template has no bhkCollisionObject.");
+		logMessage(NCU_MSG_TYPE_ERROR, "Template has no bhkCollisionObject.");
 		return NCU_ERROR_CANT_OPEN_TEMPLATE;
 	}
 
 	//  get root node from destination
 	if ((pRootInput = getRootNodeFromNifFile(fileNameNifDst, "target", fakedRoot)) == NULL)
 	{
+		logMessage(NCU_MSG_TYPE_ERROR, "Can't open '" + fileNameNifDst + "' as template");
 		return NCU_ERROR_CANT_OPEN_INPUT;
 	}
 
@@ -1113,7 +1117,7 @@ bool NifConvertUtility2::updateTangentSpace(NiTriShapeDataRef pDataObj)
 	//  check on valid input data
 	if (vecVertices.empty() || vecTriangles.empty() || vecNormals.size() != vecVertices.size() || vecVertices.size() != vecTexCoords.size())
 	{
-		_userMessages.push_back("UpdateTangentSpace: No vertices, normals, coords or faces defined.");
+		logMessage(NCU_MSG_TYPE_INFO, "UpdateTangentSpace: No vertices, normals, coords or faces defined.");
 		return false;
 	}
 

@@ -13,23 +13,20 @@ using namespace NifUtility;
 
 extern CString					glPathSkyrim;
 extern CString					glPathTemplate;
+extern CChunkMergeDlg			dlg;
 extern NifUtlMaterialList		glMaterialList;
+
+
+//  static wrapper function
+void logCallback(const int type, const char* pMessage)
+{
+	dlg.logMessage(type, pMessage);
+}
+
 
 // CChunkMergeDlg dialog
 
 
-
-
-CChunkMergeDlg::CChunkMergeDlg(CWnd* pParent /*=NULL*/)
-	: CDialog(CChunkMergeDlg::IDD, pParent)
-{
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-}
-
-void CChunkMergeDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialog::DoDataExchange(pDX);
-}
 
 BEGIN_MESSAGE_MAP(CChunkMergeDlg, CDialog)
 	ON_WM_PAINT()
@@ -43,6 +40,18 @@ BEGIN_MESSAGE_MAP(CChunkMergeDlg, CDialog)
   ON_BN_CLICKED(IDC_RADIO_COLLISION_3, &CChunkMergeDlg::OnBnClickedRadioCollision)
 END_MESSAGE_MAP()
 
+
+CChunkMergeDlg::CChunkMergeDlg(CWnd* pParent /*=NULL*/)
+	: CDialog(CChunkMergeDlg::IDD, pParent)
+{
+	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+}
+
+void CChunkMergeDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_RICHEDIT_LOG, m_logView);
+}
 
 void CChunkMergeDlg::parseDir(CString path, set<string>& directories, bool doDirs)
 {
@@ -95,6 +104,9 @@ BOOL CChunkMergeDlg::OnInitDialog()
 	GetDlgItem(IDC_RADIO_COLLMAT_3)->EnableWindow(FALSE);
 	GetDlgItem(IDC_BUTTON_COLLMAT) ->EnableWindow(FALSE);
 
+	m_logView.SetBackgroundColor(FALSE, RGB(0x00, 0x00, 0x00));
+	m_logView.SetReadOnly       (TRUE);
+
 	//  get templates
 	CComboBox*  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
 	CString     pathTemplate(glPathTemplate);
@@ -120,6 +132,14 @@ BOOL CChunkMergeDlg::OnInitDialog()
 		pCBox->SetItemDataPtr(t, (void*) (pIter->second._code));
 	}
 	pCBox->SelectString(-1, _T("Stone"));
+
+	//  add messages from material list
+	vector<string>  userMessages(glMaterialList.getUserMessages());
+
+	for (vector<string>::iterator texIter = userMessages.begin(); texIter != userMessages.end(); texIter++)
+	{
+		logMessage(NCU_MSG_TYPE_INFO, texIter->c_str());
+	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -189,13 +209,18 @@ void CChunkMergeDlg::OnBnClickedOk()
 {
   NifConvertUtility2		ncUtility(glMaterialList);
   map<int, unsigned int>	materialMap;
-  string					infoMessage("Nif successfully converted");
   unsigned short			ncReturn   (NCU_OK);
 
   //  copy strings from input
   GetDlgItem(IDC_EDIT_INPUT)    ->GetWindowTextW(m_fileNameAry[0]);
   GetDlgItem(IDC_EDIT_OUTPUT)   ->GetWindowTextW(m_fileNameAry[1]);
   GetDlgItem(IDC_COMBO_TEMPLATE)->GetWindowTextW(m_fileNameAry[2]);
+
+  //  set path
+  ncUtility.setSkyrimPath ((CStringA(glPathSkyrim)).GetString());
+
+  //  set callback for log info
+  ncUtility.setLogCallback(logCallback);
 
   //  get material handling
   MaterialTypeHandling	matHandling((MaterialTypeHandling) (GetCheckedRadioButton(IDC_RADIO_COLLMAT_1, IDC_RADIO_COLLMAT_3) - IDC_RADIO_COLLMAT_1));
@@ -230,18 +255,75 @@ void CChunkMergeDlg::OnBnClickedOk()
   ncReturn = ncUtility.addCollision((CStringA(m_fileNameAry[1])).GetString(), (CStringA(m_fileNameAry[0])).GetString(), (CStringA(glPathTemplate + L"\\" + m_fileNameAry[2])).GetString());
   if (ncReturn != NCU_OK)
   {
-    infoMessage = "NifConverter returned code: " + ncReturn;
+    logMessage(NCU_MSG_TYPE_ERROR, "NifConverter returned code: " + ncReturn);
   }
-
-  //  generate info message
-  vector<string>  userMessages = ncUtility.getUserMessages();
-
-  infoMessage += "\n\nMessages:\n";
-  for (vector<string>::iterator texIter = userMessages.begin(); texIter != userMessages.end(); texIter++)
+  else
   {
-    infoMessage += ("- " + (*texIter) + "\n");
+    logMessage(NCU_MSG_TYPE_ERROR, "Nif converted successfully");
   }
-
-  MessageBox(CString((const char*) infoMessage.c_str()), L"Convert Info", MB_OK| MB_ICONINFORMATION);
+	logMessage(NCU_MSG_TYPE_INFO, "- - - - - - - - - -");
 }
 
+void CChunkMergeDlg::logMessage(const int type, const char* pMessage)
+{
+	CHARFORMAT	charFormat;
+	COLORREF	color       (RGB(0x00, 0xD0, 0x00));
+	CString		text        (pMessage);
+	int			lineCountOld(m_logView.GetLineCount());
+	int			tType       (type);
+
+	//  special handling of type settings
+	if (pMessage[0] == '^')
+	{
+		tType = atoi(pMessage+1);
+		text  = (pMessage+2);
+	}
+
+	//  append of newline necessary?
+	if (pMessage[strlen(pMessage) - 1] != '\n')
+	{
+		text += _T("\r\n");
+	}
+
+	//  get color by type
+	switch (tType)
+	{
+		case NCU_MSG_TYPE_ERROR:
+		{
+			color = RGB(0xFF, 0x00, 0x00);
+			break;
+		}
+
+		case NCU_MSG_TYPE_WARNING:
+		{
+			color = RGB(0xFF, 0xFF, 0x00);
+			break;
+		}
+
+		case NCU_MSG_TYPE_TEXTURE:
+		{
+			color = RGB(0x50, 0x50, 0xFF);
+			break;
+		}
+
+		case NCU_MSG_TYPE_SUB_INFO:
+		{
+			color = RGB(0x00, 0x60, 0x00);
+			break;
+		}
+	}
+
+	//  character format
+	charFormat.cbSize      = sizeof(charFormat);
+	charFormat.dwMask      = CFM_COLOR;
+	charFormat.dwEffects   = 0;
+	charFormat.crTextColor = color;
+
+	//  select  nothing, set format and append new text
+	m_logView.SetSel(-1, -1);
+	m_logView.SetSelectionCharFormat(charFormat);
+	m_logView.ReplaceSel(text);
+
+	//  scroll to end of text
+	m_logView.LineScroll(m_logView.GetLineCount() - lineCountOld);
+}
