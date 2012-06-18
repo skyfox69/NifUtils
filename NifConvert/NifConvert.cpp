@@ -5,6 +5,7 @@
 #include "NifConvert.h"
 #include "NifConvertDlg.h"
 #include "..\Common\NifUtlMaterial.h"
+#include "..\Common\FDFileHelper.h"
 
 #include "..\Common\HavokUtilities.hpp"
 
@@ -79,16 +80,24 @@ BOOL CNifConvertApp::InitInstance()
 
 	if (argc >= 2)
 	{
-	glPathTemplate = argv[1];
+		glPathTemplate = argv[1];
 	}
-	if (argc >= 1)
+	else
 	{
-	glPathSkyrim = argv[0];
+		glPathTemplate = FDFileHelper::getFileOrFolder(_T(""), L"*.nif (*.nif)|*.nif||", L"nif", false, true, _T("Please select template directory"));
+	}
+	if ((argc >= 1) && (wcsstr(argv[0], L"NifConvert.exe") == NULL))
+	{
+		glPathSkyrim = argv[0];
+	}
+	else
+	{
+		glPathSkyrim = FDFileHelper::getFileOrFolder(_T(""), L"TESV.exe (TESV.exe)|TESV.exe||", L"exe", false, true, _T("Please select SKYRIM directory"));
 	}
 
   LocalFree(argv);
 
-	CNifConvertDlg dlg;
+
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)

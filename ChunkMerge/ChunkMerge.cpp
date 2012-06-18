@@ -5,6 +5,7 @@
 #include "ChunkMerge.h"
 #include "ChunkMergeDlg.h"
 #include "..\Common\NifUtlMaterial.h"
+#include "..\Common\FDFileHelper.h"
 
 #include "..\Common\HavokUtilities.hpp"
 
@@ -17,7 +18,6 @@ using namespace NifUtility;
 #if defined( HK_ATOM )
 extern "C" int __cdecl ADP_Close( void );
 #endif
-
 
 CString					glPathSkyrim;
 CString					glPathTemplate;
@@ -85,13 +85,27 @@ BOOL CChunkMergeApp::InitInstance()
 		//  initialize material map
 		glMaterialList.initializeMaterialMap((const char*) CStringA(argv[2]));
 	}
+	else
+	{
+		CString	dir = FDFileHelper::getFileOrFolder(_T(""), L"Nif-XML (nif.xml)|nif.xml||", L"xml", false, false, _T("Please select Nif.xml file"));
+
+		glMaterialList.initializeMaterialMap((const char*) CStringA(dir));
+	}
 	if (argc >= 2)
 	{
-	glPathTemplate = argv[1];
+		glPathTemplate = argv[1];
 	}
-	if (argc >= 1)
+	else
 	{
-	glPathSkyrim = argv[0];
+		glPathTemplate = FDFileHelper::getFileOrFolder(_T(""), L"*.nif (*.nif)|*.nif||", L"nif", false, true, _T("Please select template directory"));
+	}
+	if ((argc >= 1) && (wcsstr(argv[0], L"ChunkMerge.exe") == NULL))
+	{
+		glPathSkyrim = argv[0];
+	}
+	else
+	{
+		glPathSkyrim = FDFileHelper::getFileOrFolder(_T(""), L"TESV.exe (TESV.exe)|TESV.exe||", L"exe", false, true, _T("Please select SKYRIM directory"));
 	}
 
   LocalFree(argv);

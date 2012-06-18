@@ -10,7 +10,7 @@ void FDFileHelper::splitFileName(const CString path, CString& directory, CString
     bool  isExtension(false);
     char  cBuffer[5000];
 
-    sprintf_s(cBuffer, 5000, "%s", (const char*) path.GetString());
+    sprintf_s(cBuffer, 5000, "%s", (const char*) CStringA(path).GetString());
 
     for (pChar = cBuffer + strlen(cBuffer) - 1; (pChar > cBuffer); --pChar)
     {
@@ -34,7 +34,7 @@ void FDFileHelper::splitFileName(const CString path, CString& directory, CString
 }
 
 /*-------------------------------------------- getFileName -----------------------------------------*/
-CString FDFileHelper::getFileOrFolder(const CString fileName, CString filter, CString extension, bool saveDialog, bool selFolder)
+CString FDFileHelper::getFileOrFolder(const CString fileName, CString filter, CString extension, bool saveDialog, bool selFolder, CString title)
 {
   CString           dirName;
   CString           tmpName;
@@ -61,6 +61,12 @@ CString FDFileHelper::getFileOrFolder(const CString fileName, CString filter, CS
     dirName = ".";
   }
   dlg.m_ofn.lpstrInitialDir = dirName;
+
+  //  use title if given
+  if (!title.IsEmpty())
+  {
+	  dlg.m_ofn.lpstrTitle = title.GetString();
+  }
 
   //  open dialog
   if (dlg.DoModal() == IDOK)
