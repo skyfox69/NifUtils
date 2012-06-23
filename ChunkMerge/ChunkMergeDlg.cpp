@@ -5,7 +5,7 @@
 #include "ChunkMerge.h"
 #include "ChunkMergeDlg.h"
 #include "..\Common\FDFileHelper.h"
-#include "..\Common\NifConvertUtility2.h"
+#include "..\Common\NifCollisionUtility.h"
 #include "..\Common\NifUtlMaterial.h"
 
 
@@ -207,9 +207,9 @@ void CChunkMergeDlg::OnBnClickedRadioCollision()
 
 void CChunkMergeDlg::OnBnClickedOk()
 {
-  NifConvertUtility2		ncUtility(glMaterialList);
+  NifCollisionUtility		ncUtility(glMaterialList);
   map<int, unsigned int>	materialMap;
-  unsigned short			ncReturn   (NCU_OK);
+  unsigned short			ncReturn (NCU_OK);
 
   //  copy strings from input
   GetDlgItem(IDC_EDIT_INPUT)    ->GetWindowTextW(m_fileNameAry[0]);
@@ -303,6 +303,12 @@ void CChunkMergeDlg::logMessage(const int type, const char* pMessage)
 		case NCU_MSG_TYPE_TEXTURE:
 		{
 			color = RGB(0x50, 0x50, 0xFF);
+			break;
+		}
+
+		case NCU_MSG_TYPE_TEXTURE_MISS:
+		{
+			color = RGB(0xC0, 0x50, 0xFF);
 			break;
 		}
 

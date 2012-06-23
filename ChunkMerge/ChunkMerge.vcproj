@@ -224,7 +224,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Common\NifConvertUtility2.cpp"
+					RelativePath="..\Common\NifCollisionUtility.cpp"
 					>
 				</File>
 				<File
@@ -274,15 +274,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Common\NifConvertUtility2.h"
+					RelativePath="..\Common\NifCollisionUtility.h"
 					>
 				</File>
 				<File
 					RelativePath="..\Common\NifUtlMaterial.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Common\VertexColorHandling.h"
 					>
 				</File>
 			</Filter>

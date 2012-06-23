@@ -5,15 +5,14 @@
 #include "NifConvert.h"
 #include "NifConvertDlg.h"
 #include "..\Common\FDFileHelper.h"
-#include "..\Common\NifConvertUtility2.h"
+#include "..\Common\NifConvertUtility.h"
 
 
 using namespace NifUtility;
 
-extern	CString					glPathSkyrim;
-extern	CString					glPathTemplate;
-extern	CNifConvertDlg			dlg;
-extern NifUtlMaterialList		glMaterialList;
+extern	CString				glPathSkyrim;
+extern	CString				glPathTemplate;
+extern	CNifConvertDlg		dlg;
 
 //  static wrapper function
 void logCallback(const int type, const char* pMessage)
@@ -186,8 +185,8 @@ void CNifConvertDlg::OnBnClickedButtonOutput()
 
 void CNifConvertDlg::OnBnClickedOk()
 {
-  NifConvertUtility2  ncUtility(glMaterialList);
-  unsigned short      ncReturn   (NCU_OK);
+  NifConvertUtility		ncUtility;
+  unsigned short		ncReturn(NCU_OK);
 
   //  copy strings from input
   GetDlgItem(IDC_EDIT_INPUT)    ->GetWindowTextW(m_fileNameAry[0]);
@@ -258,6 +257,12 @@ void CNifConvertDlg::logMessage(const int type, const char* pMessage)
 		case NCU_MSG_TYPE_TEXTURE:
 		{
 			color = RGB(0x50, 0x50, 0xFF);
+			break;
+		}
+
+		case NCU_MSG_TYPE_TEXTURE_MISS:
+		{
+			color = RGB(0xC0, 0x50, 0xFF);
 			break;
 		}
 

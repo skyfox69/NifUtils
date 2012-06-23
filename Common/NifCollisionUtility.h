@@ -1,31 +1,27 @@
 ///////////////////////////////////////////////////////////
-//  NifConvertUtility2.h
-//  Implementation of the Class NifConvertUtility2
+//  NifCollisionUtility.h
+//  Implementation of the Class NifCollisionUtility
 //  Created on:      06-Mai-2012 10:03:33
 //  Original author: Skyfox
 ///////////////////////////////////////////////////////////
 
-#if !defined(NIFCONVERTUTILITY2_H)
-#define NIFCONVERTUTILITY2_H
+#if !defined(NIFCOLLISIONUTILITY_H)
+#define NIFCOLLISIONUTILITY_H
 
 //  common includes
 #include <set>
 
 //  NifUtiliy includes
-#include "VertexColorHandling.h"
 #include "CollisionNodeHandling.h"
 #include "MaterialTypeHandling.h"
 #include "NifUtlMaterial.h"
 
 //  Niflib includes
 #include "obj/nitrishape.h"
-#include "obj/rootcollisionnode.h"
 #include "obj/bhkcollisionobject.h"
 #include "obj/bsfadenode.h"
-#include "obj/nialphaproperty.h"
 #include "obj/bhkMoppBvTreeShape.h"
 #include "obj/bhkCompressedMeshShapeData.h"
-#include "obj/NiTriShapeData.h"
 
 //  Havok includes
 #include <Common/Base/Types/Geometry/hkGeometry.h>
@@ -49,6 +45,7 @@ using namespace std;
 #define   NCU_MSG_TYPE_ERROR                0x02
 #define   NCU_MSG_TYPE_TEXTURE              0x03
 #define   NCU_MSG_TYPE_SUB_INFO             0x04
+#define   NCU_MSG_TYPE_TEXTURE_MISS         0x05
 
 //  internal mode
 #define   NCU_IMD_NONE                      0x00
@@ -63,19 +60,19 @@ namespace NifUtility
 	 * @version 1.0
 	 * @created 06-Mai-2012 10:03:33
 	 */
-	class NifConvertUtility2
+	class NifCollisionUtility
 	{
 
 	public:
 		/**
 		 * Default Constructor
 		 */
-		NifConvertUtility2(NifUtlMaterialList& materialList);
+		NifCollisionUtility(NifUtlMaterialList& materialList);
 
 		/**
 		 * Destructor
 		 */
-		virtual ~NifConvertUtility2();
+		virtual ~NifCollisionUtility();
 
 		/**
 		 * add collision nodes to shape
@@ -87,35 +84,12 @@ namespace NifUtility
 		virtual unsigned int addCollision(string fileNameCollSrc, string fileNameNifDst, string fileNameCollTmpl);
 
 		/**
-		 * Convert shape part of NIF to new format
-		 * 
-		 * @param fileNameSrc    in: filename of NIF to be converted
-		 * @param fileNameDst    in: filename of NIF to be produced
-		 * @param fileNameTmpl    in: path and name of Nif-file used as template
-		 */
-		virtual unsigned int convertShape(string fileNameSrc, string fileNameDst, string fileNameTmpl);
-
-		/**
-		 * set texture path used for re-locate textures
-		 * 
-		 * @param pathTexture    in: path to texture base directory used for new location
-		 * of textures
-		 */
-		virtual void setTexturePath(string pathTexture);
-
-		/**
 		 * set Skyrim path
 		 * 
 		 * @param pathSkyrim    in: path to Skyrim base directory
 		 * of textures
 		 */
 		virtual void setSkyrimPath(string pathSkyrim);
-
-		/**
-		 * 
-		 * @param vcHandling    in: handling of vertex colors when missing in source NIF
-		 */
-		virtual void setVertexColorHandling(VertexColorHandling vcHandling);
 
 		/**
 		 * 
@@ -129,24 +103,6 @@ namespace NifUtility
 		 * @param mtMap         in: map of material types: key=NodeID, value=MatType
 		 */
 		virtual void setMaterialTypeHandling(MaterialTypeHandling mtHandling, map<int, unsigned int>& mtMapping);
-
-		/**
-		 * 
-		 * @param defaultColor    in: RGB color
-		 */
-		virtual void setDefaultVertexColor(Color4 defaultColor);
-
-		/**
-		 * 
-		 * @param doUpdate    in: true: update tangent space
-		 */
-		virtual void setUpdateTangentSpace(bool doUpdate);
-
-		/**
-		 * 
-		 * @param doReorder    in: true: reorder NiTriShape properties
-		 */
-		virtual void setReorderProperties(bool doReorder);
 
 		/**
 		 * Get list of user messages
@@ -178,11 +134,6 @@ namespace NifUtility
 		unsigned char _internalMode;
 
 		/**
-		 * path to texture files
-		 */
-		string _pathTexture;
-
-		/**
 		 * path to Skyrim files
 		 */
 		string _pathSkyrim;
@@ -203,11 +154,6 @@ namespace NifUtility
 		set<string> _newTextures;
 
 		/**
-		 * handling of vertex colors
-		 */
-		VertexColorHandling _vcHandling;
-
-		/**
 		 * handling of collision nodes
 		 */
 		CollisionNodeHandling _cnHandling;
@@ -221,21 +167,6 @@ namespace NifUtility
 		 * mapping of material per NiTriShape; key: nif node number, value: material id
 		 */
 		map<int, unsigned int> _mtMapping;
-
-		/**
-		 * default vertex color
-		 */
-		Color4 _vcDefaultColor;
-
-		/**
-		 * update tangent space
-		 */
-		bool _updateTangentSpace;
-
-		/**
-		 * reorder NiTriShape properties
-		 */
-		bool _reorderProperties;
 
 		/**
 		 * reference to material list (injected)
@@ -288,25 +219,6 @@ namespace NifUtility
 		virtual NiNodeRef getRootNodeFromNifFile(string fileName, string logPreText, bool& fakedRoot);
 
 		/**
-		 * Convert NiNode and all known sub-nodes
-		 * 
-		 * @param srcNode
-		 * @param tmplNode
-		 * @param rootNode    in: Root node of destination NIF tree
-		 * @param tmplAlphaProp    tmplAlphaProp
-		 */
-		virtual NiNodeRef convertNiNode(NiNodeRef pSrcNode, NiTriShapeRef pTmplNode, NiNodeRef pRootNode, NiAlphaPropertyRef pTmplAlphaProp = NULL);
-
-		/**
-		 * Convert NiTriShape and properties/geometry
-		 * 
-		 * @param srcNode    in: Source NiTriShape node
-		 * @param tmplNode    in: Template NiTriShape node
-		 * @param tmplAlphaProp    in: Template for alpha properties
-		 */
-		virtual NiTriShapeRef convertNiTriShape(NiTriShapeRef pSrcNode, NiTriShapeRef pTmplNode, NiAlphaPropertyRef pTmplAlphaProp = NULL);
-
-		/**
 		 * Create bhkCollisionObject from template and geometry
 		 * 
 		 * @param geometryAry    in: reference to vector of hkGeometry
@@ -325,27 +237,13 @@ namespace NifUtility
 		virtual bool injectCollisionData(map<int, hkGeometry*>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData);
 
 		/**
-		 * Create tangent space data
-		 * 
-		 * @param pDataObj    in: data object
-		 */
-		virtual bool updateTangentSpace(NiTriShapeDataRef pDataObj);
-
-		/**
 		 * Log messages
 		 * 
 		 * @param type    in: message type
 		 * @param text    in: message text
 		 */
 		virtual void logMessage(int type, string text);
-
-		/**
-		 * Check of existence of file
-		 * 
-		 * @param fileName    in: path and name of file to check
-		 */
-		virtual bool checkFileExists(string fileName);
 	};
 
 }
-#endif // !defined(NIFCONVERTUTILITY2_H)
+#endif // !defined(NIFCOLLISIONUTILITY_H)

@@ -4,24 +4,10 @@
 #include "..\Common\stdafx.h"
 #include "NifConvert.h"
 #include "NifConvertDlg.h"
-#include "..\Common\NifUtlMaterial.h"
 #include "..\Common\FDFileHelper.h"
-
-#include "..\Common\HavokUtilities.hpp"
-
-//  used namespaces
-using namespace NifUtility;
-
-#define HK_MAIN_CALL _cdecl
-
-
-#if defined( HK_ATOM )
-extern "C" int __cdecl ADP_Close( void );
-#endif
 
 CString					glPathSkyrim;
 CString					glPathTemplate;
-NifUtlMaterialList		glMaterialList;
 CNifConvertDlg			dlg;
 
 // CNifConvertApp
@@ -69,9 +55,6 @@ BOOL CNifConvertApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-
-  //  initialize Havok
-	HavokUtilities* havokUtilities = new HavokUtilities(true);
 
   LPWSTR* argv;
   int     argc(0);

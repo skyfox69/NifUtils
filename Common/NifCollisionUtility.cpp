@@ -1,23 +1,19 @@
 ///////////////////////////////////////////////////////////
-//  NifConvertUtility2.cpp
-//  Implementation of the Class NifConvertUtility2
+//  NifCollisionUtility.cpp
+//  Implementation of the Class NifCollisionUtility
 //  Created on:      06-Mai-2012 10:03:33
 //  Original author: Skyfox
 ///////////////////////////////////////////////////////////
 
 //  Common includes
-#include "NifConvertUtility2.h"
+#include "NifCollisionUtility.h"
 
 //  Niflib includes
 #include "niflib.h"
-#include "obj/BSLightingShaderProperty.h"
-#include "obj/NiTexturingProperty.h"
-#include "obj/BSShaderTextureSet.h"
-#include "obj/NiSourceTexture.h"
-#include "obj/NiMaterialProperty.h"
 #include "obj/NiTriShapeData.h"
 #include "obj/bhkRigidBody.h"
 #include "obj/bhkCompressedMeshShape.h"
+#include "obj/rootcollisionnode.h"
 
 //  Havok includes
 #include <Physics/Collide/Shape/Compound/Tree/Mopp/hkpMoppBvTreeShape.h>
@@ -29,13 +25,9 @@
 using namespace NifUtility;
 
 /*---------------------------------------------------------------------------*/
-NifConvertUtility2::NifConvertUtility2(NifUtlMaterialList& materialList)
-	:	_vcDefaultColor    (1.0f, 1.0f, 1.0f, 1.0f),
-		_vcHandling        (NCU_VC_REMOVE_FLAG),
-		_cnHandling        (NCU_CN_FALLBACK),
+NifCollisionUtility::NifCollisionUtility(NifUtlMaterialList& materialList)
+	:	_cnHandling        (NCU_CN_FALLBACK),
 		_mtHandling        (NCU_MT_SINGLE),
-		_updateTangentSpace(true),
-		_reorderProperties (true),
 		_logCallback       (NULL),
 		_materialList      (materialList),
 		_internalMode      (NCU_IMD_NONE)
@@ -43,12 +35,12 @@ NifConvertUtility2::NifConvertUtility2(NifUtlMaterialList& materialList)
 }
 
 /*---------------------------------------------------------------------------*/
-NifConvertUtility2::~NifConvertUtility2()
+NifCollisionUtility::~NifCollisionUtility()
 {
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifConvertUtility2::getGeometryFromTriShape(NiTriShapeRef pShape, map<int, hkGeometry*>& geometryMap, vector<Matrix44>& transformAry)
+unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, map<int, hkGeometry*>& geometryMap, vector<Matrix44>& transformAry)
 {
 	NiTriShapeDataRef	pData(DynamicCast<NiTriShapeData>(pShape->GetData()));
 
@@ -122,7 +114,7 @@ unsigned int NifConvertUtility2::getGeometryFromTriShape(NiTriShapeRef pShape, m
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifConvertUtility2::getGeometryFromNode(NiNodeRef pNode, map<int, hkGeometry*>& geometryMap, vector<Matrix44>& transformAry)
+unsigned int NifCollisionUtility::getGeometryFromNode(NiNodeRef pNode, map<int, hkGeometry*>& geometryMap, vector<Matrix44>& transformAry)
 {
 	vector<NiAVObjectRef>	childList(pNode->GetChildren());
 
@@ -151,7 +143,7 @@ unsigned int NifConvertUtility2::getGeometryFromNode(NiNodeRef pNode, map<int, h
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifConvertUtility2::getGeometryFromObjFile(string fileName, map<int, hkGeometry*>& geometryMap)
+unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<int, hkGeometry*>& geometryMap)
 {
 	hkGeometry::Triangle*			pTri   (NULL);
 	hkGeometry*						pTmpGeo(NULL);
@@ -253,7 +245,7 @@ unsigned int NifConvertUtility2::getGeometryFromObjFile(string fileName, map<int
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifConvertUtility2::getGeometryFromNifFile(string fileName, map<int, hkGeometry*>& geometryMap)
+unsigned int NifCollisionUtility::getGeometryFromNifFile(string fileName, map<int, hkGeometry*>& geometryMap)
 {
 	NiNodeRef				pRootInput     (NULL);
 	vector<NiAVObjectRef>	srcChildList;
@@ -312,7 +304,7 @@ unsigned int NifConvertUtility2::getGeometryFromNifFile(string fileName, map<int
 }
 
 /*---------------------------------------------------------------------------*/
-NiNodeRef NifConvertUtility2::getRootNodeFromNifFile(string fileName, string logPreText, bool& fakedRoot)
+NiNodeRef NifCollisionUtility::getRootNodeFromNifFile(string fileName, string logPreText, bool& fakedRoot)
 {
 	NiObjectRef		pRootTree (NULL);
 	NiNodeRef		pRootInput(NULL);
@@ -351,350 +343,7 @@ NiNodeRef NifConvertUtility2::getRootNodeFromNifFile(string fileName, string log
 }
 
 /*---------------------------------------------------------------------------*/
-NiNodeRef NifConvertUtility2::convertNiNode(NiNodeRef pSrcNode, NiTriShapeRef pTmplNode, NiNodeRef pRootNode, NiAlphaPropertyRef pTmplAlphaProp)
-{
-	NiNodeRef				pDstNode    (pSrcNode);
-	vector<NiAVObjectRef>	srcShapeList(pDstNode->GetChildren());
-
-	//  find NiAlphaProperty and use as template in sub-nodes
-	if (DynamicCast<NiAlphaProperty>(pDstNode->GetPropertyByType(NiAlphaProperty::TYPE)) != NULL)
-	{
-		pTmplAlphaProp = DynamicCast<NiAlphaProperty>(pDstNode->GetPropertyByType(NiAlphaProperty::TYPE));
-	}
-
-	//  unlink protperties -> not used in new format
-	pDstNode->ClearProperties();
-
-	//  shift extra data to new version
-	pDstNode->ShiftExtraData(VER_20_2_0_7);
-
-	//  unlink children
-	pDstNode->ClearChildren();
-
-	//  iterate over source nodes and convert using template
-	for (vector<NiAVObjectRef>::iterator  ppIter = srcShapeList.begin(); ppIter != srcShapeList.end(); ppIter++)
-	{
-		//  NiTriShape
-		if (DynamicCast<NiTriShape>(*ppIter) != NULL)
-		{
-			pDstNode->AddChild(&(*convertNiTriShape(DynamicCast<NiTriShape>(*ppIter), pTmplNode, pTmplAlphaProp)));
-		}
-		//  NiNode (and derived classes?)
-		else if (DynamicCast<NiNode>(*ppIter) != NULL)
-		{
-			pDstNode->AddChild(&(*convertNiNode(DynamicCast<NiNode>(*ppIter), pTmplNode, pRootNode, pTmplAlphaProp)));
-		}
-	}
-
-	return pDstNode;
-}
-
-/*---------------------------------------------------------------------------*/
-NiTriShapeRef NifConvertUtility2::convertNiTriShape(NiTriShapeRef pSrcNode, NiTriShapeRef pTmplNode, NiAlphaPropertyRef pTmplAlphaProp)
-{
-	BSLightingShaderPropertyRef	pTmplLShader(NULL);
-	vector<NiPropertyRef>		dstPropList;
-	short						bsPropIdx   (0);
-	bool						forceAlpha  (pTmplAlphaProp != NULL);
-	bool						hasAlpha    (false);
-
-	//  NiTriShape is moved from src to dest. It's unlinked in calling function
-	NiTriShapeRef		pDstNode(pSrcNode);
-	NiGeometryDataRef	pDstGeo (pDstNode->GetData());
-
-	//  force some data in destination shape
-	pDstNode->SetCollisionObject(NULL);  //  no collision object here
-	pDstNode->SetFlags          (14);    //  ???
-
-	//  data node
-	if (pDstGeo != NULL)
-	{
-		//  set flags
-		if (pTmplNode->GetData() != NULL)
-		{
-			pDstGeo->SetConsistencyFlags(pTmplNode->GetData()->GetConsistencyFlags());  //  nessessary ???
-		}
-
-		//  update tangent space?
-		if ((_updateTangentSpace) && (DynamicCast<NiTriShapeData>(pDstGeo) != NULL))
-		{
-			//  update tangent space
-			if (updateTangentSpace(DynamicCast<NiTriShapeData>(pDstGeo)))
-			{
-				//  enable tangent space
-				pDstGeo->SetTspaceFlag(0x10);
-			}
-		}  //  if (_updateTangentSpace)
-	}  //  if (pDstGeo != NULL)
-
-	//  properties - get them from template
-	for (short index(0); index < 2; ++index)
-	{
-		//  BSLightingShaderProperty
-		if (DynamicCast<BSLightingShaderProperty>(pTmplNode->getBSProperty(index)) != NULL)
-		{
-			pTmplLShader = DynamicCast<BSLightingShaderProperty>(pTmplNode->getBSProperty(index));
-		}
-		//  NiAlphaProperty
-		else if (DynamicCast<NiAlphaProperty>(pTmplNode->getBSProperty(index)) != NULL)
-		{
-			pTmplAlphaProp = DynamicCast<NiAlphaProperty>(pTmplNode->getBSProperty(index));
-		}
-	}  //  for (short index(0); index < 2; ++index)
-
-	//  parse properties of destination node
-	dstPropList = pDstNode->GetProperties();
-
-	for (vector<NiPropertyRef>::iterator  ppIter = dstPropList.begin(); ppIter != dstPropList.end(); ppIter++)
-	{
-		//  NiAlphaProperty
-		if (DynamicCast<NiAlphaProperty>(*ppIter) != NULL)
-		{
-			NiAlphaPropertyRef	pPropAlpha(DynamicCast<NiAlphaProperty>(*ppIter));
-
-			//  set values from template
-			pPropAlpha->SetFlags        (pTmplAlphaProp->GetFlags());
-			pPropAlpha->SetTestThreshold(pTmplAlphaProp->GetTestThreshold());
-
-			//  remove property from node
-			pDstNode->RemoveProperty(*ppIter);
-
-			//  set new property to node
-			pDstNode->setBSProperty(bsPropIdx++, &(*pPropAlpha));
-
-			//  own alpha, reset forced alpha
-			forceAlpha = false;
-
-			//  mark alpha property
-			hasAlpha = true;
-		}
-		//  NiTexturingProperty
-		else if (DynamicCast<NiTexturingProperty>(*ppIter) != NULL)
-		{
-			char*						pTextPos   (NULL);
-			BSLightingShaderPropertyRef	pDstLShader(new BSLightingShaderProperty(*pTmplLShader));
-			BSShaderTextureSetRef		pDstSText  (new BSShaderTextureSet());
-			TexDesc						baseTex    ((DynamicCast<NiTexturingProperty>(*ppIter))->GetTexture(BASE_MAP));
-			char						fileName[1000] = {0};
-			char						textName[1000] = {0};
-
-			//  copy textures from template to copy
-			pDstSText->setTextures(pTmplLShader->getTextureSet()->getTextures());
-
-			//  set new texture names
-			sprintf(fileName, "%s", (const char*) _pathTexture.c_str());
-			baseTex.source->GetTextureFileName().copy(textName, 1000, 0);
-			pTextPos = strrchr(textName, '\\');
-			if (pTextPos == NULL)
-			{
-				pTextPos = strrchr(textName, '/');
-			}
-			if (pTextPos != NULL)
-			{
-				strcat(fileName, ++pTextPos);
-			}
-			else
-			{
-				strcat(fileName, textName);
-			}
-			fileName[strlen(fileName) - 3] = 0;
-			strcat(fileName, "dds");
-
-			//  set new texture map
-			pDstSText->setTexture(0, fileName);
-
-			logMessage(NCU_MSG_TYPE_TEXTURE, fileName);
-			if (!checkFileExists(fileName))
-			{
-				_newTextures.insert(fileName);
-			}
-
-			fileName[strlen(fileName) - 4] = 0;
-			strcat(fileName, "_n.dds");
-
-			//  set new normal map
-			pDstSText->setTexture(1, fileName);
-
-			if (!checkFileExists(fileName))
-			{
-				_newTextures.insert(fileName);
-			}
-
-			//  add texture set to texture property
-			pDstLShader->setTextureSet(pDstSText);
-
-			//  check for existing vertex colors
-			if ((pDstGeo != NULL) && (pDstGeo->GetColors().size() <= 0) && ((pDstLShader->getShaderFlags2() & Niflib::SLSF2_VERTEX_COLOR) != 0))
-			{
-				switch (_vcHandling)
-				{
-					case NCU_VC_REMOVE_FLAG:
-					{
-						pDstLShader->setShaderFlags2((pDstLShader->getShaderFlags2() & ~Niflib::SLSF2_VERTEX_COLOR));
-						break;
-					}
-
-					case NCU_VC_ADD_DEFAULT:
-					{
-						pDstGeo->SetVertexColors(vector<Color4>(pDstGeo->GetVertexCount(), _vcDefaultColor));
-						break;
-					}
-				}
-			}  //  if ((pDstGeo != NULL) && (pDstGeo->GetColors().size() <= 0) && ...
-
-			//  remove property from node
-			pDstNode->RemoveProperty(*ppIter);
-
-			//  set new property to node
-			pDstNode->setBSProperty(bsPropIdx++, &(*pDstLShader));
-		}
-		//  NiMaterialProperty
-		else if (DynamicCast<NiMaterialProperty>(*ppIter) != NULL)
-		{
-			//  remove property from node
-			pDstNode->RemoveProperty(*ppIter);
-		}
-	}  //  for (vector<NiPropertyRef>::iterator  ppIter = dstPropList.begin(); ppIter != dstPropList.end(); ppIter++)
-
-	//  add forced NiAlphaProperty?
-	if (forceAlpha)
-	{
-		NiAlphaPropertyRef	pPropAlpha(new NiAlphaProperty());
-
-		//  set values from template
-		pPropAlpha->SetFlags        (pTmplAlphaProp->GetFlags());
-		pPropAlpha->SetTestThreshold(pTmplAlphaProp->GetTestThreshold());
-
-		//  set new property to node
-		pDstNode->setBSProperty(bsPropIdx++, &(*pPropAlpha));
-
-		//  mark alpha property
-		hasAlpha = true;
-
-	}  //  if (forceAlpha)
-
-	//  add default vertex colors if alpha property and no colors
-	if (hasAlpha && (pDstGeo != NULL) && (pDstGeo->GetColors().size() <= 0))
-	{
-		pDstGeo->SetVertexColors(vector<Color4>(pDstGeo->GetVertexCount(), _vcDefaultColor));
-	}
-
-	//  reorder properties
-	if (_reorderProperties)
-	{
-		NiPropertyRef	tProp01(pDstNode->getBSProperty(0));
-		NiPropertyRef	tProp02(pDstNode->getBSProperty(1));
-
-		//  make sure BSLightingShaderProperty comes before NiAlphaProperty - seems a 'must be'
-		if ((tProp01->GetType().GetTypeName() == "NiAlphaProperty") &&
-			(tProp02->GetType().GetTypeName() == "BSLightingShaderProperty")
-		   )
-		{
-			pDstNode->setBSProperty(0, tProp02);
-			pDstNode->setBSProperty(1, tProp01);
-		}
-	}  //  if (_reorderProperties)
-
-	return  pDstNode;
-}
-
-/*---------------------------------------------------------------------------*/
-unsigned int NifConvertUtility2::convertShape(string fileNameSrc, string fileNameDst, string fileNameTmpl)
-{
-	NiNodeRef				pRootInput     (NULL);
-	NiNodeRef				pRootOutput    (NULL);
-	NiNodeRef				pRootTemplate  (NULL);
-	NiTriShapeRef			pNiTriShapeTmpl(NULL);
-	vector<NiAVObjectRef>	srcChildList;
-	bool					fakedRoot      (false);
-
-	//  test on existing file names
-	if (fileNameSrc.empty())		return NCU_ERROR_MISSING_FILE_NAME;
-	if (fileNameDst.empty())		return NCU_ERROR_MISSING_FILE_NAME;
-	if (fileNameTmpl.empty())		return NCU_ERROR_MISSING_FILE_NAME;
-
-	//  set internal mode
-	_internalMode = NCU_IMD_SHAPE;
-
-	//  initialize user messages
-	_userMessages.clear();
-	logMessage(NCU_MSG_TYPE_INFO, "Source:  "      + (fileNameSrc.empty() ? "- none -" : fileNameSrc));
-	logMessage(NCU_MSG_TYPE_INFO, "Template:  "    + (fileNameTmpl.empty() ? "- none -" : fileNameTmpl));
-	logMessage(NCU_MSG_TYPE_INFO, "Destination:  " + (fileNameDst.empty() ? "- none -" : fileNameDst));
-	logMessage(NCU_MSG_TYPE_INFO, "Texture:  "     + (_pathTexture.empty() ? "- none -" : _pathTexture));
-
-	//  initialize used texture list
-	_usedTextures.clear();
-	_newTextures.clear();
-
-	//  read input NIF
-	if ((pRootInput = getRootNodeFromNifFile(fileNameSrc, "source", fakedRoot)) == NULL)
-	{
-		logMessage(NCU_MSG_TYPE_ERROR, "Can't open '" + fileNameSrc + "' as input");
-		return NCU_ERROR_CANT_OPEN_INPUT;
-	}
-
-	//  get template nif
-	pRootTemplate = DynamicCast<BSFadeNode>(ReadNifTree((const char*) fileNameTmpl.c_str()));
-	if (pRootTemplate == NULL)
-	{
-		logMessage(NCU_MSG_TYPE_ERROR, "Can't open '" + fileNameTmpl + "' as template");
-		return NCU_ERROR_CANT_OPEN_TEMPLATE;
-	}
-
-	//  get shapes from template
-	//  - shape root
-	pNiTriShapeTmpl = DynamicCast<NiTriShape>(pRootTemplate->GetChildren().at(0));
-	if (pNiTriShapeTmpl == NULL)
-	{
-		logMessage(NCU_MSG_TYPE_INFO, "Template has no NiTriShape.");
-	}
-
-	//  template root is used as root of output
-	pRootOutput = pRootTemplate;
-
-	//   get rid of unwanted subnodes
-	pRootOutput->ClearChildren();           //  remove all children
-	pRootOutput->SetCollisionObject(NULL);  //  unlink collision object
-	//  hold extra data and property nodes
-
-	//  get list of children from input node
-	srcChildList = pRootInput->GetChildren();
-
-	//  unlink children 'cause moved to output
-	pRootInput->ClearChildren();
-
-	//  iterate over source nodes and convert using template
-	for (vector<NiAVObjectRef>::iterator  ppIter = srcChildList.begin(); ppIter != srcChildList.end(); ppIter++)
-	{
-		//  NiTriShape
-		if (DynamicCast<NiTriShape>(*ppIter) != NULL)
-		{
-			pRootOutput->AddChild(&(*convertNiTriShape(DynamicCast<NiTriShape>(*ppIter), pNiTriShapeTmpl)));
-		}
-		//  RootCollisionNode
-		else if (DynamicCast<RootCollisionNode>(*ppIter) != NULL)
-		{
-			//  ignore node
-		}
-		//  NiNode (and derived classes?)
-		else if (DynamicCast<NiNode>(*ppIter) != NULL)
-		{
-			pRootOutput->AddChild(&(*convertNiNode(DynamicCast<NiNode>(*ppIter), pNiTriShapeTmpl, pRootOutput)));
-		}
-	}
-
-	//  write modified nif file
-	WriteNifTree((const char*) fileNameDst.c_str(), pRootOutput, NifInfo(VER_20_2_0_7, 12, 83));
-
-	//  reset internal mode
-	_internalMode = NCU_IMD_NONE;
-
-	return NCU_OK;
-}
-
-/*---------------------------------------------------------------------------*/
-unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fileNameNifDst, string fileNameCollTmpl)
+unsigned int NifCollisionUtility::addCollision(string fileNameCollSrc, string fileNameNifDst, string fileNameCollTmpl)
 {
 	NiNodeRef				pRootInput   (NULL);
 	NiNodeRef				pRootTemplate(NULL);
@@ -808,7 +457,7 @@ unsigned int NifConvertUtility2::addCollision(string fileNameCollSrc, string fil
 }
 
 /*---------------------------------------------------------------------------*/
-bhkCollisionObjectRef NifConvertUtility2::createCollNode(map<int, hkGeometry*>& geometryMap, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode)
+bhkCollisionObjectRef NifCollisionUtility::createCollNode(map<int, hkGeometry*>& geometryMap, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode)
 {
 	//  template collision node will be output collision node. it's unlinked from root in calling function
 	bhkCollisionObjectRef	pDstNode(pTmplNode);
@@ -852,7 +501,7 @@ bhkCollisionObjectRef NifConvertUtility2::createCollNode(map<int, hkGeometry*>& 
 }
 
 /*---------------------------------------------------------------------------*/
-bool NifConvertUtility2::injectCollisionData(map<int, hkGeometry*>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData)
+bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry*>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData)
 {
 	if (pMoppShape == NULL)   return false;
 	if (pData      == NULL)   return false;
@@ -1107,159 +756,50 @@ bool NifConvertUtility2::injectCollisionData(map<int, hkGeometry*>& geometryMap,
 }
 
 /*---------------------------------------------------------------------------*/
-bool NifConvertUtility2::updateTangentSpace(NiTriShapeDataRef pDataObj)
-{
-	vector<Vector3>		vecVertices (pDataObj->GetVertices());
-	vector<Vector3>		vecNormals  (pDataObj->GetNormals());
-	vector<TexCoord>	vecTexCoords(pDataObj->GetUVSet(0));
-	vector<Triangle>	vecTriangles(pDataObj->GetTriangles());
-
-	//  check on valid input data
-	if (vecVertices.empty() || vecTriangles.empty() || vecNormals.size() != vecVertices.size() || vecVertices.size() != vecTexCoords.size())
-	{
-		logMessage(NCU_MSG_TYPE_INFO, "UpdateTangentSpace: No vertices, normals, coords or faces defined.");
-		return false;
-	}
-
-	//  prepare result vectors
-	vector<Vector3>		vecTangents  = vector<Vector3>(vecVertices.size(), Vector3(0.0f, 0.0f, 0.0f));
-	vector<Vector3>		vecBiNormals = vector<Vector3>(vecVertices.size(), Vector3(0.0f, 0.0f, 0.0f));
-
-	for (unsigned int t(0); t < vecTriangles.size(); ++t)
-	{
-		Vector3		vec21(vecVertices[vecTriangles[t][1]] - vecVertices[vecTriangles[t][0]]);
-		Vector3		vec31(vecVertices[vecTriangles[t][2]] - vecVertices[vecTriangles[t][0]]);
-		TexCoord	txc21(vecTexCoords[vecTriangles[t][1]] - vecTexCoords[vecTriangles[t][0]]);
-		TexCoord	txc31(vecTexCoords[vecTriangles[t][2]] - vecTexCoords[vecTriangles[t][0]]);
-		float		radius(((txc21.u * txc31.v - txc31.u * txc21.v) >= 0.0f ? +1.0f : -1.0f));
-
-		Vector3		sdir(( txc31.v * vec21[0] - txc21.v * vec31[0] ) * radius,
-					     ( txc31.v * vec21[1] - txc21.v * vec31[1] ) * radius,
-					     ( txc31.v * vec21[2] - txc21.v * vec31[2] ) * radius);
-		Vector3		tdir(( txc21.u * vec31[0] - txc31.u * vec21[0] ) * radius,
-					     ( txc21.u * vec31[1] - txc31.u * vec21[1] ) * radius,
-					     ( txc21.u * vec31[2] - txc31.u * vec21[2] ) * radius);
-
-		//  normalize
-		sdir = sdir.Normalized();
-		tdir = tdir.Normalized();
-
-		for (int j(0); j < 3; ++j)
-		{
-			vecTangents [vecTriangles[t][j]] += tdir;
-			vecBiNormals[vecTriangles[t][j]] += sdir;
-		}
-	}  //  for (unsigned int t(0); t < vecTriangles.size(); ++t)
-
-	for (unsigned int i(0); i < vecVertices.size(); ++i)
-	{
-		Vector3&	n(vecNormals[i]);
-		Vector3&	t(vecTangents [i]);
-		Vector3&	b(vecBiNormals[i]);
-
-		if ((t == Vector3()) || (b == Vector3()))
-		{
-			t[0] = n[1];
-			t[1] = n[2];
-			t[2] = n[0];
-
-			b = n.CrossProduct(t);
-		}
-		else
-		{
-			t = t.Normalized();
-			t = (t - n * n.DotProduct(t));
-			t = t.Normalized();
-
-			b = b.Normalized();
-			b = (b - n * n.DotProduct(b));
-			b = (b - t * t.DotProduct(b));
-			b = b.Normalized();
-		}
-	}  //  for (unsigned int i(0); i < vecVertices.size(); ++i)
-
-	//  set tangents and binormals to object
-	pDataObj->SetBinormals(vecBiNormals);
-	pDataObj->SetTangents (vecTangents);
-
-	return true;
-}
-
-/*---------------------------------------------------------------------------*/
-void NifConvertUtility2::setTexturePath(string pathTexture)
-{
-	_pathTexture = pathTexture;
-}
-
-/*---------------------------------------------------------------------------*/
-void NifConvertUtility2::setSkyrimPath(string pathSkyrim)
+void NifCollisionUtility::setSkyrimPath(string pathSkyrim)
 {
 	_pathSkyrim = pathSkyrim;
 }
 
 /*---------------------------------------------------------------------------*/
-void NifConvertUtility2::setVertexColorHandling(VertexColorHandling vcHandling)
-{
-	_vcHandling = vcHandling;
-}
-
-/*---------------------------------------------------------------------------*/
-void NifConvertUtility2::setCollisionNodeHandling(CollisionNodeHandling cnHandling)
+void NifCollisionUtility::setCollisionNodeHandling(CollisionNodeHandling cnHandling)
 {
 	_cnHandling = cnHandling;
 }
 
 /*---------------------------------------------------------------------------*/
-void NifConvertUtility2::setMaterialTypeHandling(MaterialTypeHandling mtHandling, map<int, unsigned int>& mtMapping)
+void NifCollisionUtility::setMaterialTypeHandling(MaterialTypeHandling mtHandling, map<int, unsigned int>& mtMapping)
 {
 	_mtHandling = mtHandling;
 	_mtMapping  = mtMapping;
 }
 
 /*---------------------------------------------------------------------------*/
-void NifConvertUtility2::setDefaultVertexColor(Color4 defaultColor)
-{
-	_vcDefaultColor = defaultColor;
-}
-
-/*---------------------------------------------------------------------------*/
-void NifConvertUtility2::setUpdateTangentSpace(bool doUpdate)
-{
-	_updateTangentSpace = doUpdate;
-}
-
-/*---------------------------------------------------------------------------*/
-void NifConvertUtility2::setReorderProperties(bool doReorder)
-{
-	_reorderProperties = doReorder;
-}
-
-/*---------------------------------------------------------------------------*/
-vector<string>& NifConvertUtility2::getUserMessages()
+vector<string>& NifCollisionUtility::getUserMessages()
 {
 	return _userMessages;
 }
 
 /*---------------------------------------------------------------------------*/
-set<string>& NifConvertUtility2::getUsedTextures()
+set<string>& NifCollisionUtility::getUsedTextures()
 {
 	return _usedTextures;
 }
 
 /*---------------------------------------------------------------------------*/
-set<string>& NifConvertUtility2::getNewTextures()
+set<string>& NifCollisionUtility::getNewTextures()
 {
 	return _newTextures;
 }
 
 /*---------------------------------------------------------------------------*/
-void NifConvertUtility2::setLogCallback(void (*logCallback) (const int type, const char* pMessage))
+void NifCollisionUtility::setLogCallback(void (*logCallback) (const int type, const char* pMessage))
 {
 	_logCallback = logCallback;
 }
 
 /*---------------------------------------------------------------------------*/
-void NifConvertUtility2::logMessage(int type, string text)
+void NifCollisionUtility::logMessage(int type, string text)
 {
 	//  add message to internal storages
 	switch (type)
@@ -1278,6 +818,12 @@ void NifConvertUtility2::logMessage(int type, string text)
 			_usedTextures.insert(text);
 			break;
 		}
+
+		case NCU_MSG_TYPE_TEXTURE_MISS:
+		{
+//			_newTextures.insert(text);
+			break;
+		}
 	}
 
 	//  send message to callback if given
@@ -1286,14 +832,3 @@ void NifConvertUtility2::logMessage(int type, string text)
 		(*_logCallback)(type, text.c_str());
 	}
 }
-
-/*---------------------------------------------------------------------------*/
-bool NifConvertUtility2::checkFileExists(string fileName)
-{
-	string		path   (_pathSkyrim + "\\Data\\" + fileName);
-	ifstream	iStream(path.c_str());
-
-	//  return existance of file
-	return iStream.good();
-}
-

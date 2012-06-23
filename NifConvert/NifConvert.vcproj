@@ -208,14 +208,6 @@
 				>
 			</File>
 			<Filter
-				Name="Havok"
-				>
-				<File
-					RelativePath="..\Common\HavokUtilities.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="Common"
 				>
 				<File
@@ -223,11 +215,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Common\NifConvertUtility2.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Common\NifUtlMaterial.cpp"
+					RelativePath="..\Common\NifConvertUtility.cpp"
 					>
 				</File>
 			</Filter>
@@ -250,34 +238,14 @@
 				>
 			</File>
 			<Filter
-				Name="Havok"
-				>
-				<File
-					RelativePath="..\Common\HavokUtilities.hpp"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="Common"
 				>
-				<File
-					RelativePath="..\Common\CollisionNodeHandling.h"
-					>
-				</File>
 				<File
 					RelativePath="..\Common\FDFileHelper.h"
 					>
 				</File>
 				<File
-					RelativePath="..\Common\MaterialTypeHandling.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Common\NifConvertUtility2.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Common\NifUtlMaterial.h"
+					RelativePath="..\Common\NifConvertUtility.h"
 					>
 				</File>
 				<File
