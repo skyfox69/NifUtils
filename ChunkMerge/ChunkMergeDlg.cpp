@@ -9,6 +9,11 @@
 #include "..\Common\NifUtlMaterial.h"
 
 
+#define	FD_VERSION	0
+#define	FD_REVISION	40
+#define	FD_BUILD	3142
+
+
 using namespace NifUtility;
 
 extern CString					glPathSkyrim;
@@ -140,6 +145,12 @@ BOOL CChunkMergeDlg::OnInitDialog()
 	{
 		logMessage(NCU_MSG_TYPE_INFO, texIter->c_str());
 	}
+
+	//  set title
+	char	cbuffer[100];
+
+	sprintf(cbuffer, "ChunkMerge  v%d.%d.%04d", FD_VERSION, FD_REVISION, FD_BUILD);
+	SetWindowText(CString(cbuffer));
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }

@@ -8,6 +8,11 @@
 #include "..\Common\NifConvertUtility.h"
 
 
+#define	FD_VERSION	0
+#define	FD_REVISION	40
+#define	FD_BUILD	3142
+
+
 using namespace NifUtility;
 
 extern	CString				glPathSkyrim;
@@ -122,6 +127,12 @@ BOOL CNifConvertDlg::OnInitDialog()
     pCBox->AddString(CString((*tIter).c_str()));
   }
   pCBox->SetCurSel(0);
+
+	//  set title
+	char	cbuffer[100];
+
+	sprintf(cbuffer, "NifConvert  v%d.%d.%04d", FD_VERSION, FD_REVISION, FD_BUILD);
+	SetWindowText(CString(cbuffer));
 
   return TRUE;  // return TRUE  unless you set the focus to a control
 }
