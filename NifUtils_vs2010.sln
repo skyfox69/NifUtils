@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DXView", "DXView\DXView.vcxproj", "{A0F71F00-820F-4CF8-AA95-6D74D145E75A}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MoppDecode", "MoppDecode\MoppDecode.vcxproj", "{DB319BEC-A0BA-4068-906F-A791076C0122}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NifConvert", "NifConvert\NifConvert.vcxproj", "{9196D38A-CC82-474A-9730-73D3494A8DAA}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "niflib", "niflib\niflib.vcxproj", "{19FD8EE6-79CC-4BAC-9744-D9573BE47C7E}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChunkMerge", "ChunkMerge\ChunkMerge.vcxproj", "{114EB366-06EC-42C1-AB0D-F4413341AF27}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A0F71F00-820F-4CF8-AA95-6D74D145E75A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A0F71F00-820F-4CF8-AA95-6D74D145E75A}.Debug|Win32.Build.0 = Debug|Win32
+		{A0F71F00-820F-4CF8-AA95-6D74D145E75A}.Release|Win32.ActiveCfg = Release|Win32
+		{A0F71F00-820F-4CF8-AA95-6D74D145E75A}.Release|Win32.Build.0 = Release|Win32
+		{DB319BEC-A0BA-4068-906F-A791076C0122}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DB319BEC-A0BA-4068-906F-A791076C0122}.Debug|Win32.Build.0 = Debug|Win32
+		{DB319BEC-A0BA-4068-906F-A791076C0122}.Release|Win32.ActiveCfg = Release|Win32
+		{DB319BEC-A0BA-4068-906F-A791076C0122}.Release|Win32.Build.0 = Release|Win32
+		{9196D38A-CC82-474A-9730-73D3494A8DAA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9196D38A-CC82-474A-9730-73D3494A8DAA}.Debug|Win32.Build.0 = Debug|Win32
+		{9196D38A-CC82-474A-9730-73D3494A8DAA}.Release|Win32.ActiveCfg = Release|Win32
+		{9196D38A-CC82-474A-9730-73D3494A8DAA}.Release|Win32.Build.0 = Release|Win32
+		{19FD8EE6-79CC-4BAC-9744-D9573BE47C7E}.Debug|Win32.ActiveCfg = Release - Static|Win32
+		{19FD8EE6-79CC-4BAC-9744-D9573BE47C7E}.Debug|Win32.Build.0 = Release - Static|Win32
+		{19FD8EE6-79CC-4BAC-9744-D9573BE47C7E}.Release|Win32.ActiveCfg = Release - Static|Win32
+		{19FD8EE6-79CC-4BAC-9744-D9573BE47C7E}.Release|Win32.Build.0 = Release - Static|Win32
+		{114EB366-06EC-42C1-AB0D-F4413341AF27}.Debug|Win32.ActiveCfg = Debug|Win32
+		{114EB366-06EC-42C1-AB0D-F4413341AF27}.Debug|Win32.Build.0 = Debug|Win32
+		{114EB366-06EC-42C1-AB0D-F4413341AF27}.Release|Win32.ActiveCfg = Release|Win32
+		{114EB366-06EC-42C1-AB0D-F4413341AF27}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
