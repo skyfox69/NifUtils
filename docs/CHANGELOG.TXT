@@ -1,0 +1,7 @@
+Version 0.1.41.9
+================
+
+* Added: versioning system
+
+* Fixed: typo in ReadMe.txt
+
