@@ -21,7 +21,7 @@ THANKS TO:
 - Piotr Pluta: HavokUtilities (http://piotrpluta.opol.pl/programming/havok-physics-tutorial-update-havok-2010-1/)
 - neomonkeus from NifTools forum for his global support
 - ttl269 from NifTools forum for his support decoding bhkCompressedMeshShpae
-- Macoron3 from NifTools forum for his tipp creating collision data from other shpaes than RootCollisionObject
+- Macoron3 from NifTools forum for his tipp creating collision data from other shapes than RootCollisionObject
 - and many others :-)
 
 
