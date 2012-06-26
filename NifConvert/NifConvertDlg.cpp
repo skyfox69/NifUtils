@@ -6,11 +6,9 @@
 #include "NifConvertDlg.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifConvertUtility.h"
+#include "..\Common\version.h"
 
 
-#define	FD_VERSION	0
-#define	FD_REVISION	40
-#define	FD_BUILD	3142
 
 
 using namespace NifUtility;
@@ -131,7 +129,7 @@ BOOL CNifConvertDlg::OnInitDialog()
 	//  set title
 	char	cbuffer[100];
 
-	sprintf(cbuffer, "NifConvert  v%d.%d.%04d", FD_VERSION, FD_REVISION, FD_BUILD);
+	sprintf(cbuffer, "NifConvert  v%d.%d.%d.%04d", FD_VERSION, FD_SUBVERSION, FD_REVISION, FD_BUILD);
 	SetWindowText(CString(cbuffer));
 
   return TRUE;  // return TRUE  unless you set the focus to a control
