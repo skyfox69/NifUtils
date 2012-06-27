@@ -66,7 +66,7 @@ void NifUtlMaterialList::initializeMaterialMap(string pathToXML)
 				char*			pEnd  (strstr(cbuffer, "\" name="));
 
 				//  read material code
-				matNew._code = atol(pStart + 7);
+				matNew._code = (unsigned int) atof(pStart + 7);
 
 				//  parse and read definition name
 				pStart = pEnd + 8;
