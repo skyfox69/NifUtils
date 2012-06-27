@@ -6,7 +6,7 @@
 #include "NifConvertDlg.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifConvertUtility.h"
-#include "..\Common\version.h"
+#include "version.h"
 
 
 

@@ -7,7 +7,7 @@
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifCollisionUtility.h"
 #include "..\Common\NifUtlMaterial.h"
-#include "..\Common\version.h"
+#include "version.h"
 
 
 

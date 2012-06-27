@@ -250,6 +250,10 @@
 				RelativePath=".\Resource.h"
 				>
 			</File>
+			<File
+				RelativePath=".\version.h"
+				>
+			</File>
 			<Filter
 				Name="Havok"
 				>
