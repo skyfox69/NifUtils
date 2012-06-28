@@ -41,6 +41,9 @@ BEGIN_MESSAGE_MAP(CChunkMergeDlg, CDialog)
   ON_BN_CLICKED(IDC_RADIO_COLLISION_1, &CChunkMergeDlg::OnBnClickedRadioCollision)
   ON_BN_CLICKED(IDC_RADIO_COLLISION_2, &CChunkMergeDlg::OnBnClickedRadioCollision)
   ON_BN_CLICKED(IDC_RADIO_COLLISION_3, &CChunkMergeDlg::OnBnClickedRadioCollision)
+	ON_BN_CLICKED(IDC_RADIO_COLLMAT_1, &CChunkMergeDlg::OnBnClickedRadioCollmat)
+	ON_BN_CLICKED(IDC_RADIO_COLLMAT_2, &CChunkMergeDlg::OnBnClickedRadioCollmat)
+	ON_BN_CLICKED(IDC_RADIO_COLLMAT_3, &CChunkMergeDlg::OnBnClickedRadioCollmat)
 END_MESSAGE_MAP()
 
 
@@ -102,6 +105,7 @@ BOOL CChunkMergeDlg::OnInitDialog()
 	GetDlgItem(IDOK)->EnableWindow(FALSE);
 	((CButton*) GetDlgItem(IDC_RADIO_COLLISION_2))->SetCheck(BST_CHECKED);
 	((CButton*) GetDlgItem(IDC_RADIO_COLLMAT_1))  ->SetCheck(BST_CHECKED);
+	OnBnClickedRadioCollmat();
 
 	//  temp. until working
 	GetDlgItem(IDC_RADIO_COLLMAT_3)->EnableWindow(FALSE);
@@ -341,4 +345,31 @@ void CChunkMergeDlg::logMessage(const int type, const char* pMessage)
 
 	//  scroll to end of text
 	m_logView.LineScroll(m_logView.GetLineCount() - lineCountOld);
+}
+
+void CChunkMergeDlg::OnBnClickedRadioCollmat()
+{
+	switch (GetCheckedRadioButton(IDC_RADIO_COLLMAT_1, IDC_RADIO_COLLMAT_3))
+	{
+		case IDC_RADIO_COLLMAT_1:
+		{
+			GetDlgItem(IDC_BUTTON_COLLMAT)->EnableWindow(FALSE);
+			GetDlgItem(IDC_COMBO_COLLMAT) ->EnableWindow(TRUE);
+			break;
+		}
+
+		case IDC_RADIO_COLLMAT_2:
+		{
+			GetDlgItem(IDC_BUTTON_COLLMAT)->EnableWindow(FALSE);
+			GetDlgItem(IDC_COMBO_COLLMAT) ->EnableWindow(FALSE);
+			break;
+		}
+
+		case IDC_RADIO_COLLMAT_3:
+		{
+			GetDlgItem(IDC_BUTTON_COLLMAT)->EnableWindow(TRUE);
+			GetDlgItem(IDC_COMBO_COLLMAT) ->EnableWindow(FALSE);
+			break;
+		}
+	}
 }

@@ -44,4 +44,5 @@ public:
   afx_msg void OnBnClickedRadioCollision();
 
 	virtual void logMessage(const int type, const char* pMessage);
+	afx_msg void OnBnClickedRadioCollmat();
 };
