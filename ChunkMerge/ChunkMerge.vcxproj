@@ -122,7 +122,6 @@
   <ItemGroup>
     <ClCompile Include="ChunkMerge.cpp" />
     <ClCompile Include="ChunkMergeDlg.cpp" />
-    <ClCompile Include="..\Common\HavokUtilities.cpp" />
     <ClCompile Include="..\Common\FDFileHelper.cpp" />
     <ClCompile Include="..\Common\NifCollisionUtility.cpp" />
     <ClCompile Include="..\Common\NifUtlMaterial.cpp" />
@@ -131,7 +130,6 @@
     <ClInclude Include="ChunkMerge.h" />
     <ClInclude Include="ChunkMergeDlg.h" />
     <ClInclude Include="Resource.h" />
-    <ClInclude Include="..\Common\HavokUtilities.hpp" />
     <ClInclude Include="..\Common\CollisionNodeHandling.h" />
     <ClInclude Include="..\Common\FDFileHelper.h" />
     <ClInclude Include="..\Common\MaterialTypeHandling.h" />

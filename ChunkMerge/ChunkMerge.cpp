@@ -7,7 +7,25 @@
 #include "..\Common\NifUtlMaterial.h"
 #include "..\Common\FDFileHelper.h"
 
-#include "..\Common\HavokUtilities.hpp"
+#include <Common/Base/hkBase.h>
+#include <Common/Base/System/hkBaseSystem.h>
+#include <Common/Base/Memory/System/Util/hkMemoryInitUtil.h>
+#include <Common/Base/Memory/Allocator/Malloc/hkMallocAllocator.h>
+
+#include <Common/Base/keycode.cxx>
+
+#ifdef HK_FEATURE_PRODUCT_ANIMATION
+#undef HK_FEATURE_PRODUCT_ANIMATION
+#endif
+#ifndef HK_EXCLUDE_LIBRARY_hkgpConvexDecomposition
+#define HK_EXCLUDE_LIBRARY_hkgpConvexDecomposition
+#endif
+#include <Common/Base/Config/hkProductFeatures.cxx> 
+
+static void HK_CALL errorReport(const char* msg, void* userArgGivenToInit)
+{
+	printf("%s", msg);
+}
 
 //  used namespaces
 using namespace NifUtility;
@@ -72,8 +90,9 @@ BOOL CChunkMergeApp::InitInstance()
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
 
-  //  initialize Havok
-	HavokUtilities* havokUtilities = new HavokUtilities(true);
+	//  initialize Havok  (500000 bytes of physics solver buffer)
+	hkMemoryRouter*		pMemoryRouter(hkMemoryInitUtil::initDefault(hkMallocAllocator::m_defaultMallocAllocator, hkMemorySystem::FrameInfo(500000)));
+	hkBaseSystem::init(pMemoryRouter, errorReport);
 
   LPWSTR* argv;
   int     argc(0);

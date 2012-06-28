@@ -5,18 +5,12 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\Havok">
-      <UniqueIdentifier>{2d81d65d-3d13-49f2-8365-770e59925bf4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Common">
       <UniqueIdentifier>{6443e8c4-de62-4e21-a324-2ea635674aab}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Header Files\Havok">
-      <UniqueIdentifier>{dbb147bb-12d6-42fd-9a56-5ca6d6d7e7ce}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Common">
       <UniqueIdentifier>{a7358d88-ac5a-4a10-be54-daac6be219dd}</UniqueIdentifier>
@@ -32,9 +26,6 @@
     </ClCompile>
     <ClCompile Include="ChunkMergeDlg.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Common\HavokUtilities.cpp">
-      <Filter>Source Files\Havok</Filter>
     </ClCompile>
     <ClCompile Include="..\Common\FDFileHelper.cpp">
       <Filter>Source Files\Common</Filter>
@@ -55,9 +46,6 @@
     </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Common\HavokUtilities.hpp">
-      <Filter>Header Files\Havok</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\CollisionNodeHandling.h">
       <Filter>Header Files\Common</Filter>

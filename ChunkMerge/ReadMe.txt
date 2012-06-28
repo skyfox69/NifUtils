@@ -18,7 +18,6 @@ IF AUTHOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
 THANKS TO:
 
-- Piotr Pluta: HavokUtilities (http://piotrpluta.opol.pl/programming/havok-physics-tutorial-update-havok-2010-1/)
 - neomonkeus from NifTools forum for his global support
 - ttl269 from NifTools forum for his support decoding bhkCompressedMeshShpae
 - Macoron3 from NifTools forum for his tipp creating collision data from other shapes than RootCollisionObject
