@@ -209,14 +209,6 @@
 				>
 			</File>
 			<Filter
-				Name="Havok"
-				>
-				<File
-					RelativePath="..\Common\HavokUtilities.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="Common"
 				>
 				<File
@@ -254,14 +246,6 @@
 				RelativePath=".\version.h"
 				>
 			</File>
-			<Filter
-				Name="Havok"
-				>
-				<File
-					RelativePath="..\Common\HavokUtilities.hpp"
-					>
-				</File>
-			</Filter>
 			<Filter
 				Name="Common"
 				>
