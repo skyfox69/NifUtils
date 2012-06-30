@@ -40,22 +40,25 @@ NifCollisionUtility::~NifCollisionUtility()
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, map<int, hkGeometry*>& geometryMap, vector<Matrix44>& transformAry)
+unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, map<int, hkGeometry>& geometryMap, vector<Matrix44>& transformAry)
 {
 	NiTriShapeDataRef	pData(DynamicCast<NiTriShapeData>(pShape->GetData()));
 
 	if (pData != NULL)
 	{
-		hkGeometry::Triangle*			pTri     (NULL);
-		hkGeometry*						pTmpGeo  (NULL);
+		hkGeometry						tmpGeo;
 		vector<Vector3>					vertices (pData->GetVertices());
 		vector<Triangle>				triangles(pData->GetTriangles());
-		hkArray<hkVector4>				vertAry;
-		hkArray<hkGeometry::Triangle>	triAry;
+		hkArray<hkVector4>&				vertAry  (tmpGeo.m_vertices);
+		hkArray<hkGeometry::Triangle>&	triAry   (tmpGeo.m_triangles);
 		Vector3							tVector;
 
 		//  add local transformation to list
 		transformAry.push_back(pShape->GetLocalTransform());
+
+		//  clear arrays
+		vertAry.clear();
+		triAry.clear();
 
 		//  get vertices
 		for (unsigned int idx(0); idx < vertices.size(); ++idx)
@@ -73,25 +76,21 @@ unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			tVector *= 0.0143f;
 
 			//  add vertex to tmp. array
-			vertAry.append(new hkVector4(tVector.x, tVector.y, tVector.z), 1);
+			vertAry.pushBack(hkVector4(tVector.x, tVector.y, tVector.z));
 
 		}  //  for (unsigned int idx(0); idx < vertices.size(); ++idx)
 
 		//  get triangles
 		for (unsigned int idx(0); idx < triangles.size(); ++idx)
 		{
-			pTri = new hkGeometry::Triangle();
-			pTri->set(triangles[idx].v1, triangles[idx].v2, triangles[idx].v3);
-			triAry.append(pTri, 1);
+			hkGeometry::Triangle	tTri;
+
+			tTri.set(triangles[idx].v1, triangles[idx].v2, triangles[idx].v3);
+			triAry.pushBack(tTri);
 		}
 
-		//  create new geometry from vertices and triangles
-		pTmpGeo = new hkGeometry();
-		pTmpGeo->m_triangles = triAry;
-		pTmpGeo->m_vertices  = vertAry;
-
 		//  add geometry to result array
-		geometryMap[pShape->internal_block_number] = pTmpGeo;
+		geometryMap[pShape->internal_block_number] = tmpGeo;
 
 		//  remove local transformation from array
 		transformAry.pop_back();
@@ -114,7 +113,7 @@ unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, 
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifCollisionUtility::getGeometryFromNode(NiNodeRef pNode, map<int, hkGeometry*>& geometryMap, vector<Matrix44>& transformAry)
+unsigned int NifCollisionUtility::getGeometryFromNode(NiNodeRef pNode, map<int, hkGeometry>& geometryMap, vector<Matrix44>& transformAry)
 {
 	vector<NiAVObjectRef>	childList(pNode->GetChildren());
 
@@ -143,15 +142,15 @@ unsigned int NifCollisionUtility::getGeometryFromNode(NiNodeRef pNode, map<int, 
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<int, hkGeometry*>& geometryMap)
+unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<int, hkGeometry>& geometryMap)
 {
 	hkGeometry::Triangle*			pTri   (NULL);
-	hkGeometry*						pTmpGeo(NULL);
 	char*							pChar  (NULL);
 	char							cBuffer[1000] = {0};
+	hkGeometry						tmpGeo;
+	hkArray<hkVector4>&				vertAry(tmpGeo.m_vertices);
+	hkArray<hkGeometry::Triangle>&	triAry (tmpGeo.m_triangles);
 	ifstream						inFile;
-	hkArray<hkVector4>				vertAry;
-	hkArray<hkGeometry::Triangle>	triAry;
 	Vector3							tVector;
 	int								tIntAry[3];
 	unsigned int					faceOffset(1);
@@ -168,6 +167,9 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 	//  process file
 	while (inFile.good())
 	{
+		//  reset array
+		tmpGeo.clear();
+
 		//  read line
 		inFile.getline(cBuffer, 1000);
 
@@ -177,20 +179,11 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 			//  existing face? => create new geometry
 			if (hasFace)
 			{
-				//  create new geometry from vertices and triangles
-				pTmpGeo = new hkGeometry();
-				pTmpGeo->m_triangles = triAry;
-				pTmpGeo->m_vertices  = vertAry;
-
 				//  add geometry to result array
-				geometryMap[idxObject++] = pTmpGeo;
+				geometryMap[idxObject++] = tmpGeo;
 
 				//  set new offset for face vertices
 				faceOffset = vertAry.getSize() + 1;
-
-				//  reset tmp. arrays
-				vertAry.clear();
-				triAry.clear();
 
 				//  reset existing face flag
 				hasFace = false;
@@ -203,8 +196,8 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 			//  scale final vertex
 			tVector *= 0.0143f;
 
-			//  add vertex to tmp. array
-			vertAry.append(new hkVector4(tVector.x, tVector.y, tVector.z), 1);
+			//  add vertex to array
+			vertAry.pushBack(hkVector4(tVector.x, tVector.y, tVector.z));
 		}
 		//  face?
 		else if (_strnicmp(cBuffer, "f ", 2) == 0)
@@ -215,10 +208,11 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 				tIntAry[idx] = atoi(++pChar) - faceOffset;
 			}
 
-			//  create new triangle and add to tmp. array
-			pTri = new hkGeometry::Triangle();
-			pTri->set(tIntAry[0], tIntAry[1], tIntAry[2]);
-			triAry.append(pTri, 1);
+			//  create new triangle and add to array
+			hkGeometry::Triangle	tTri;
+
+			tTri.set(tIntAry[0], tIntAry[1], tIntAry[2]);
+			triAry.pushBack(tTri);
 
 			//  mark existing face
 			hasFace = true;
@@ -228,13 +222,8 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 	//  existing last/only face? => create new geometry
 	if (hasFace)
 	{
-		//  create new geometry from vertices and triangles
-		pTmpGeo = new hkGeometry();
-		pTmpGeo->m_triangles = triAry;
-		pTmpGeo->m_vertices  = vertAry;
-
 		//  add geometry to result array
-		geometryMap[idxObject++] = pTmpGeo;
+		geometryMap[idxObject++] = tmpGeo;
 
 	}  //  if (hasFace)
 
@@ -245,13 +234,13 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifCollisionUtility::getGeometryFromNifFile(string fileName, map<int, hkGeometry*>& geometryMap)
+unsigned int NifCollisionUtility::getGeometryFromNifFile(string fileName, map<int, hkGeometry>& geometryMap)
 {
 	NiNodeRef				pRootInput     (NULL);
 	vector<NiAVObjectRef>	srcChildList;
 	vector<Matrix44>		transformAry;
-	map<int, hkGeometry*>	geometryMapColl;
-	map<int, hkGeometry*>	geometryMapShape;
+	map<int, hkGeometry>	geometryMapColl;
+	map<int, hkGeometry>	geometryMapShape;
 	bool					fakedRoot      (false);
 
 	//  read input NIF
@@ -348,7 +337,7 @@ unsigned int NifCollisionUtility::addCollision(string fileNameCollSrc, string fi
 	NiNodeRef				pRootInput   (NULL);
 	NiNodeRef				pRootTemplate(NULL);
 	bhkCollisionObjectRef	pCollNodeTmpl(NULL);
-	map<int, hkGeometry*>	geometryMap;
+	map<int, hkGeometry>	geometryMap;
 	vector<NiAVObjectRef>	srcChildList;
 	bool					fakedRoot    (false);
 
@@ -457,7 +446,7 @@ unsigned int NifCollisionUtility::addCollision(string fileNameCollSrc, string fi
 }
 
 /*---------------------------------------------------------------------------*/
-bhkCollisionObjectRef NifCollisionUtility::createCollNode(map<int, hkGeometry*>& geometryMap, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode)
+bhkCollisionObjectRef NifCollisionUtility::createCollNode(map<int, hkGeometry>& geometryMap, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode)
 {
 	//  template collision node will be output collision node. it's unlinked from root in calling function
 	bhkCollisionObjectRef	pDstNode(pTmplNode);
@@ -501,7 +490,7 @@ bhkCollisionObjectRef NifCollisionUtility::createCollNode(map<int, hkGeometry*>&
 }
 
 /*---------------------------------------------------------------------------*/
-bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry*>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData)
+bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData)
 {
 	if (pMoppShape == NULL)   return false;
 	if (pData      == NULL)   return false;
@@ -524,11 +513,11 @@ bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry*>& geometryMap
 	pCompMesh = shapeBuilder.createMeshShape(0.001f, hkpCompressedMeshShape::MATERIAL_SINGLE_VALUE_PER_CHUNK);
 
 	//  add geometries to compressedMeshShape
-	for (map<int, hkGeometry*>::iterator geoIter = geometryMap.begin(); geoIter != geometryMap.end(); geoIter++)
+	for (map<int, hkGeometry>::iterator geoIter = geometryMap.begin(); geoIter != geometryMap.end(); geoIter++)
 	{
 		//  add geometry to shape
 		subPartId = shapeBuilder.beginSubpart(pCompMesh);
-		shapeBuilder.addGeometry(*(geoIter->second), hkMatrix4::getIdentity(), pCompMesh);
+		shapeBuilder.addGeometry(geoIter->second, hkMatrix4::getIdentity(), pCompMesh);
 		shapeBuilder.endSubpart(pCompMesh);
 		shapeBuilder.addInstance(subPartId, hkMatrix4::getIdentity(), pCompMesh);
 
