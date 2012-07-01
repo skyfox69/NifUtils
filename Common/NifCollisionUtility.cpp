@@ -29,8 +29,7 @@ NifCollisionUtility::NifCollisionUtility(NifUtlMaterialList& materialList)
 	:	_cnHandling        (NCU_CN_FALLBACK),
 		_mtHandling        (NCU_MT_SINGLE),
 		_logCallback       (NULL),
-		_materialList      (materialList),
-		_internalMode      (NCU_IMD_NONE)
+		_materialList      (materialList)
 {
 }
 
@@ -96,7 +95,7 @@ unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		transformAry.pop_back();
 
 		//  get material type by name?
-		if ((_internalMode == NCU_IMD_COLLISION) && (_mtHandling == NCU_MT_NITRISHAPE_NAME))
+		if (_mtHandling == NCU_MT_NITRISHAPE_NAME)
 		{
 			//  get material code from name
 			_mtMapping[pShape->internal_block_number] = _materialList.getMaterialCode(pShape->GetName());
@@ -106,7 +105,7 @@ unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			{
 				_mtMapping[pShape->internal_block_number] = NCU_NUM_DEFAULT_MATERIAL;
 			}
-		}  //  if ((_internalMode == NCU_IMD_COLLISION) && (_mtHandling == NCU_MT_NITRISHAPE_NAME))
+		}  //  if (_mtHandling == NCU_MT_NITRISHAPE_NAME)
 	}  //  if (pData != NULL)
 
 	return geometryMap.size();
@@ -346,9 +345,6 @@ unsigned int NifCollisionUtility::addCollision(string fileNameCollSrc, string fi
 	if (fileNameNifDst.empty())			return NCU_ERROR_MISSING_FILE_NAME;
 	if (fileNameCollTmpl.empty())		return NCU_ERROR_MISSING_FILE_NAME;
 
-	//  set internal mode
-	_internalMode = NCU_IMD_COLLISION;
-
 	//  reset material mapping in case of material from NiTriShape name
 	if (_mtHandling == NCU_MT_NITRISHAPE_NAME)
 	{
@@ -438,9 +434,6 @@ unsigned int NifCollisionUtility::addCollision(string fileNameCollSrc, string fi
 
 	//  write modified nif file
 	WriteNifTree((const char*) fileNameNifDst.c_str(), pRootInput, NifInfo(VER_20_2_0_7, 12, 83));
-
-	//  reset internal mode
-	_internalMode = NCU_IMD_NONE;
 
 	return NCU_OK;
 }

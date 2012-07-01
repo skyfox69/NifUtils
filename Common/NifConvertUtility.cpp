@@ -25,8 +25,7 @@ NifConvertUtility::NifConvertUtility()
 		_vcHandling        (NCU_VC_REMOVE_FLAG),
 		_updateTangentSpace(true),
 		_reorderProperties (true),
-		_logCallback       (NULL),
-		_internalMode      (NCU_IMD_NONE)
+		_logCallback       (NULL)
 {
 }
 
@@ -345,9 +344,6 @@ unsigned int NifConvertUtility::convertShape(string fileNameSrc, string fileName
 	if (fileNameDst.empty())		return NCU_ERROR_MISSING_FILE_NAME;
 	if (fileNameTmpl.empty())		return NCU_ERROR_MISSING_FILE_NAME;
 
-	//  set internal mode
-	_internalMode = NCU_IMD_SHAPE;
-
 	//  initialize user messages
 	_userMessages.clear();
 	logMessage(NCU_MSG_TYPE_INFO, "Source:  "      + (fileNameSrc.empty() ? "- none -" : fileNameSrc));
@@ -424,9 +420,6 @@ unsigned int NifConvertUtility::convertShape(string fileNameSrc, string fileName
 
 	//  write modified nif file
 	WriteNifTree((const char*) fileNameDst.c_str(), pRootOutput, NifInfo(VER_20_2_0_7, 12, 83));
-
-	//  reset internal mode
-	_internalMode = NCU_IMD_NONE;
 
 	return NCU_OK;
 }

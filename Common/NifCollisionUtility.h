@@ -47,11 +47,6 @@ using namespace std;
 #define   NCU_MSG_TYPE_SUB_INFO             0x04
 #define   NCU_MSG_TYPE_TEXTURE_MISS         0x05
 
-//  internal mode
-#define   NCU_IMD_NONE                      0x00
-#define   NCU_IMD_SHAPE                     0x01
-#define   NCU_IMD_COLLISION                 0x02
-
 
 namespace NifUtility
 {
@@ -127,11 +122,6 @@ namespace NifUtility
 	protected:
 
 		void (*_logCallback) (const int, const char*);
-
-		/**
-		 * internal mode
-		 */
-		unsigned char _internalMode;
 
 		/**
 		 * path to Skyrim files
