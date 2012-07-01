@@ -170,7 +170,7 @@ namespace NifUtility
 		 * @param geometryAry    out: reference to vector of hkGeometry read geometries
 		 * are inserted in
 		 */
-		virtual unsigned int getGeometryFromTriShape(NiTriShapeRef pShape, map<int, hkGeometry>& geometryMap, vector<Matrix44>& transformAry);
+		virtual unsigned int getGeometryFromTriShape(NiTriShapeRef pShape, vector<hkGeometry>& geometryMap, vector<Matrix44>& transformAry);
 
 		/**
 		 * Get geometry from NiNode
@@ -179,7 +179,7 @@ namespace NifUtility
 		 * @param geometryAry    out: reference to vector of hkGeometry read geometries
 		 * are inserted in
 		 */
-		virtual unsigned int getGeometryFromNode(NiNodeRef pNode, map<int, hkGeometry>& geometryMap, vector<Matrix44>& transformAry);
+		virtual unsigned int getGeometryFromNode(NiNodeRef pNode, vector<hkGeometry>& geometryMap, vector<Matrix44>& transformAry);
 
 		/**
 		 * Get geometry from OBJ-file
@@ -188,7 +188,7 @@ namespace NifUtility
 		 * @param geometryAry    out: reference to vector of hkGeometry read geometries
 		 * are inserted in
 		 */
-		virtual unsigned int getGeometryFromObjFile(string fileName, map<int, hkGeometry>& geometryMap);
+		virtual unsigned int getGeometryFromObjFile(string fileName, vector<hkGeometry>& geometryMap);
 
 		/**
 		 * Get geometry from NIF-file
@@ -197,7 +197,7 @@ namespace NifUtility
 		 * @param geometryAry    out: reference to vector of hkGeometry read geometries
 		 * are inserted in
 		 */
-		virtual unsigned int getGeometryFromNifFile(string fileName, map<int, hkGeometry>& geometryMap);
+		virtual unsigned int getGeometryFromNifFile(string fileName, vector<hkGeometry>& geometryMap);
 
 		/**
 		 * Get NiNode from NIF-file
@@ -215,7 +215,7 @@ namespace NifUtility
 		 * @param tmplNode    in: Template bhkCollisionObject
 		 * @param rootNode    in: Root node of NIF tree
 		 */
-		virtual bhkCollisionObjectRef createCollNode(map<int, hkGeometry>& geometryMap, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode);
+		virtual bhkCollisionObjectRef createCollNode(vector<hkGeometry>& geometryMap, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode);
 
 		/**
 		 * Create HAVOK specific collision data and inject into model
@@ -224,7 +224,7 @@ namespace NifUtility
 		 * @param pMoppShape    in: MoppBvTreeShape to inject MoppCode into
 		 * @param pData    in: CompressedMeshShapeData getting chunks and tris
 		 */
-		virtual bool injectCollisionData(map<int, hkGeometry>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData);
+		virtual bool injectCollisionData(vector<hkGeometry>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData);
 
 		/**
 		 * Log messages

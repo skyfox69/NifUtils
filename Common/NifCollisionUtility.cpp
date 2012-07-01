@@ -39,7 +39,7 @@ NifCollisionUtility::~NifCollisionUtility()
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, map<int, hkGeometry>& geometryMap, vector<Matrix44>& transformAry)
+unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, vector<hkGeometry>& geometryMap, vector<Matrix44>& transformAry)
 {
 	NiTriShapeDataRef	pData(DynamicCast<NiTriShapeData>(pShape->GetData()));
 
@@ -51,6 +51,7 @@ unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		hkArray<hkVector4>&				vertAry  (tmpGeo.m_vertices);
 		hkArray<hkGeometry::Triangle>&	triAry   (tmpGeo.m_triangles);
 		Vector3							tVector;
+		unsigned int					material (NCU_NUM_DEFAULT_MATERIAL);
 
 		//  add local transformation to list
 		transformAry.push_back(pShape->GetLocalTransform());
@@ -79,40 +80,50 @@ unsigned int NifCollisionUtility::getGeometryFromTriShape(NiTriShapeRef pShape, 
 
 		}  //  for (unsigned int idx(0); idx < vertices.size(); ++idx)
 
+		//  map material to geometry/triangles
+		switch (_mtHandling)
+		{
+			case NCU_MT_SINGLE:				//  one material for all
+			{
+				material = _mtMapping[-1];
+				break;
+			}
+
+			case NCU_MT_MATMAP:				//  material defined by node id
+			{
+				material = _mtMapping[pShape->internal_block_number];
+				break;
+			}
+
+			case NCU_MT_NITRISHAPE_NAME:	//  material defined by node name
+			{
+				material = _materialList.getMaterialCode(pShape->GetName());
+				break;
+			}
+		}
+
 		//  get triangles
 		for (unsigned int idx(0); idx < triangles.size(); ++idx)
 		{
 			hkGeometry::Triangle	tTri;
 
-			tTri.set(triangles[idx].v1, triangles[idx].v2, triangles[idx].v3);
+			tTri.set(triangles[idx].v1, triangles[idx].v2, triangles[idx].v3, material);
 			triAry.pushBack(tTri);
 		}
 
 		//  add geometry to result array
-		geometryMap[pShape->internal_block_number] = tmpGeo;
+		geometryMap.push_back(tmpGeo);
 
 		//  remove local transformation from array
 		transformAry.pop_back();
 
-		//  get material type by name?
-		if (_mtHandling == NCU_MT_NITRISHAPE_NAME)
-		{
-			//  get material code from name
-			_mtMapping[pShape->internal_block_number] = _materialList.getMaterialCode(pShape->GetName());
-
-			//  unknown material => use default one
-			if (_mtMapping[pShape->internal_block_number] == 0)
-			{
-				_mtMapping[pShape->internal_block_number] = NCU_NUM_DEFAULT_MATERIAL;
-			}
-		}  //  if (_mtHandling == NCU_MT_NITRISHAPE_NAME)
 	}  //  if (pData != NULL)
 
 	return geometryMap.size();
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifCollisionUtility::getGeometryFromNode(NiNodeRef pNode, map<int, hkGeometry>& geometryMap, vector<Matrix44>& transformAry)
+unsigned int NifCollisionUtility::getGeometryFromNode(NiNodeRef pNode, vector<hkGeometry>& geometryMap, vector<Matrix44>& transformAry)
 {
 	vector<NiAVObjectRef>	childList(pNode->GetChildren());
 
@@ -141,7 +152,7 @@ unsigned int NifCollisionUtility::getGeometryFromNode(NiNodeRef pNode, map<int, 
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<int, hkGeometry>& geometryMap)
+unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, vector<hkGeometry>& geometryMap)
 {
 	hkGeometry::Triangle*			pTri   (NULL);
 	char*							pChar  (NULL);
@@ -153,6 +164,7 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 	Vector3							tVector;
 	int								tIntAry[3];
 	unsigned int					faceOffset(1);
+	unsigned int					material  (NCU_NUM_DEFAULT_MATERIAL);
 	int								idxObject (1);
 	short							idx(0);
 	bool							hasFace(false);
@@ -179,7 +191,7 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 			if (hasFace)
 			{
 				//  add geometry to result array
-				geometryMap[idxObject++] = tmpGeo;
+				geometryMap.push_back(tmpGeo);
 
 				//  set new offset for face vertices
 				faceOffset = vertAry.getSize() + 1;
@@ -210,7 +222,7 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 			//  create new triangle and add to array
 			hkGeometry::Triangle	tTri;
 
-			tTri.set(tIntAry[0], tIntAry[1], tIntAry[2]);
+			tTri.set(tIntAry[0], tIntAry[1], tIntAry[2], material);
 			triAry.pushBack(tTri);
 
 			//  mark existing face
@@ -222,7 +234,7 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 	if (hasFace)
 	{
 		//  add geometry to result array
-		geometryMap[idxObject++] = tmpGeo;
+		geometryMap.push_back(tmpGeo);
 
 	}  //  if (hasFace)
 
@@ -233,13 +245,13 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, map<in
 }
 
 /*---------------------------------------------------------------------------*/
-unsigned int NifCollisionUtility::getGeometryFromNifFile(string fileName, map<int, hkGeometry>& geometryMap)
+unsigned int NifCollisionUtility::getGeometryFromNifFile(string fileName, vector<hkGeometry>& geometryMap)
 {
 	NiNodeRef				pRootInput     (NULL);
 	vector<NiAVObjectRef>	srcChildList;
 	vector<Matrix44>		transformAry;
-	map<int, hkGeometry>	geometryMapColl;
-	map<int, hkGeometry>	geometryMapShape;
+	vector<hkGeometry>		geometryMapColl;
+	vector<hkGeometry>		geometryMapShape;
 	bool					fakedRoot      (false);
 
 	//  read input NIF
@@ -336,7 +348,7 @@ unsigned int NifCollisionUtility::addCollision(string fileNameCollSrc, string fi
 	NiNodeRef				pRootInput   (NULL);
 	NiNodeRef				pRootTemplate(NULL);
 	bhkCollisionObjectRef	pCollNodeTmpl(NULL);
-	map<int, hkGeometry>	geometryMap;
+	vector<hkGeometry>		geometryMap;
 	vector<NiAVObjectRef>	srcChildList;
 	bool					fakedRoot    (false);
 
@@ -439,7 +451,7 @@ unsigned int NifCollisionUtility::addCollision(string fileNameCollSrc, string fi
 }
 
 /*---------------------------------------------------------------------------*/
-bhkCollisionObjectRef NifCollisionUtility::createCollNode(map<int, hkGeometry>& geometryMap, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode)
+bhkCollisionObjectRef NifCollisionUtility::createCollNode(vector<hkGeometry>& geometryMap, bhkCollisionObjectRef pTmplNode, NiNodeRef pRootNode)
 {
 	//  template collision node will be output collision node. it's unlinked from root in calling function
 	bhkCollisionObjectRef	pDstNode(pTmplNode);
@@ -483,7 +495,7 @@ bhkCollisionObjectRef NifCollisionUtility::createCollNode(map<int, hkGeometry>& 
 }
 
 /*---------------------------------------------------------------------------*/
-bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData)
+bool NifCollisionUtility::injectCollisionData(vector<hkGeometry>& geometryMap, bhkMoppBvTreeShapeRef pMoppShape, bhkCompressedMeshShapeDataRef pData)
 {
 	if (pMoppShape == NULL)   return false;
 	if (pData      == NULL)   return false;
@@ -496,6 +508,8 @@ bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry>& geometryMap,
 	hkpCompressedMeshShapeBuilder			shapeBuilder;
 	hkpMoppCompilerInput					mci;
 	vector<int>								geometryIdxVec;
+	vector<bhkCMSD_Something>				tMtrlVec;
+	unsigned int							material   (0);
 	int										subPartId  (0);
 	int										tChunkSize (0);
 
@@ -506,20 +520,45 @@ bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry>& geometryMap,
 	pCompMesh = shapeBuilder.createMeshShape(0.001f, hkpCompressedMeshShape::MATERIAL_SINGLE_VALUE_PER_CHUNK);
 
 	//  add geometries to compressedMeshShape
-	for (map<int, hkGeometry>::iterator geoIter = geometryMap.begin(); geoIter != geometryMap.end(); geoIter++)
+	for (vector<hkGeometry>::iterator geoIter = geometryMap.begin(); geoIter != geometryMap.end(); geoIter++)
 	{
+		size_t		matIdx(0);
+
+		//  determine material index
+		material = (unsigned int) geoIter->m_triangles[0].m_material;
+
+		//  material already known?
+		for (matIdx=0; matIdx < tMtrlVec.size(); ++matIdx)
+		{
+			if (tMtrlVec[matIdx].largeInt == material)		break;
+		}
+
+		//  add new material?
+		if (matIdx >= tMtrlVec.size())
+		{
+			bhkCMSD_Something	tChunkMat;
+
+			//  create single material
+			tChunkMat.largeInt       = material;
+			tChunkMat.unknownInteger = 1;
+
+			//  add material to list
+			tMtrlVec.push_back(tChunkMat);
+		}
+
+		//  set material index to each triangle of geometry
+		for (int idx(0); idx < geoIter->m_triangles.getSize(); ++idx)
+		{
+			geoIter->m_triangles[idx].m_material = matIdx;
+		}
+
 		//  add geometry to shape
 		subPartId = shapeBuilder.beginSubpart(pCompMesh);
-		shapeBuilder.addGeometry(geoIter->second, hkMatrix4::getIdentity(), pCompMesh);
+		shapeBuilder.addGeometry(*geoIter, hkMatrix4::getIdentity(), pCompMesh);
 		shapeBuilder.endSubpart(pCompMesh);
 		shapeBuilder.addInstance(subPartId, hkMatrix4::getIdentity(), pCompMesh);
 
-		//  add geometry to temp. vector for later usage for each chunk created during adding geometry
-		for (;tChunkSize < pCompMesh->m_chunks.getSize(); ++tChunkSize)
-		{
-			geometryIdxVec.push_back(geoIter->first);
-		}
-	}
+	}  //  for (vector<hkGeometry>::iterator geoIter = geometryMap.begin(); geoIter != geometryMap.end(); geoIter++)
 
 	//  create welding info
 	mci.m_enableChunkSubdivision = true;
@@ -535,7 +574,6 @@ bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry>& geometryMap,
 	vector<Vector4>                         tVec4Vec;
 	vector<bhkCMSDBigTris>                  tBTriVec;
 	vector<bhkCMSDTransform>                tTranVec;
-	vector<bhkCMSD_Something>				tMtrlVec;
 	map<unsigned int, bhkCMSD_Something>	tMtrlMap;
 	short                                   chunkIdxNif(0);
 
@@ -603,6 +641,9 @@ bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry>& geometryMap,
 	}
 	pData->SetChunkTransforms(tTranVec);
 
+	//  set material list
+	pData->SetChunkMaterials(tMtrlVec);
+
 	//  get chunk list from mesh
 	chunkListHvk = pCompMesh->m_chunks;
 
@@ -621,72 +662,8 @@ bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry>& geometryMap,
 		chunkNif.translation.z = pCIterHvk->m_offset(2);
 		chunkNif.translation.w = pCIterHvk->m_offset(3);
 
-		//  set material index and create material if necessary
-		switch (_mtHandling)
-		{
-			case NCU_MT_SINGLE:
-			{
-				//  existing material?
-				if (tMtrlVec.empty())
-				{
-					bhkCMSD_Something	tChunkMat;
-
-					//  create single material
-					tChunkMat.largeInt       = _mtMapping[-1];
-					tChunkMat.unknownInteger = 1;
-
-					//  add material to list
-					tMtrlVec.resize(1);
-					tMtrlVec[0] = tChunkMat;
-
-				}  //  if (tMtrlVec.empty())
-
-				//  force first material
-				chunkNif.materialIndex = 0;
-				break;
-			}
-
-			case NCU_MT_NITRISHAPE_NAME:
-			case NCU_MT_MATMAP:
-			{
-				//  get nif node id
-				int				nifNodeId(geometryIdxVec[chunkIdxNif]);
-				unsigned int	material (_mtMapping[nifNodeId]);
-				unsigned int	tIdx     (0);
-				bool			doAdd    (true);
-
-				//  check on exitisting material
-				for (tIdx=0; tIdx < tMtrlVec.size(); ++tIdx)
-				{
-					//  early break on existing material
-					if (tMtrlVec[tIdx].largeInt == material)
-					{
-						doAdd = false;
-						break;
-					}
-				}  //  for (tIdx=0; tIdx < tMtrlVec.size(); ++tIdx)
-
-				//  add new material?
-				if (doAdd)
-				{
-					bhkCMSD_Something	tChunkMat;
-
-					//  create single material
-					tChunkMat.largeInt       = material;
-					tChunkMat.unknownInteger = 1;
-
-					//  add material to list
-					tMtrlVec.push_back(tChunkMat);
-
-				}  //  if (doAdd)
-
-				//  set material index
-				chunkNif.materialIndex = tIdx;
-				break;
-			}
-		}  //  switch (_mtHandling)
-
 		//  force flags to fixed values
+		chunkNif.materialIndex  = pCIterHvk->m_materialInfo;
 		chunkNif.unknownShort1  = 65535;
 		chunkNif.transformIndex = pCIterHvk->m_transformIndex;
 
@@ -726,9 +703,6 @@ bool NifCollisionUtility::injectCollisionData(map<int, hkGeometry>& geometryMap,
 		++chunkIdxNif;
 
 	}  //  for (hkArray<hkpCompressedMeshShape::Chunk>::iterator pCIterHvk = 
-
-	//  set material list
-	pData->SetChunkMaterials(tMtrlVec);
 
 	//  set modified chunk list to compressed mesh shape data
 	pData->SetChunks(chunkListNif);
