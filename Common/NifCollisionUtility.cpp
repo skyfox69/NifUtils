@@ -178,29 +178,29 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, vector
 	//  process file
 	while (inFile.good())
 	{
-		//  reset array
-		tmpGeo.clear();
-
 		//  read line
 		inFile.getline(cBuffer, 1000);
+
+		//  check begin of new face
+		if (hasFace && (_strnicmp(cBuffer, "f ", 2) != 0))
+		{
+			//  add geometry to result array
+			geometryMap.push_back(tmpGeo);
+
+			//  set new offset for face vertices
+			faceOffset += vertAry.getSize();
+
+			//  reset existing face flag
+			hasFace = false;
+
+			//  reset geometry and material
+			tmpGeo.clear();
+			material = NCU_NUM_DEFAULT_MATERIAL;
+		}
 
 		//  vertex?
 		if (_strnicmp(cBuffer, "v ", 2) == 0)
 		{
-			//  existing face? => create new geometry
-			if (hasFace)
-			{
-				//  add geometry to result array
-				geometryMap.push_back(tmpGeo);
-
-				//  set new offset for face vertices
-				faceOffset = vertAry.getSize() + 1;
-
-				//  reset existing face flag
-				hasFace = false;
-
-			}  //  if (hasFace)
-
 			//  get vector from line
 			sscanf(cBuffer, "v %f %f %f", &(tVector.x), &(tVector.y), &(tVector.z));
 
@@ -227,6 +227,15 @@ unsigned int NifCollisionUtility::getGeometryFromObjFile(string fileName, vector
 
 			//  mark existing face
 			hasFace = true;
+		}
+		//  material?
+		else if (_strnicmp(cBuffer, "usemtl ", 7) == 0)
+		{
+			//  get material from material table
+			material = _materialList.getMaterialCode(cBuffer+7);
+
+			//  unknown material => use default
+			if (material == 0)		material = NCU_NUM_DEFAULT_MATERIAL;
 		}
 	}  //  while (inFile.good())
 
