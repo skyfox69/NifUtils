@@ -360,15 +360,21 @@ void CChunkMergeDlg::OnBnClickedRadioCollmat()
 
 		case IDC_RADIO_COLLMAT_2:
 		{
-			GetDlgItem(IDC_BUTTON_COLLMAT)->EnableWindow(FALSE);
-			GetDlgItem(IDC_COMBO_COLLMAT) ->EnableWindow(FALSE);
+			GetDlgItem(IDC_BUTTON_COLLMAT)                ->EnableWindow(FALSE);
+			GetDlgItem(IDC_COMBO_COLLMAT)                 ->EnableWindow(FALSE);
+			((CButton*) GetDlgItem(IDC_RADIO_COLLISION_1))->SetCheck(BST_UNCHECKED);
+			((CButton*) GetDlgItem(IDC_RADIO_COLLISION_2))->SetCheck(BST_UNCHECKED);
+			((CButton*) GetDlgItem(IDC_RADIO_COLLISION_3))->SetCheck(BST_CHECKED);
 			break;
 		}
 
 		case IDC_RADIO_COLLMAT_3:
 		{
-			GetDlgItem(IDC_BUTTON_COLLMAT)->EnableWindow(TRUE);
-			GetDlgItem(IDC_COMBO_COLLMAT) ->EnableWindow(FALSE);
+			GetDlgItem(IDC_BUTTON_COLLMAT)                ->EnableWindow(TRUE);
+			GetDlgItem(IDC_COMBO_COLLMAT)                 ->EnableWindow(FALSE);
+			((CButton*) GetDlgItem(IDC_RADIO_COLLISION_1))->SetCheck(BST_UNCHECKED);
+			((CButton*) GetDlgItem(IDC_RADIO_COLLISION_2))->SetCheck(BST_UNCHECKED);
+			((CButton*) GetDlgItem(IDC_RADIO_COLLISION_3))->SetCheck(BST_CHECKED);
 			break;
 		}
 	}
