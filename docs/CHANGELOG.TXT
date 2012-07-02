@@ -1,7 +1,18 @@
+Version 0.1.51.*
+================
+
+* Added:  Common: use OBJ-file material name as material type
+* Fixed:  Common: refactored (simplyfied) collision material handling using Havok geometry field
+* Fixed:  Common: removed internalMode - not needed anymore
+* Fixed:  Common: removed some memory-leaks; using local objects instead of heap
+* Added:  Common: replace HavokUtilities by simple Havok memory initialization
+* Added:  ChunkMerge: feature for autom. collision source selection depending on selected material handling
+* Added:  ChunkMerge: disable non-reachable material widgets
+
+
 Version 0.1.41.9
 ================
 
-* Added: versioning system
-
-* Fixed: typo in ReadMe.txt
+* Added:  versioning system
+* Fixed:  typo in ReadMe.txt
 
