@@ -386,6 +386,9 @@ unsigned int NifConvertUtility::convertShape(string fileNameSrc, string fileName
 	pRootOutput->SetCollisionObject(NULL);  //  unlink collision object
 	//  hold extra data and property nodes
 
+	//  copy name of root node
+	pRootOutput->SetName(pRootInput->GetName());
+
 	//  get list of children from input node
 	srcChildList = pRootInput->GetChildren();
 
