@@ -211,6 +211,10 @@
 				Name="Common"
 				>
 				<File
+					RelativePath="..\Common\Configuration.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\Common\FDFileHelper.cpp"
 					>
 				</File>
@@ -244,6 +248,10 @@
 			<Filter
 				Name="Common"
 				>
+				<File
+					RelativePath="..\Common\Configuration.h"
+					>
+				</File>
 				<File
 					RelativePath="..\Common\FDFileHelper.h"
 					>
