@@ -1,8 +1,8 @@
 #ifndef NIFUTILS_VERSION_H
 #define NIFUTILS_VERSION_H
 
-#define	FD_BUILD		12
-#define	FD_REVISION		51
+#define	FD_BUILD		36
+#define	FD_REVISION		52
 #define	FD_SUBVERSION	1
 #define	FD_VERSION		0
 

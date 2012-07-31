@@ -42,7 +42,11 @@ public:
   afx_msg void OnBnClickedButtonOutput();
   afx_msg void OnBnClickedOk();
   afx_msg void OnBnClickedRadioCollision();
+	afx_msg void OnBnClickedRadioCollmat();
+	afx_msg void OnBnClickedButtonTemplate();
+	afx_msg void OnContextMenu(CWnd*, CPoint point);
+	afx_msg void OnDefaultSavesettings();
+	afx_msg void OnDefaultReloaddirectories();
 
 	virtual void logMessage(const int type, const char* pMessage);
-	afx_msg void OnBnClickedRadioCollmat();
 };

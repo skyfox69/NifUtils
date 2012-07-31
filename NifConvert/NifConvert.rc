@@ -16,10 +16,8 @@
 // German (Germany) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
-#ifdef _WIN32
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -98,6 +96,8 @@ BEGIN
     CONTROL         "Reorder NiTriShape Properties",IDC_CHECK_NITRISHAPEPROPERTIES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,150,120,113,10
     CONTROL         "",IDC_RICHEDIT_LOG,"RichEdit20A",ES_MULTILINE | ES_AUTOHSCROLL | WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,6,138,288,78
+    PUSHBUTTON      "...",IDC_BUTTON_TEMPLATE,270,54,19,14
+    PUSHBUTTON      "...",IDC_BUTTON_TEXTURE,270,72,19,14
 END
 
 
@@ -157,6 +157,21 @@ BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU_POPUP MENU
+BEGIN
+    POPUP "Default"
+    BEGIN
+        MENUITEM "Reload Directories",          ID_DEFAULT_RELOADDIRECTORIES
+        MENUITEM "Save Settings",               ID_DEFAULT_SAVESETTINGS
+    END
+END
 
 #endif    // German (Germany) resources
 /////////////////////////////////////////////////////////////////////////////

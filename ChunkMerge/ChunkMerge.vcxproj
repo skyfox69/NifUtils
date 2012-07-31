@@ -120,6 +120,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Common\Configuration.cpp" />
     <ClCompile Include="ChunkMerge.cpp" />
     <ClCompile Include="ChunkMergeDlg.cpp" />
     <ClCompile Include="..\Common\FDFileHelper.cpp" />
@@ -127,6 +128,7 @@
     <ClCompile Include="..\Common\NifUtlMaterial.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\Configuration.h" />
     <ClInclude Include="ChunkMerge.h" />
     <ClInclude Include="ChunkMergeDlg.h" />
     <ClInclude Include="Resource.h" />

@@ -36,6 +36,9 @@ void NifUtlMaterialList::initializeMaterialMap(string pathToXML)
 	char		cbuffer[10000] = {0};
 	bool		isMaterialSection(false);
 
+	//  reset old settings
+	reset();
+
 	//  open nif.xml
 	streamIn.open(pathToXML.c_str(), ifstream::in);
 
@@ -106,5 +109,12 @@ void NifUtlMaterialList::initializeMaterialMap(string pathToXML)
 vector<string>& NifUtlMaterialList::getUserMessages()
 {
 	return _userMessages;
+}
+
+/*---------------------------------------------------------------------------*/
+void NifUtlMaterialList::reset()
+{
+	_userMessages.clear();
+	_materialMap.clear();
 }
 

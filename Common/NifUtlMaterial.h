@@ -53,6 +53,11 @@ namespace NifUtility
 			 */
 			virtual vector<string>& getUserMessages();
 
+			/**
+			 * Reset material map
+			 */
+			virtual void reset();
+
 		protected:
 			/**
 			 * log messages for user

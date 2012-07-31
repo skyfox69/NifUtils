@@ -4,6 +4,7 @@
 #include "..\Common\stdafx.h"
 #include "ChunkMerge.h"
 #include "ChunkMergeDlg.h"
+#include "..\Common\Configuration.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifCollisionUtility.h"
 #include "..\Common\NifUtlMaterial.h"
@@ -14,10 +15,9 @@
 
 using namespace NifUtility;
 
-extern CString					glPathSkyrim;
-extern CString					glPathTemplate;
 extern CChunkMergeDlg			dlg;
 extern NifUtlMaterialList		glMaterialList;
+extern Configuration			glConfig;
 
 
 //  static wrapper function
@@ -34,6 +34,7 @@ void logCallback(const int type, const char* pMessage)
 BEGIN_MESSAGE_MAP(CChunkMergeDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_CONTEXTMENU()
 	//}}AFX_MSG_MAP
   ON_BN_CLICKED(IDC_BUTTON_INPUT, &CChunkMergeDlg::OnBnClickedButtonInput)
   ON_BN_CLICKED(IDC_BUTTON_OUTPUT, &CChunkMergeDlg::OnBnClickedButtonOutput)
@@ -44,6 +45,9 @@ BEGIN_MESSAGE_MAP(CChunkMergeDlg, CDialog)
 	ON_BN_CLICKED(IDC_RADIO_COLLMAT_1, &CChunkMergeDlg::OnBnClickedRadioCollmat)
 	ON_BN_CLICKED(IDC_RADIO_COLLMAT_2, &CChunkMergeDlg::OnBnClickedRadioCollmat)
 	ON_BN_CLICKED(IDC_RADIO_COLLMAT_3, &CChunkMergeDlg::OnBnClickedRadioCollmat)
+	ON_COMMAND(ID_DEFAULT_SAVESETTINGS, &CChunkMergeDlg::OnDefaultSavesettings)
+	ON_COMMAND(ID_DEFAULT_RELOADDIRECTORIES, &CChunkMergeDlg::OnDefaultReloaddirectories)
+	ON_BN_CLICKED(IDC_BUTTON_TEMPLATE, &CChunkMergeDlg::OnBnClickedButtonTemplate)
 END_MESSAGE_MAP()
 
 
@@ -114,39 +118,8 @@ BOOL CChunkMergeDlg::OnInitDialog()
 	m_logView.SetBackgroundColor(FALSE, RGB(0x00, 0x00, 0x00));
 	m_logView.SetReadOnly       (TRUE);
 
-	//  get templates
-	CComboBox*  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
-	CString     pathTemplate(glPathTemplate);
-	set<string> directories;
-
-	parseDir(pathTemplate, directories, false);
-
-	for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
-	{
-		pCBox->AddString(CString((*tIter).c_str()));
-	}
-	pCBox->SetCurSel(0);
-
-	//  initialize materials
-	map<string, NifUtlMaterial>		mapMap(glMaterialList.getMaterialMap());
-	short							t(0);
-
-	pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_COLLMAT);
-
-	for (map<string, NifUtlMaterial>::iterator pIter = mapMap.begin(); pIter != mapMap.end(); pIter++, t++)
-	{
-		pCBox->InsertString  (t, CString(pIter->second._name.c_str()));
-		pCBox->SetItemDataPtr(t, (void*) (pIter->second._code));
-	}
-	pCBox->SelectString(-1, _T("Stone"));
-
-	//  add messages from material list
-	vector<string>  userMessages(glMaterialList.getUserMessages());
-
-	for (vector<string>::iterator texIter = userMessages.begin(); texIter != userMessages.end(); texIter++)
-	{
-		logMessage(NCU_MSG_TYPE_INFO, texIter->c_str());
-	}
+	//  scan directories and fill combo boxes
+	OnDefaultReloaddirectories();
 
 	//  set title
 	char	cbuffer[100];
@@ -196,6 +169,10 @@ HCURSOR CChunkMergeDlg::OnQueryDragIcon()
 
 void CChunkMergeDlg::OnBnClickedButtonInput()
 {
+	if (m_fileNameAry[0].IsEmpty())
+	{
+		m_fileNameAry[0] = glConfig._dirDestination.c_str();
+	}
   m_fileNameAry[0] = FDFileHelper::getFileOrFolder(m_fileNameAry[0], L"Nif Files (*.nif)|*.nif||", L"nif");
   GetDlgItem(IDC_EDIT_INPUT)->SetWindowText(m_fileNameAry[0]);
   if (!m_fileNameAry[0].IsEmpty() && !m_fileNameAry[1].IsEmpty())
@@ -206,6 +183,10 @@ void CChunkMergeDlg::OnBnClickedButtonInput()
 
 void CChunkMergeDlg::OnBnClickedButtonOutput()
 {
+	if (m_fileNameAry[1].IsEmpty())
+	{
+		m_fileNameAry[1] = glConfig._dirCollision.c_str();
+	}
   m_fileNameAry[1] = FDFileHelper::getFileOrFolder(m_fileNameAry[1], L"Nif Files (*.nif)|*.nif|Object Files (*.obj)|*.obj||", L"nif");
   GetDlgItem(IDC_EDIT_OUTPUT)->SetWindowText(m_fileNameAry[1]);
   if (!m_fileNameAry[0].IsEmpty() && !m_fileNameAry[1].IsEmpty())
@@ -216,6 +197,45 @@ void CChunkMergeDlg::OnBnClickedButtonOutput()
 
 void CChunkMergeDlg::OnBnClickedRadioCollision()
 {
+}
+
+void CChunkMergeDlg::OnBnClickedButtonTemplate()
+{
+	CString		pathTmpl(glConfig._pathTemplate.c_str());
+
+	//  get new path to templates
+	pathTmpl = FDFileHelper::getFileOrFolder(pathTmpl + _T("\\"), L"*.nif (*.nif)|*.nif||", L"nif", false, true);
+
+	//  if path given - reload templates
+	if (!pathTmpl.IsEmpty())
+	{
+		CComboBox*	pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
+		set<string> directories;
+
+		//  reset selection box
+		pCBox->ResetContent();
+
+		//  parse directory
+		parseDir(pathTmpl, directories, false);
+
+		//  in case of existing data
+		if (directories.size() > 0)
+		{
+			//  add files to selection box
+			for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
+			{
+				if ((*tIter).rfind(".nif") == string::npos)		continue;
+				pCBox->AddString(CString((*tIter).c_str()));
+			}
+			pCBox->SetCurSel(0);
+
+			//  set new path to config
+			glConfig._pathTemplate = CStringA(pathTmpl).GetString();
+
+			//  reset last choosen template
+			glConfig._lastTemplate = *directories.begin();
+		}
+	}
 }
 
 void CChunkMergeDlg::OnBnClickedOk()
@@ -230,7 +250,7 @@ void CChunkMergeDlg::OnBnClickedOk()
   GetDlgItem(IDC_COMBO_TEMPLATE)->GetWindowTextW(m_fileNameAry[2]);
 
   //  set path
-  ncUtility.setSkyrimPath ((CStringA(glPathSkyrim)).GetString());
+  ncUtility.setSkyrimPath(glConfig._pathSkyrim);
 
   //  set callback for log info
   ncUtility.setLogCallback(logCallback);
@@ -265,7 +285,7 @@ void CChunkMergeDlg::OnBnClickedOk()
   ncUtility.setMaterialTypeHandling (matHandling, materialMap);
 
   //  convert nif
-  ncReturn = ncUtility.addCollision((CStringA(m_fileNameAry[1])).GetString(), (CStringA(m_fileNameAry[0])).GetString(), (CStringA(glPathTemplate + L"\\" + m_fileNameAry[2])).GetString());
+  ncReturn = ncUtility.addCollision((CStringA(m_fileNameAry[1])).GetString(), (CStringA(m_fileNameAry[0])).GetString(), (CStringA(CString(glConfig._pathTemplate.c_str()) + L"\\" + m_fileNameAry[2])).GetString());
   if (ncReturn != NCU_OK)
   {
     logMessage(NCU_MSG_TYPE_ERROR, "NifConverter returned code: " + ncReturn);
@@ -378,4 +398,108 @@ void CChunkMergeDlg::OnBnClickedRadioCollmat()
 			break;
 		}
 	}
+}
+
+void CChunkMergeDlg::OnContextMenu(CWnd *pWnd, CPoint point)
+{
+	CMenu*	pPopUp(NULL);
+	CMenu	menuBar;
+
+	menuBar.LoadMenu(IDR_MENU_POPUP);
+
+	pPopUp = menuBar.GetSubMenu(0);
+	pPopUp->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
+}
+
+void CChunkMergeDlg::OnDefaultSavesettings()
+{
+	//  write last used options
+	CComboBox*	pCBox((CComboBox*) GetDlgItem(IDC_COMBO_COLLMAT));
+
+	//  copy strings from input
+	GetDlgItem(IDC_EDIT_INPUT)    ->GetWindowTextW(m_fileNameAry[0]);
+	GetDlgItem(IDC_EDIT_OUTPUT)   ->GetWindowTextW(m_fileNameAry[1]);
+	GetDlgItem(IDC_COMBO_TEMPLATE)->GetWindowTextW(m_fileNameAry[2]);
+
+	//  modify settings
+	glConfig._collMaterial      = ((int) pCBox->GetItemDataPtr(pCBox->GetCurSel()));
+	glConfig._matHandling       = (GetCheckedRadioButton(IDC_RADIO_COLLMAT_1, IDC_RADIO_COLLMAT_3) - IDC_RADIO_COLLMAT_1);
+	glConfig._collTypeHandling  = (GetCheckedRadioButton(IDC_RADIO_COLLISION_1, IDC_RADIO_COLLISION_3) - IDC_RADIO_COLLISION_1);
+	glConfig._lastTemplate      = CStringA(m_fileNameAry[2]).GetString();
+	glConfig._lastTexture       = CStringA(m_texturePath).GetString();
+	glConfig._dirDestination    = CStringA(m_fileNameAry[0].Left(m_fileNameAry[0].ReverseFind('\\') + 1)).GetString();
+	glConfig._dirCollision      = CStringA(m_fileNameAry[1].Left(m_fileNameAry[1].ReverseFind('\\') + 1)).GetString();
+
+	//  write last config
+	glConfig.write();
+}
+
+void CChunkMergeDlg::OnDefaultReloaddirectories()
+{
+	logMessage(NCU_MSG_TYPE_INFO, "scanning directories...");
+
+	//  re-scan templates
+	CComboBox*	pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
+	CString		pathTmpl(glConfig._pathTemplate.c_str());
+	set<string> directories;
+
+	//  reset selection box
+	pCBox->ResetContent();
+
+	//  parse directory
+	parseDir(pathTmpl, directories, false);
+
+	//  in case of existing data
+	if (directories.size() > 0)
+	{
+		//  add files to selection box
+		for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
+		{
+			if ((*tIter).rfind(".nif") == string::npos)		continue;
+			pCBox->AddString(CString((*tIter).c_str()));
+		}
+		pCBox->SelectString(-1, CString(glConfig._lastTemplate.c_str()));
+
+		//  make sure one entry is selected
+		GetDlgItem(IDC_COMBO_TEMPLATE) ->GetWindowTextW(pathTmpl);
+		if (pathTmpl.IsEmpty())
+		{
+			pCBox->SetCurSel(0);
+		}
+
+		//  reset last choosen template
+		GetDlgItem(IDC_COMBO_TEMPLATE)->GetWindowTextW(pathTmpl);
+		glConfig._lastTemplate = CStringA(pathTmpl).GetString();
+	}
+
+	//  re-load material
+	glMaterialList.initializeMaterialMap(glConfig._pathNifXML);
+
+	map<string, NifUtlMaterial>		mapMap(glMaterialList.getMaterialMap());
+	short							t     (0);
+	short							selIdx(0);
+
+	pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_COLLMAT);
+
+	for (map<string, NifUtlMaterial>::iterator pIter = mapMap.begin(); pIter != mapMap.end(); pIter++, t++)
+	{
+		pCBox->InsertString  (t, CString(pIter->second._name.c_str()));
+		pCBox->SetItemDataPtr(t, (void*) (pIter->second._code));
+
+		if (pIter->second._code == ((unsigned int) glConfig._collMaterial))
+		{
+			selIdx = t;
+		}
+	}
+	pCBox->SetCurSel(selIdx);
+
+	//  add messages from material list
+	vector<string>  userMessages(glMaterialList.getUserMessages());
+
+	for (vector<string>::iterator texIter = userMessages.begin(); texIter != userMessages.end(); texIter++)
+	{
+		logMessage(NCU_MSG_TYPE_INFO, texIter->c_str());
+	}
+
+	logMessage(NCU_MSG_TYPE_INFO, "scan done.");
 }

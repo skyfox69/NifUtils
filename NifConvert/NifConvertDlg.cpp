@@ -4,6 +4,7 @@
 #include "..\Common\stdafx.h"
 #include "NifConvert.h"
 #include "NifConvertDlg.h"
+#include "..\Common\Configuration.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifConvertUtility.h"
 #include "version.h"
@@ -13,9 +14,8 @@
 
 using namespace NifUtility;
 
-extern	CString				glPathSkyrim;
-extern	CString				glPathTemplate;
 extern	CNifConvertDlg		dlg;
+extern Configuration		glConfig;
 
 //  static wrapper function
 void logCallback(const int type, const char* pMessage)
@@ -40,10 +40,15 @@ void CNifConvertDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CNifConvertDlg, CDialog)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_CONTEXTMENU()
 	//}}AFX_MSG_MAP
   ON_BN_CLICKED(IDC_BUTTON_INPUT, &CNifConvertDlg::OnBnClickedButtonInput)
   ON_BN_CLICKED(IDC_BUTTON_OUTPUT, &CNifConvertDlg::OnBnClickedButtonOutput)
   ON_BN_CLICKED(IDOK, &CNifConvertDlg::OnBnClickedOk)
+  ON_BN_CLICKED(IDC_BUTTON_TEMPLATE, &CNifConvertDlg::OnBnClickedButtonTemplate)
+  ON_BN_CLICKED(IDC_BUTTON_TEXTURE, &CNifConvertDlg::OnBnClickedButtonTexture)
+	ON_COMMAND(ID_DEFAULT_SAVESETTINGS, &CNifConvertDlg::OnDefaultSavesettings)
+	ON_COMMAND(ID_DEFAULT_RELOADDIRECTORIES, &CNifConvertDlg::OnDefaultReloaddirectories)
 END_MESSAGE_MAP()
 
 
@@ -98,33 +103,8 @@ BOOL CNifConvertDlg::OnInitDialog()
 	m_logView.SetBackgroundColor(FALSE, RGB(0x00, 0x00, 0x00));
 	m_logView.SetReadOnly       (TRUE);
 
-  //  get texture paths
-  CComboBox*  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEXTURE);
-  set<string> directories;
-  CString     pathSkyrim  (glPathSkyrim);
-  CString     pathTemplate(glPathTemplate);
-
-  //  go down to textures
-  pathSkyrim += "\\Data\\Textures";
-  parseDir(pathSkyrim, directories);
-
-  for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
-  {
-    pCBox->AddString(CString((*tIter).c_str()) + _T("\\"));
-  }
-  pCBox->SetCurSel(0);
-
-  //  get templates
-  pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
-
-  directories.clear();
-  parseDir(pathTemplate, directories, false);
-
-  for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
-  {
-    pCBox->AddString(CString((*tIter).c_str()));
-  }
-  pCBox->SetCurSel(0);
+	//  scan path and fill combo boxes
+	OnDefaultReloaddirectories();
 
 	//  set title
 	char	cbuffer[100];
@@ -174,6 +154,10 @@ HCURSOR CNifConvertDlg::OnQueryDragIcon()
 
 void CNifConvertDlg::OnBnClickedButtonInput()
 {
+	if (m_fileNameAry[0].IsEmpty())
+	{
+		m_fileNameAry[0] = glConfig._dirSource.c_str();
+	}
   m_fileNameAry[0] = FDFileHelper::getFileOrFolder(m_fileNameAry[0], L"Nif Files (*.nif)|*.nif||", L"nif");
   GetDlgItem(IDC_EDIT_INPUT)->SetWindowText(m_fileNameAry[0]);
   if (!m_fileNameAry[0].IsEmpty() && !m_fileNameAry[1].IsEmpty())
@@ -184,12 +168,96 @@ void CNifConvertDlg::OnBnClickedButtonInput()
 
 void CNifConvertDlg::OnBnClickedButtonOutput()
 {
+	if (m_fileNameAry[1].IsEmpty())
+	{
+		m_fileNameAry[1] = glConfig._dirDestination.c_str();
+	}
   m_fileNameAry[1] = FDFileHelper::getFileOrFolder(m_fileNameAry[1], L"Nif Files (*.nif)|*.nif||", L"nif", true);
   GetDlgItem(IDC_EDIT_OUTPUT)->SetWindowText(m_fileNameAry[1]);
   if (!m_fileNameAry[0].IsEmpty() && !m_fileNameAry[1].IsEmpty())
   {
     GetDlgItem(IDOK)->EnableWindow(TRUE);
   }
+}
+
+void CNifConvertDlg::OnBnClickedButtonTemplate()
+{
+	CString		pathTmpl(glConfig._pathTemplate.c_str());
+
+	//  get new path to templates
+	pathTmpl = FDFileHelper::getFileOrFolder(pathTmpl + _T("\\"), L"*.nif (*.nif)|*.nif||", L"nif", false, true);
+
+	//  if path given - reload templates
+	if (!pathTmpl.IsEmpty())
+	{
+		CComboBox*	pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
+		set<string> directories;
+
+		//  reset selection box
+		pCBox->ResetContent();
+
+		//  parse directory
+		parseDir(pathTmpl, directories, false);
+
+		//  in case of existing data
+		if (directories.size() > 0)
+		{
+			//  add files to selection box
+			for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
+			{
+				if ((*tIter).rfind(".nif") == string::npos)		continue;
+				pCBox->AddString(CString((*tIter).c_str()));
+			}
+			pCBox->SetCurSel(0);
+
+			//  set new path to config
+			glConfig._pathTemplate = CStringA(pathTmpl).GetString();
+
+			//  reset last choosen template
+			glConfig._lastTemplate = *directories.begin();
+		}
+	}
+}
+
+void CNifConvertDlg::OnBnClickedButtonTexture()
+{
+	CString		pathTmpl(glConfig._pathSkyrim.c_str());
+
+	//  get new path to templates
+	pathTmpl = FDFileHelper::getFileOrFolder(pathTmpl + _T("\\"), L"TESV.exe (TESV.exe)|TESV.exe||", L"exe", false, true);
+
+	//  if path given - reload templates
+	if (!pathTmpl.IsEmpty())
+	{
+		CComboBox*	pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEXTURE);
+		set<string> directories;
+
+		//  reset selection box
+		pCBox->ResetContent();
+
+		//  set new path to config
+		glConfig._pathSkyrim = CStringA(pathTmpl).GetString();
+
+		//  add subdirectory
+		pathTmpl += "\\Data\\Textures";
+
+		//  parse directory
+		parseDir(pathTmpl, directories);
+
+		//  in case of existing data
+		if (directories.size() > 0)
+		{
+			//  add files to selection box
+			for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
+			{
+				pCBox->AddString(CString((*tIter).c_str()));
+			}
+			pCBox->SetCurSel(0);
+
+			//  reset last choosen template
+			glConfig._lastTexture = *directories.begin();
+		}
+	}
 }
 
 void CNifConvertDlg::OnBnClickedOk()
@@ -210,12 +278,12 @@ void CNifConvertDlg::OnBnClickedOk()
   ncUtility.setLogCallback(logCallback);
 
   //  set flags
-  ncUtility.setVertexColorHandling((VertexColorHandling) (GetCheckedRadioButton(IDC_RADIO_VCREMOVE, IDC_RADIO_VCADD) - IDC_RADIO_VCREMOVE));
-  ncUtility.setUpdateTangentSpace (((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))->GetCheck() != FALSE);
-  ncUtility.setReorderProperties  (((CButton*) GetDlgItem(IDC_CHECK_NITRISHAPEPROPERTIES))->GetCheck() != FALSE);
+	ncUtility.setVertexColorHandling  ((VertexColorHandling) (GetCheckedRadioButton(IDC_RADIO_VCREMOVE, IDC_RADIO_VCADD) - IDC_RADIO_VCREMOVE));
+	ncUtility.setUpdateTangentSpace   (((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))->GetCheck() != FALSE);
+	ncUtility.setReorderProperties    (((CButton*) GetDlgItem(IDC_CHECK_NITRISHAPEPROPERTIES))->GetCheck() != FALSE);
 
   //  convert nif
-  ncReturn = ncUtility.convertShape((CStringA(m_fileNameAry[0])).GetString(), (CStringA(m_fileNameAry[1])).GetString(), (CStringA(glPathTemplate + L"\\" + m_fileNameAry[2])).GetString());
+  ncReturn = ncUtility.convertShape((CStringA(m_fileNameAry[0])).GetString(), (CStringA(m_fileNameAry[1])).GetString(), (CStringA(CString(glConfig._pathTemplate.c_str()) + L"\\" + m_fileNameAry[2])).GetString());
   if (ncReturn != NCU_OK)
   {
     logMessage(NCU_MSG_TYPE_ERROR, "NifConverter returned code: " + ncReturn);
@@ -295,4 +363,114 @@ void CNifConvertDlg::logMessage(const int type, const char* pMessage)
 
 	//  scroll to end of text
 	m_logView.LineScroll(m_logView.GetLineCount() - lineCountOld);
+}
+
+void CNifConvertDlg::OnContextMenu(CWnd *pWnd, CPoint point)
+{
+	CMenu*	pPopUp(NULL);
+	CMenu	menuBar;
+
+	menuBar.LoadMenu(IDR_MENU_POPUP);
+
+	pPopUp = menuBar.GetSubMenu(0);
+	pPopUp->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
+}
+
+void CNifConvertDlg::OnDefaultSavesettings()
+{
+	//  copy strings from input
+	GetDlgItem(IDC_EDIT_INPUT)    ->GetWindowTextW(m_fileNameAry[0]);
+	GetDlgItem(IDC_EDIT_OUTPUT)   ->GetWindowTextW(m_fileNameAry[1]);
+	GetDlgItem(IDC_COMBO_TEMPLATE)->GetWindowTextW(m_fileNameAry[2]);
+	GetDlgItem(IDC_COMBO_TEXTURE) ->GetWindowTextW(m_texturePath);
+
+	//  write last used options
+	glConfig._vertColHandling   = (GetCheckedRadioButton(IDC_RADIO_VCREMOVE, IDC_RADIO_VCADD) - IDC_RADIO_VCREMOVE);
+	glConfig._upTangentSpace    = (((CButton*) GetDlgItem(IDC_CHECK_TANGENTSPACE))->GetCheck() != FALSE);
+	glConfig._reorderProperties = (((CButton*) GetDlgItem(IDC_CHECK_NITRISHAPEPROPERTIES))->GetCheck() != FALSE);
+	glConfig._collTypeHandling  = (GetCheckedRadioButton(IDC_RADIO_COLLISION_1, IDC_RADIO_COLLISION_3) - IDC_RADIO_COLLISION_1);
+	glConfig._lastTexture       = CStringA(m_texturePath).GetString();
+	glConfig._lastTemplate      = CStringA(m_fileNameAry[2]).GetString();
+	glConfig._dirSource         = CStringA(m_fileNameAry[0].Left(m_fileNameAry[0].ReverseFind('\\') + 1)).GetString();
+	glConfig._dirDestination    = CStringA(m_fileNameAry[1].Left(m_fileNameAry[1].ReverseFind('\\') + 1)).GetString();
+
+	//  write last config
+	glConfig.write();
+}
+
+void CNifConvertDlg::OnDefaultReloaddirectories()
+{
+	logMessage(NCU_MSG_TYPE_INFO, "scanning directories...");
+
+	//  re-scan texture path
+	CComboBox*	pCBox = (CComboBox*) GetDlgItem(IDC_COMBO_TEXTURE);
+	CString		pathTmpl(glConfig._pathSkyrim.c_str());
+	set<string> directories;
+
+	//  reset selection box
+	pCBox->ResetContent();
+
+	//  add subdirectory
+	pathTmpl += "\\Data\\Textures";
+
+	//  parse directory
+	parseDir(pathTmpl, directories);
+
+	//  in case of existing data
+	if (directories.size() > 0)
+	{
+		//  add files to selection box
+		for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
+		{
+		    pCBox->AddString(CString((*tIter).c_str()) + _T("\\"));
+		}
+		pCBox->SelectString(-1, CString(glConfig._lastTexture.c_str()));
+
+		//  make sure one entry is selected
+		GetDlgItem(IDC_COMBO_TEXTURE) ->GetWindowTextW(pathTmpl);
+		if (pathTmpl.IsEmpty())
+		{
+			pCBox->SetCurSel(0);
+		}
+
+		//  reset last choosen template
+		GetDlgItem(IDC_COMBO_TEXTURE)->GetWindowTextW(pathTmpl);
+		glConfig._lastTexture = CStringA(pathTmpl).GetString();
+	}
+
+	//  re-scan templates
+	pCBox    = (CComboBox*) GetDlgItem(IDC_COMBO_TEMPLATE);
+	pathTmpl = glConfig._pathTemplate.c_str();
+	directories.clear();
+
+	//  reset selection box
+	pCBox->ResetContent();
+
+	//  parse directory
+	parseDir(pathTmpl, directories, false);
+
+	//  in case of existing data
+	if (directories.size() > 0)
+	{
+		//  add files to selection box
+		for (set<string>::iterator tIter = directories.begin(); tIter != directories.end(); tIter++)
+		{
+			if ((*tIter).rfind(".nif") == string::npos)		continue;
+			pCBox->AddString(CString((*tIter).c_str()));
+		}
+		pCBox->SelectString(-1, CString(glConfig._lastTemplate.c_str()));
+
+		//  make sure one entry is selected
+		GetDlgItem(IDC_COMBO_TEMPLATE) ->GetWindowTextW(pathTmpl);
+		if (pathTmpl.IsEmpty())
+		{
+			pCBox->SetCurSel(0);
+		}
+
+		//  reset last choosen template
+		GetDlgItem(IDC_COMBO_TEMPLATE)->GetWindowTextW(pathTmpl);
+		glConfig._lastTemplate = CStringA(pathTmpl).GetString();
+	}
+
+	logMessage(NCU_MSG_TYPE_INFO, "scan done.");
 }

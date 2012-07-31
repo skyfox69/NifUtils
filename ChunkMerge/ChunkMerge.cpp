@@ -6,6 +6,7 @@
 #include "ChunkMergeDlg.h"
 #include "..\Common\NifUtlMaterial.h"
 #include "..\Common\FDFileHelper.h"
+#include "..\Common\Configuration.h"
 
 #include <Common/Base/hkBase.h>
 #include <Common/Base/System/hkBaseSystem.h>
@@ -37,10 +38,9 @@ using namespace NifUtility;
 extern "C" int __cdecl ADP_Close( void );
 #endif
 
-CString					glPathSkyrim;
-CString					glPathTemplate;
 NifUtlMaterialList		glMaterialList;
 CChunkMergeDlg			dlg;
+Configuration			glConfig;
 
 
 // CChunkMergeApp
@@ -82,6 +82,15 @@ BOOL CChunkMergeApp::InitInstance()
 
 	AfxInitRichEdit2();
 
+	CStringA	configName;
+
+	GetModuleFileNameA(NULL, configName.GetBuffer(MAX_PATH), MAX_PATH);
+	configName.ReleaseBuffer();
+	configName.Replace(".exe", ".xml");
+
+	glConfig.read((const char*) configName);
+
+
 	// Standard initialization
 	// If you are not using these features and wish to reduce the size
 	// of your final executable, you should remove from the following
@@ -99,33 +108,48 @@ BOOL CChunkMergeApp::InitInstance()
 
   argv = CommandLineToArgvW(m_lpCmdLine, &argc);
 
-	if (argc >= 3)
+	//  nif.xml - not given or overwritten
+	if ((glConfig._pathNifXML.empty()) || (argc >= 3))
 	{
-		//  initialize material map
-		glMaterialList.initializeMaterialMap((const char*) CStringA(argv[2]));
-	}
-	else
-	{
-		CString	dir = FDFileHelper::getFileOrFolder(_T(""), L"Nif-XML (nif.xml)|nif.xml||", L"xml", false, false, _T("Please select Nif.xml file"));
+		if (argc >= 3)
+		{
+			glConfig._pathNifXML = (const char*) CStringA(argv[2]);
+		}
+		else
+		{
+			glConfig._pathNifXML = (const char*) CStringA(FDFileHelper::getFileOrFolder(_T(""), L"Nif-XML (nif.xml)|nif.xml||", L"xml", false, false, _T("Please select Nif.xml file")));
+		}
 
-		glMaterialList.initializeMaterialMap((const char*) CStringA(dir));
-	}
-	if (argc >= 2)
+	}  //  if ((glConfig._pathNifXML.empty()) || (argc >= 3))
+
+	//  initialize material map
+	glMaterialList.initializeMaterialMap(glConfig._pathNifXML);
+
+	//  path to templates - not given or overwritten
+	if ((glConfig._pathTemplate.empty()) || (argc >= 2))
 	{
-		glPathTemplate = argv[1];
-	}
-	else
+		if (argc >= 2)
+		{
+			glConfig._pathTemplate = (const char*) CStringA(argv[1]);
+		}
+		else
+		{
+			glConfig._pathTemplate = (const char*) CStringA(FDFileHelper::getFileOrFolder(_T(""), L"*.nif (*.nif)|*.nif||", L"nif", false, true, _T("Please select template directory")));
+		}
+	}  //  if ((glConfig._pathTemplate.empty()) || (argc >= 2))
+
+	//  path to Skyrim - not given or overwritten
+	if ((glConfig._pathSkyrim.empty()) || ((argc >= 1) && (wcsstr(argv[0], L"ChunkMerge.exe") == NULL)))
 	{
-		glPathTemplate = FDFileHelper::getFileOrFolder(_T(""), L"*.nif (*.nif)|*.nif||", L"nif", false, true, _T("Please select template directory"));
-	}
-	if ((argc >= 1) && (wcsstr(argv[0], L"ChunkMerge.exe") == NULL))
-	{
-		glPathSkyrim = argv[0];
-	}
-	else
-	{
-		glPathSkyrim = FDFileHelper::getFileOrFolder(_T(""), L"TESV.exe (TESV.exe)|TESV.exe||", L"exe", false, true, _T("Please select SKYRIM directory"));
-	}
+		if ((argc >= 1) && (wcsstr(argv[0], L"ChunkMerge.exe") == NULL))
+		{
+			glConfig._pathSkyrim = (const char*) CStringA(argv[0]);
+		}
+		else
+		{
+			glConfig._pathSkyrim = (const char*) CStringA(FDFileHelper::getFileOrFolder(_T(""), L"TESV.exe (TESV.exe)|TESV.exe||", L"exe", false, true, _T("Please select SKYRIM directory")));
+		}
+	}  //  if ((glConfig._pathSkyrim.empty()) || ((argc >= 1) && (wcsstr(argv[0], L"OneClickNifConvert.exe") == NULL)))
 
   LocalFree(argv);
 
@@ -141,6 +165,9 @@ BOOL CChunkMergeApp::InitInstance()
 		// TODO: Place code here to handle when the dialog is
 		//  dismissed with Cancel
 	}
+
+	//  cleanup Havok
+	hkBaseSystem::quit();
 
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.

@@ -37,9 +37,14 @@ protected:
   virtual void  parseDir(CString path, set<string>& directories, bool doDirs=true);
 
 public:
-  afx_msg void OnBnClickedButtonInput();
-  afx_msg void OnBnClickedButtonOutput();
-  afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedButtonInput();
+	afx_msg void OnBnClickedButtonOutput();
+	afx_msg void OnBnClickedButtonTemplate();
+	afx_msg void OnBnClickedButtonTexture();
+	afx_msg void OnBnClickedOk();
+	afx_msg void OnContextMenu(CWnd*, CPoint point);
+	afx_msg void OnDefaultSavesettings();
+	afx_msg void OnDefaultReloaddirectories();
 
 	virtual void logMessage(const int type, const char* pMessage);
 };

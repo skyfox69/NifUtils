@@ -119,12 +119,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Common\Configuration.cpp" />
     <ClCompile Include="NifConvert.cpp" />
     <ClCompile Include="NifConvertDlg.cpp" />
     <ClCompile Include="..\Common\FDFileHelper.cpp" />
     <ClCompile Include="..\Common\NifConvertUtility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\Configuration.h" />
     <ClInclude Include="NifConvert.h" />
     <ClInclude Include="NifConvertDlg.h" />
     <ClInclude Include="Resource.h" />
