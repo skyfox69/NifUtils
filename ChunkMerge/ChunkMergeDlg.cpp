@@ -115,6 +115,16 @@ BOOL CChunkMergeDlg::OnInitDialog()
 	GetDlgItem(IDC_RADIO_COLLMAT_3)->EnableWindow(FALSE);
 	GetDlgItem(IDC_BUTTON_COLLMAT) ->EnableWindow(FALSE);
 
+	//  prepare log view
+	CHARFORMAT	cf = { 0 };
+
+	cf.cbSize    = sizeof(cf);
+	cf.dwMask    = CFM_FACE | CFM_SIZE | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT | CFM_PROTECTED;
+	cf.dwEffects = 0;
+	cf.yHeight   = 127;
+	lstrcpy(cf.szFaceName, _T("Small Fonts"));
+
+	m_logView.SetDefaultCharFormat(cf);
 	m_logView.SetBackgroundColor(FALSE, RGB(0x00, 0x00, 0x00));
 	m_logView.SetReadOnly       (TRUE);
 
