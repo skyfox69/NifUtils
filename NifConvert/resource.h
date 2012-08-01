@@ -19,12 +19,6 @@
 #define IDC_RADIO_VCREMOVE              1008
 #define IDC_RADIO_VCADD                 1009
 #define IDC_COMBO_TEMPLATE              1010
-#define IDC_RADIO_COLLISION_1           1011
-#define IDC_RADIO_COLLISION_2           1012
-#define IDC_RADIO_COLLISION_3           1013
-#define IDC_RADIO_COLLISION_4           1014
-#define IDC_RADIO_COLLISION_5           1015
-#define IDC_RADIO_COLLISION_6           1016
 #define IDC_CHECK_TANGENTSPACE          1017
 #define IDC_CHECK_NITRISHAPEPROPERTIES  1018
 #define IDC_RICHEDIT_LOG                1021

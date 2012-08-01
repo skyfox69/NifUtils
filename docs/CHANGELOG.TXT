@@ -3,6 +3,7 @@ Version 0.1.52.*
 
 * Added:  Common: configuration files (XML)
 * Added:  Common: context menu for saving actual settings and re-scan directories
+* Added:  Common: show tool tips for nearly all widgets
 
 
 Version 0.1.51.*

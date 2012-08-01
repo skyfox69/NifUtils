@@ -19,6 +19,31 @@ extern CChunkMergeDlg			dlg;
 extern NifUtlMaterialList		glMaterialList;
 extern Configuration			glConfig;
 
+//  ToolTip definitions
+struct FDToolTipText
+{
+	int		_uid;
+	string	_text;
+};
+
+static FDToolTipText	glTTText[] = {{IDC_RADIO_VCADD, "Add default vertext colors of 0xffffff in case of set flag SLSF2_Vertex_Colors"},
+									  {IDC_RADIO_VCREMOVE, "Remove flag SLSF2_Vertex_Colors in case of missing vertex colors"},
+									  {IDC_RADIO_COLLISION_1, "Use RootCollisionNode as source for collision shapes"},
+									  {IDC_RADIO_COLLISION_2, "Use RootCollisionNode as source for collision shapes if not existing use NiTriShapes"},
+									  {IDC_RADIO_COLLISION_3, "Use NiTriShapes as source for collision shapes"},
+									  {IDC_RADIO_COLLMAT_1, "Use single material for collision data"},
+									  {IDC_RADIO_COLLMAT_2, "Use multiple materials defined by name of NiTriShapes for collision data (e.g. HAV_MAT_STONE"},
+									  {IDC_RADIO_COLLMAT_3, "Use multiple materials as defined by additional dialog for collision data"},
+									  {IDC_COMBO_TEMPLATE, "Define NIF file used as template for converting and adding collision data"},
+									  {IDC_COMBO_COLLMAT, "Define material used for single collision material"},
+									  {IDC_EDIT_INPUT, "Path to source NIF-file to be converted"},
+									  {IDC_EDIT_OUTPUT, "Path to destination NIF-file"},
+									  {IDC_BUTTON_INPUT, "Choose source NIF-file to be converted"},
+									  {IDC_BUTTON_OUTPUT, "Choose destination NIF-file"},
+									  {IDC_BUTTON_TEMPLATE, "Choose path to template files and scan recursively"},
+									  {IDC_RICHEDIT_LOG, "Some log output"},
+									  {-1, ""}
+									 };
 
 //  static wrapper function
 void logCallback(const int type, const char* pMessage)
@@ -96,6 +121,13 @@ void CChunkMergeDlg::parseDir(CString path, set<string>& directories, bool doDir
 
 // CChunkMergeDlg message handlers
 
+BOOL CChunkMergeDlg::PreTranslateMessage(MSG* pMsg)
+{
+     m_toolTip.RelayEvent(pMsg);
+
+     return CDialog::PreTranslateMessage(pMsg);
+}
+
 BOOL CChunkMergeDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
@@ -127,6 +159,17 @@ BOOL CChunkMergeDlg::OnInitDialog()
 	m_logView.SetDefaultCharFormat(cf);
 	m_logView.SetBackgroundColor(FALSE, RGB(0x00, 0x00, 0x00));
 	m_logView.SetReadOnly       (TRUE);
+
+	//  prepare tool tips
+	if (m_toolTip.Create(this, TTS_BALLOON))
+	{
+		for (short i(0); glTTText[i]._uid != -1; ++i)
+		{
+			m_toolTip.AddTool(GetDlgItem(glTTText[i]._uid), CString(glTTText[i]._text.c_str()));
+		}
+
+		m_toolTip.Activate(TRUE);
+	}
 
 	//  scan directories and fill combo boxes
 	OnDefaultReloaddirectories();

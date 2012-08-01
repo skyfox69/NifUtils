@@ -15,7 +15,6 @@
 #define IDC_BUTTON_TEMPLATE             1005
 #define IDC_BUTTON_OUTPUT2              1005
 #define IDC_BUTTON_EXTERNAL             1005
-#define IDC_COMBO_TEXTURE               1007
 #define IDC_RADIO_VCREMOVE              1008
 #define IDC_RADIO_VCADD                 1009
 #define IDC_COMBO_TEMPLATE              1010

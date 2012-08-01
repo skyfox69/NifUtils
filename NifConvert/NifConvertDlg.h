@@ -27,9 +27,11 @@ protected:
 	CString			m_fileNameAry[3];
 	CString			m_texturePath;
 	CRichEditCtrl	m_logView;
+	CToolTipCtrl	m_toolTip;
 
   // Generated message map functions
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
