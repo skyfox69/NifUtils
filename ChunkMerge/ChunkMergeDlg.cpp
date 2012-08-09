@@ -334,7 +334,7 @@ void CChunkMergeDlg::OnBnClickedOk()
   }
 
   //  set flags
-  ncUtility.setCollisionNodeHandling((CollisionNodeHandling) (GetCheckedRadioButton(IDC_RADIO_COLLISION_1, IDC_RADIO_COLLISION_2) - IDC_RADIO_COLLISION_1));
+  ncUtility.setCollisionNodeHandling((CollisionNodeHandling) (GetCheckedRadioButton(IDC_RADIO_COLLISION_1, IDC_RADIO_COLLISION_3) - IDC_RADIO_COLLISION_1));
   ncUtility.setMaterialTypeHandling (matHandling, materialMap);
 
   //  convert nif
