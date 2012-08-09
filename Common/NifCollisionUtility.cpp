@@ -273,7 +273,8 @@ unsigned int NifCollisionUtility::getGeometryFromNifFile(string fileName, vector
 	srcChildList = pRootInput->GetChildren();
 
 	//  add own transform to list
-	transformAry.push_back(pRootInput->GetLocalTransform());
+	//  BUGFIX:  don't consider transform of root node for collision 'cause used for both: collision AND shapes
+	//transformAry.push_back(pRootInput->GetLocalTransform());
 
 	//  iterate over source nodes and get geometry
 	for (vector<NiAVObjectRef>::iterator  ppIter = srcChildList.begin(); ppIter != srcChildList.end(); ppIter++)
