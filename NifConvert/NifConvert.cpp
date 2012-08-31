@@ -7,6 +7,9 @@
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\Configuration.h"
 
+//  used namespaces
+using namespace NifUtility;
+
 CNifConvertDlg	dlg;
 Configuration	glConfig;
 

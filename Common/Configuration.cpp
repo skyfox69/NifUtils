@@ -3,6 +3,9 @@
 #include <iostream>
 #include <fstream>
 
+using namespace NifUtility;
+
+
 Configuration::Configuration()
 	:	_collMaterial     (3741512247),
 		_matHandling      (0),
