@@ -7,7 +7,7 @@
 #include "..\Common\Configuration.h"
 #include "..\Common\FDFileHelper.h"
 #include "..\Common\NifConvertUtility.h"
-#include "version.h"
+#include "..\Common\version.h"
 
 
 
