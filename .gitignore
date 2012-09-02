@@ -1,0 +1,6 @@
+OneClickNifConvert/*
+deploy/*
+*/*.vcxproj.user
+NifUtils.sln
+
+DX/*
