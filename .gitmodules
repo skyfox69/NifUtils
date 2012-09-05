@@ -1,3 +1,4 @@
-[submodule "niflib"]
-	path = niflib
-	url = git://github.com/skyfox69/niflib.git
+
+[submodule ".\\niflib"]
+	path = .\\niflib
+	url = git@github.com:skyfox69/niflib.git

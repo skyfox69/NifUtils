@@ -4,10 +4,9 @@ debug/*
 ipch/*
 */*.vcxproj.user
 NifUtils.sln
-NifUtils.sdf
+NifUtils.*sdf
 NifUtils.suo
 */Debug
 
 #niflib/*
 
-DX/*

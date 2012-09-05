@@ -547,7 +547,7 @@ bool NifCollisionUtility::injectCollisionData(vector<hkGeometry>& geometryMap, b
 		//  add new material?
 		if (matIdx >= tMtrlVec.size())
 		{
-			bhkCMSDMaterial	tChunkMat;
+			bhkCMSDMaterial		tChunkMat;
 
 			//  create single material
 			tChunkMat.material       = material;

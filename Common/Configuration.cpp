@@ -12,7 +12,9 @@ Configuration::Configuration()
 		_vertColHandling  (0),
 		_collTypeHandling (1),
 		_upTangentSpace   (true),
-		_reorderProperties(true)
+		_reorderProperties(true),
+		_dxShowTexture    (true),
+		_dxShowWireframe  (false)
 {
 }
 
@@ -114,6 +116,9 @@ bool Configuration::read(const string fileName)
 			readAttribute(content, "DirDestination>", _dirDestination);
 			readAttribute(content, "DirCollision>", _dirCollision);
 
+			readAttribute(content, "ShowTexture>", _dxShowTexture);
+			readAttribute(content, "ShowWireframe>", _dxShowWireframe);
+
 
 
 		}  //  while (iStr.good())
@@ -162,6 +167,10 @@ bool Configuration::write(const string fileName)
 		oStr << "<CollTypeHandling>" << _collTypeHandling << "</CollTypeHandling>";
 		oStr << "<CollMaterial>" << _collMaterial << "</CollMaterial>";
 
+		oStr << "<DirectXView>";
+		oStr << "<ShowTexture>" << _dxShowTexture << "</ShowTexture>";
+		oStr << "<ShowWireframe>" << _dxShowWireframe << "</ShowWireframe>";
+		oStr << "</DirectXView>";
 
 
 		oStr << "</Config>";

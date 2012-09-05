@@ -133,7 +133,6 @@
     <ClInclude Include="..\Common\FDFileHelper.h" />
     <ClInclude Include="..\Common\NifConvertUtility.h" />
     <ClInclude Include="..\Common\VertexColorHandling.h" />
-    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\NifConvert.ico" />
