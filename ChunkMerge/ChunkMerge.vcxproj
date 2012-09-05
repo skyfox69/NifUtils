@@ -137,7 +137,6 @@
     <ClInclude Include="..\Common\MaterialTypeHandling.h" />
     <ClInclude Include="..\Common\NifCollisionUtility.h" />
     <ClInclude Include="..\Common\NifUtlMaterial.h" />
-    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ChunkMerge.ico" />

@@ -65,9 +65,6 @@
     <ClInclude Include="..\Common\NifUtlMaterial.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>
-    <ClInclude Include="version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Common\Configuration.h">
       <Filter>Header Files\Common</Filter>
     </ClInclude>

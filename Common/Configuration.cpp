@@ -123,10 +123,10 @@ bool Configuration::read(const string fileName)
 
 		isOK = true;
 
-		//  remember file name
-		_configName = fileName;
-
 	}  //  if (oStr.is_open())
+
+	//  remember file name
+	_configName = fileName;
 
 	return isOK;
 }
