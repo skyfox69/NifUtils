@@ -18,6 +18,8 @@ DirectXMesh::DirectXMesh(const DirectXNifShapeType shapeType)
 
 DirectXMesh::~DirectXMesh()
 {
+	if (_pVBuffer != NULL)		_pVBuffer->Release();
+	if (_pIBuffer != NULL)		_pIBuffer->Release();
 }
 
 void DirectXMesh::SetDoRender(const bool doRender)

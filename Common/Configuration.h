@@ -24,6 +24,8 @@ namespace NifUtility
 			int				_collTypeHandling;
 			bool			_upTangentSpace;
 			bool			_reorderProperties;
+			bool			_dxShowTexture;
+			bool			_dxShowWireframe;
 
 		private:
 			virtual	bool	readAttribute(const string& content, const string tag, string& attribute);

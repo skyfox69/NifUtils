@@ -1,8 +1,12 @@
 #include "..\Common\stdafx.h"
+#include "..\Common\Configuration.h"
 #include "DirectXMeshModel.h"
 #include "DirectXVertex.h"
 
 using namespace NifUtility;
+
+extern Configuration	glConfig;
+
 
 DirectXMeshModel::DirectXMeshModel()
 	:	DirectXMesh  (DX_NIF_SHP_MODEL),
@@ -39,6 +43,7 @@ DirectXMeshModel::~DirectXMeshModel()
 	if (_pBufVerticesW != NULL)		delete[] _pBufVerticesW;
 	if (_pBufVertices  != NULL)		delete[] _pBufVertices;
 	if (_pBufIndices   != NULL)		delete[] _pBufIndices;
+	if (_pWBuffer      != NULL)		_pWBuffer->Release();
 }
 
 void DirectXMeshModel::SetVBuffer(D3DCustomVertexColNormTex* pBuffer, const unsigned int count)
@@ -101,11 +106,18 @@ bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMat
 		_pBufVerticesW = NULL;
 	}
 
-	if (_pTexture != NULL)
+	if (glConfig._dxShowTexture)
 	{
-		pd3dDevice->SetTexture(0, _pTexture);
+		if (_pTexture != NULL)
+		{
+			pd3dDevice->SetTexture(0, _pTexture);
+		}
+		pd3dDevice->SetRenderState      (D3DRS_FILLMODE, D3DFILL_SOLID);
 	}
-	pd3dDevice->SetRenderState      (D3DRS_FILLMODE, D3DFILL_SOLID);
+	else if (!glConfig._dxShowWireframe)
+	{
+		pd3dDevice->SetRenderState      (D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	}
 	pd3dDevice->SetMaterial         (&_material);
 	pd3dDevice->SetRenderState      (D3DRS_LIGHTING, true);
 	pd3dDevice->SetTransform        (D3DTS_WORLD, &worldMatrix);
@@ -116,13 +128,19 @@ bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMat
 	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, _countVertices, 0, _countIndices/3);
 	pd3dDevice->SetTexture(0, NULL);
 
-	if (_pWBuffer != NULL)
+	if ((_pWBuffer != NULL) && glConfig._dxShowWireframe)
 	{
 		D3DXMATRIX	matBias;
 
 		D3DXMatrixScaling(&matBias, 1.005f, 1.005f, 1.005f);
 
 		pd3dDevice->SetRenderState      (D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+		if (!glConfig._dxShowTexture)
+		{
+			pd3dDevice->SetMaterial      (&_material);
+			pd3dDevice->SetTransform     (D3DTS_WORLD, &worldMatrix);
+			pd3dDevice->MultiplyTransform(D3DTS_WORLD, &_transform);
+		}
 		pd3dDevice->SetRenderState      (D3DRS_LIGHTING, false);
 		pd3dDevice->MultiplyTransform   (D3DTS_WORLD, &matBias);
 		pd3dDevice->SetStreamSource     (0, _pWBuffer, 0, sizeof(D3DCustomVertexColor));
