@@ -1,28 +1,39 @@
 #pragma once
 
 #include "DirectXMesh.h"
+#include <string>
+
+using namespace std;
 
 namespace NifUtility
 {
-	struct D3DCustomVertexColNormal;
+	struct D3DCustomVertexColNormTex;
+	struct D3DCustomVertexColor;
 
 	class DirectXMeshModel : public DirectXMesh
 	{
 		protected:
-			D3DCustomVertexColNormal*	_pBufVertices;
+			LPDIRECT3DTEXTURE9			_pTexture;
+			LPDIRECT3DVERTEXBUFFER9		_pWBuffer;		//  VertexBuffer to hold vertices for wireframe
+			D3DCustomVertexColNormTex*	_pBufVertices;
+			D3DCustomVertexColor*		_pBufVerticesW;
 			unsigned short*				_pBufIndices;
+			string						_textureName;
 
 		public:
 							DirectXMeshModel();
 							DirectXMeshModel(D3DXMATRIX transform,
-											 D3DCustomVertexColNormal* pBufferV,
+											 D3DMATERIAL9 material,
+											 D3DCustomVertexColNormTex* pBufferV,
 											 const unsigned int countV,
 											 unsigned short* pBufferI,
-											 const unsigned int countI
+											 const unsigned int countI,
+											 string textureName,
+											 D3DCustomVertexColor* pBufferW=NULL
 											);
 			virtual			~DirectXMeshModel();
 
-			virtual	void	SetVBuffer(D3DCustomVertexColNormal* pBuffer, const unsigned int count);
+			virtual	void	SetVBuffer(D3DCustomVertexColNormTex* pBuffer, const unsigned int count);
 			virtual	void	SetIBuffer(unsigned short* pBuffer, const unsigned int count);
 
 			virtual	bool	Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMatrix);

@@ -9,6 +9,7 @@
 #include "obj/NiTriShapeData.h"
 #include "obj/NiTexturingProperty.h"
 #include "obj/NiAlphaProperty.h"
+#include "obj/NiMaterialProperty.h"
 #include "obj/NiSourceTexture.h"
 
 using namespace NifUtility;
@@ -55,14 +56,16 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 
 	if (pData != NULL)
 	{
+		D3DMATERIAL9			material;
 		vector<Vector3>			vecVertices (pData->GetVertices());
 		vector<Triangle>		vecTriangles(pData->GetTriangles());
 		vector<Vector3>			vecNormals  (pData->GetNormals());
 		vector<TexCoord>		vecTexCoords(pData->GetUVSet(0));
+		vector<Color4>			vecColors   (pData->GetColors());
 		vector<NiPropertyRef>	propList    (pShape->GetProperties());
 		Matrix44				locTransform(pShape->GetLocalTransform());
-		Vector3					locCenter   (pData->GetCenter());
 		string					baseTexture;
+		bool					hasMaterial (false);
 
 		//  parse properties
 		for (vector<NiPropertyRef>::iterator pIter=propList.begin(); pIter != propList.end(); ++pIter)
@@ -71,8 +74,9 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			if (DynamicCast<NiTexturingProperty>(*pIter) != NULL)
 			{
 				TexDesc		baseTex((DynamicCast<NiTexturingProperty>(*pIter))->GetTexture(BASE_MAP));
-
-				baseTexture = baseTex.source->GetTextureFileName();
+				
+				baseTexture = "H:\\tmp\\Morrowind\\DataFiles\\Textures\\" + baseTex.source->GetTextureFileName();
+				//baseTexture = baseTexture.substr(0, baseTexture.length() - 3) + "dds";
 			}
 			//  NiAlphaProperty
 			else if (DynamicCast<NiAlphaProperty>(*pIter) != NULL)
@@ -80,6 +84,24 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 
 
 
+			}
+			//  NiMaterialProperty
+			else if (DynamicCast<NiMaterialProperty>(*pIter) != NULL)
+			{
+				NiMaterialProperty*	pProp(DynamicCast<NiMaterialProperty>(*pIter));
+				Color3				tColor;
+
+				tColor = pProp->GetAmbientColor();
+				material.Ambient = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				tColor = pProp->GetDiffuseColor();
+				material.Diffuse = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				tColor = pProp->GetEmissiveColor();
+				material.Emissive = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				tColor = pProp->GetSpecularColor();
+				material.Specular = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				material.Power    = pProp->GetGlossiness();
+
+				hasMaterial = true;
 			}
 		}  //  for (vector<NiPropertyRef>::iterator pIter=propList.begin(); pIter != propList.end(); ++pIter)
 
@@ -91,15 +113,28 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		}
 
 		//  - vertices
-		unsigned int				countV      (vecVertices.size());
-		D3DCustomVertexColNormal*	pBufVertices(new D3DCustomVertexColNormal[countV]);
+		unsigned int				countV       (vecVertices.size());
+		D3DCustomVertexColNormTex*	pBufVertices (new D3DCustomVertexColNormTex[countV]);
+		D3DCustomVertexColor*		pBufVerticesW(new D3DCustomVertexColor[countV]);
 
 		for (unsigned int i(0); i < countV; ++i)
 		{
-			pBufVertices[i]._x     = vecVertices[i].x;
-			pBufVertices[i]._y     = vecVertices[i].y;
-			pBufVertices[i]._z     = vecVertices[i].z;
-			pBufVertices[i]._color = 0xC0C0C0;
+			//  model
+			pBufVertices[i]._x        = vecVertices[i].x;
+			pBufVertices[i]._y        = vecVertices[i].y;
+			pBufVertices[i]._z        = vecVertices[i].z;
+			pBufVertices[i]._normal.x = vecNormals[i].x;
+			pBufVertices[i]._normal.y = vecNormals[i].y;
+			pBufVertices[i]._normal.z = vecNormals[i].z;
+			pBufVertices[i]._color    = D3DXCOLOR(vecColors[i].r, vecColors[i].g, vecColors[i].b, 1.0f);
+			pBufVertices[i]._u        = vecTexCoords[i].u;
+			pBufVertices[i]._v        = vecTexCoords[i].v;
+
+			//  wireframe
+			pBufVerticesW[i]._x     = vecVertices[i].x;
+			pBufVerticesW[i]._y     = vecVertices[i].y;
+			pBufVerticesW[i]._z     = vecVertices[i].z;
+			pBufVerticesW[i]._color = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 		}
 		
 		//  - indices
@@ -113,11 +148,18 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			pBufIndices[i+2] = vecTriangles[i/3].v3;
 		}
 
+		//  - material
+		if (!hasMaterial)
+		{
+			ZeroMemory(&material, sizeof(material));
+			material.Ambient = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+			material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+		}
 
 
 
 		//  append mesh to list
-		meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), pBufVertices, countV, pBufIndices, countI));
+		meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
 
 	}  //  if (pData != NULL)
 

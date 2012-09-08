@@ -47,19 +47,19 @@ bool DirectXMeshAxes::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMatr
 			pVAxis[i]._x     = vertPts[i]._x;
 			pVAxis[i]._y     = vertPts[i]._y;
 			pVAxis[i]._z     = vertPts[i]._z;
-			pVAxis[i]._color = 0xFF0000;
+			pVAxis[i]._color = D3DXCOLOR(1.0f, 0.0f, 0.0f, 1.0f);
 
 			//  y-axis
 			pVAxis[i+8]._x     = vertPts[i]._y;
 			pVAxis[i+8]._y     = vertPts[i]._x;
 			pVAxis[i+8]._z     = vertPts[i]._z;
-			pVAxis[i+8]._color = 0x00FF00;
+			pVAxis[i+8]._color = D3DXCOLOR(0.0f, 1.0f, 0.0f, 1.0f);
 
 			//  z-axis
 			pVAxis[i+16]._x     = vertPts[i]._z;
 			pVAxis[i+16]._y     = -vertPts[i]._y;
 			pVAxis[i+16]._z     = vertPts[i]._x;
-			pVAxis[i+16]._color = 0x0000FF;
+			pVAxis[i+16]._color = D3DXCOLOR(0.0f, 0.0f, 1.0f, 1.0f);
 		}
 
 		_pVBuffer->Unlock();
@@ -82,6 +82,8 @@ bool DirectXMeshAxes::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMatr
 		_pIBuffer->Unlock();
 	}
 
+	pd3dDevice->SetMaterial         (&_material);
+	pd3dDevice->SetRenderState      (D3DRS_LIGHTING, false);
 	pd3dDevice->SetTransform        (D3DTS_WORLD, &worldMatrix);
 	pd3dDevice->SetStreamSource     (0, _pVBuffer, 0, sizeof(D3DCustomVertexColor));
 	pd3dDevice->SetIndices          (_pIBuffer);

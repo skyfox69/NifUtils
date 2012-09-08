@@ -9,9 +9,9 @@ namespace NifUtility
 
 	struct D3DCustomVertex
 	{
-	  float   _x;
-	  float   _y;
-	  float   _z;
+	  float		_x;
+	  float		_y;
+	  float		_z;
 	};
 
 	//  vertex with color
@@ -19,21 +19,23 @@ namespace NifUtility
 
 	struct D3DCustomVertexColor
 	{
-	  float   _x;
-	  float   _y;
-	  float   _z;
-	  DWORD   _color;
+	  float		_x;
+	  float		_y;
+	  float		_z;
+	  DWORD		_color;
 	};
 
 	//  vertex with color and normals
-	#define D3DFVF_CUSTOMVERTEX_COLNORMAL	D3DFVF_XYZ | D3DFVF_DIFFUSE //| D3DFVF_NORMAL
+	#define D3DFVF_CUSTOMVERTEX_COLNORMTEX	D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1
 
-	struct D3DCustomVertexColNormal
+	struct D3DCustomVertexColNormTex
 	{
-	  float   _x;
-	  float   _y;
-	  float   _z;
-	  DWORD   _color;
-//	  NORMAL  _normal;
+	  float		_x;
+	  float		_y;
+	  float		_z;
+	  D3DVECTOR	_normal;
+	  DWORD		_color;
+	  float		_u;
+	  float		_v;
 	};
 }

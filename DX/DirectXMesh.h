@@ -10,6 +10,7 @@ namespace NifUtility
 	{
 		protected:
 			D3DXMATRIX				_transform;		//  transformation to global coord system
+			D3DMATERIAL9			_material;		//  material of object
 			LPDIRECT3DVERTEXBUFFER9	_pVBuffer;		//  VertexBuffer to hold vertices
 			LPDIRECT3DINDEXBUFFER9	_pIBuffer;		//  IndexBuffer to hold face indexes
 			DirectXNifShapeType		_shapeType;		//  Type of shape represented

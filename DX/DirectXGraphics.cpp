@@ -22,6 +22,13 @@ CDirectXGraphics::CDirectXGraphics()
 CDirectXGraphics::~CDirectXGraphics()
 {
 	dxShutdown();
+
+	//  remove and delete objects
+	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end();)
+	{
+		delete *pIter;
+		pIter = _meshList.erase(pIter);
+	}
 }
 
 void CDirectXGraphics::dxCreate(CRect rect, CWnd *pParent, CWnd* pSelf)
@@ -65,14 +72,15 @@ bool CDirectXGraphics::dxCreateRenderingContext(HWND hWnd, const int width, cons
 
 	//  Set up the structure used to create the D3DDevice
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
-	d3dpp.Windowed               = TRUE;
+	d3dpp.Windowed               = true;
 	d3dpp.SwapEffect             = D3DSWAPEFFECT_DISCARD;
-	d3dpp.BackBufferFormat       = d3ddm.Format;
+	d3dpp.EnableAutoDepthStencil = true;
+	d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 	d3dpp.hDeviceWindow          = hWnd;
 	d3dpp.BackBufferWidth        = width;
 	d3dpp.BackBufferHeight       = height;
-//	d3dpp.EnableAutoDepthStencil = TRUE;
-//	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	d3dpp.BackBufferFormat       = d3ddm.Format;
+	d3dpp.MultiSampleType        = D3DMULTISAMPLE_NONE;
 
 	//  Create the D3DDevice
 	if (FAILED(_pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &_pd3dDevice)))
@@ -131,19 +139,65 @@ bool CDirectXGraphics::dxInitScene()
 								 &D3DXVECTOR3(0.0f, 0.0f, -1.0f));	// camera up vector
 	_pd3dDevice->SetTransform(D3DTS_VIEW, &matView);
 
+	_pd3dDevice->SetRenderState(D3DRS_AMBIENT, RGB(80,80,80));
+	//_pd3dDevice->SetRenderState(D3DRS_AMBIENT, RGB(0,0,0));
+
+	// Turn off D3D lighting, since we are providing our own vertex colors
+	//_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
+	_pd3dDevice->SetRenderState(D3DRS_LIGHTING, true);
+
 	// Turn off culling, so we see the front and back of the triangle
 	_pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 
-	// Turn off D3D lighting, since we are providing our own vertex colors
-	_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
-
-	_pd3dDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
-
-//	_pd3dDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));
+	_pd3dDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);
 
 	// Wireframe render
-	_pd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-	
+	//_pd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+	//alpha blending enabled (NEW)
+	_pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE,true);
+	//source alpha (NEW)
+	_pd3dDevice->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_SRCALPHA);
+	//destination alpha (NEW)
+	_pd3dDevice->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
+
+	_pd3dDevice->SetTextureStageState(0,D3DTSS_ALPHAARG1,D3DTA_DIFFUSE);
+
+	_pd3dDevice->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
+
+
+	_pd3dDevice->SetSamplerState(0,D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+	_pd3dDevice->SetSamplerState(0,D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+	_pd3dDevice->SetSamplerState(0,D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
+
+
+	D3DLIGHT9	light;
+
+	ZeroMemory(&light, sizeof(light));
+	light.Type        = D3DLIGHT_DIRECTIONAL;
+	light.Diffuse     = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	light.Direction.x = 0.0f;
+	light.Direction.y = -10000.0f;
+	light.Direction.z = 0.0f;
+	light.Range       = 21000.0f;
+
+	_pd3dDevice->SetLight(0, &light);
+	_pd3dDevice->LightEnable(0, true);
+
+	ZeroMemory(&light, sizeof(light));
+	light.Type        = D3DLIGHT_DIRECTIONAL;
+	light.Diffuse     = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+	light.Direction.x = 0.0f;
+	light.Direction.y = 10000.0f;
+	light.Direction.z = 0.0f;
+	//light.Range       = 21000.0f;
+
+	_pd3dDevice->SetLight(1, &light);
+	_pd3dDevice->LightEnable(1, true);
+
+
+
+
 	return true;
 }
 
@@ -157,6 +211,7 @@ bool CDirectXGraphics::dxBeginScene()
 {
 	//  clear background
 	_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0x20, 0x00, 0x20), 1.0f, 0);
+	_pd3dDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0x20, 0x20, 0x20), 1.0f, 0);
 
 	//  Begin the scene
 	_pd3dDevice->BeginScene();
@@ -189,7 +244,7 @@ bool CDirectXGraphics::dxRenderScene()
 	D3DXMatrixRotationY(&matRotY, (_vecViewCam.y)*3.14159f/180.0f);
 	D3DXMatrixRotationZ(&matRotZ, (_vecViewCam.z+_rotY)*3.14159f/180.0f);
 	D3DXMatrixScaling(&matScale, -_zoom, -_zoom, -_zoom);
-	D3DXMatrixTranslation(&matTrans, _posX*50, -_posY*50, 0);
+	D3DXMatrixTranslation(&matTrans, _posX*50, 0, _posY*50);
 
 	matWorld = (matRotZ*matRotY*matRotX) * matTrans * matScale;
 	_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
@@ -268,7 +323,7 @@ void CDirectXGraphics::dxSetShowModel(bool show)
 	//  set flag
 	_showModel = show;
 
-	//  search for axes and toggle display
+	//  search for model and toggle display
 	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end(); ++pIter)
 	{
 		if (dynamic_cast<DirectXMeshModel*>(*pIter) != NULL)
@@ -280,5 +335,23 @@ void CDirectXGraphics::dxSetShowModel(bool show)
 
 void CDirectXGraphics::dxAddMesh(DirectXMesh* pMesh)
 {
-	_meshList.push_back(pMesh);
+	//_meshList.push_back(pMesh);
+	_meshList.insert(_meshList.begin(), pMesh);
+}
+
+void CDirectXGraphics::dxClearModel()
+{
+	//  search for model and remove and delete object
+	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end();)
+	{
+		if (dynamic_cast<DirectXMeshModel*>(*pIter) != NULL)
+		{
+			delete *pIter;
+			pIter = _meshList.erase(pIter);
+		}
+		else
+		{
+			++pIter;
+		}
+	}
 }
