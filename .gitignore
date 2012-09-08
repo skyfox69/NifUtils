@@ -6,6 +6,7 @@ ipch/*
 NifUtils.sln
 NifUtils.sdf
 NifUtils.suo
+*/Debug
 
 niflib/*
 
