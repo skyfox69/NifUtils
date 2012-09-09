@@ -18,6 +18,7 @@
 
 //  used namespaces
 using namespace NifUtility;
+using namespace Niflib;
 
 /*---------------------------------------------------------------------------*/
 NifConvertUtility::NifConvertUtility()
@@ -249,13 +250,13 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 			pDstLShader->setTextureSet(pDstSText);
 
 			//  check for existing vertex colors
-			if ((pDstGeo != NULL) && (pDstGeo->GetColors().size() <= 0) && ((pDstLShader->getShaderFlags2() & Niflib::SLSF2_VERTEX_COLOR) != 0))
+			if ((pDstGeo != NULL) && (pDstGeo->GetColors().size() <= 0) && ((pDstLShader->getShaderFlags2() & Niflib::SLSF2_VERTEX_COLORS) != 0))
 			{
 				switch (_vcHandling)
 				{
 					case NCU_VC_REMOVE_FLAG:
 					{
-						pDstLShader->setShaderFlags2((pDstLShader->getShaderFlags2() & ~Niflib::SLSF2_VERTEX_COLOR));
+						pDstLShader->setShaderFlags2((SkyrimShaderPropertyFlags2) (pDstLShader->getShaderFlags2() & ~Niflib::SLSF2_VERTEX_COLORS));
 						break;
 					}
 
@@ -306,7 +307,7 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 		//  force flag in BSLightingShaderProperty
 		if (pDstLShader != NULL)
 		{
-			pDstLShader->setShaderFlags2((pDstLShader->getShaderFlags2() | Niflib::SLSF2_VERTEX_COLOR));
+			pDstLShader->setShaderFlags2((SkyrimShaderPropertyFlags2) (pDstLShader->getShaderFlags2() | Niflib::SLSF2_VERTEX_COLORS));
 		}
 	}
 

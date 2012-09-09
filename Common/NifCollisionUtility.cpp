@@ -23,6 +23,7 @@
 
 //  used namespaces
 using namespace NifUtility;
+using namespace Niflib;
 
 /*---------------------------------------------------------------------------*/
 NifCollisionUtility::NifCollisionUtility(NifUtlMaterialList& materialList)
@@ -518,8 +519,8 @@ bool NifCollisionUtility::injectCollisionData(vector<hkGeometry>& geometryMap, b
 	hkpCompressedMeshShapeBuilder			shapeBuilder;
 	hkpMoppCompilerInput					mci;
 	vector<int>								geometryIdxVec;
-	vector<bhkCMSD_Something>				tMtrlVec;
-	unsigned int							material   (0);
+	vector<bhkCMSDMaterial>					tMtrlVec;
+	HavokMaterial							material   (HAV_MAT_STONE);
 	int										subPartId  (0);
 	int										tChunkSize (0);
 
@@ -535,21 +536,21 @@ bool NifCollisionUtility::injectCollisionData(vector<hkGeometry>& geometryMap, b
 		size_t		matIdx(0);
 
 		//  determine material index
-		material = (unsigned int) geoIter->m_triangles[0].m_material;
+		material = (HavokMaterial) geoIter->m_triangles[0].m_material;
 
 		//  material already known?
 		for (matIdx=0; matIdx < tMtrlVec.size(); ++matIdx)
 		{
-			if (tMtrlVec[matIdx].largeInt == material)		break;
+			if (tMtrlVec[matIdx].material == material)		break;
 		}
 
 		//  add new material?
 		if (matIdx >= tMtrlVec.size())
 		{
-			bhkCMSD_Something	tChunkMat;
+			bhkCMSDMaterial	tChunkMat;
 
 			//  create single material
-			tChunkMat.largeInt       = material;
+			tChunkMat.material       = material;
 			tChunkMat.unknownInteger = 1;
 
 			//  add material to list
@@ -584,7 +585,7 @@ bool NifCollisionUtility::injectCollisionData(vector<hkGeometry>& geometryMap, b
 	vector<Vector4>                         tVec4Vec;
 	vector<bhkCMSDBigTris>                  tBTriVec;
 	vector<bhkCMSDTransform>                tTranVec;
-	map<unsigned int, bhkCMSD_Something>	tMtrlMap;
+	map<unsigned int, bhkCMSDMaterial>		tMtrlMap;
 	short                                   chunkIdxNif(0);
 
 	//  --- modify MoppBvTree ---
