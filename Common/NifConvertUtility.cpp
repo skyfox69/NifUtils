@@ -10,6 +10,8 @@
 
 //  Niflib includes
 #include "niflib.h"
+#include "obj/NiExtraData.h"
+#include "obj/NiTimeController.h"
 #include "obj/BSLightingShaderProperty.h"
 #include "obj/NiTexturingProperty.h"
 #include "obj/BSShaderTextureSet.h"
