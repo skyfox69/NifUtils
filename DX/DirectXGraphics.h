@@ -53,5 +53,7 @@ namespace NifUtility
 			virtual void					dxAddMesh    (DirectXMesh* pMesh);
 			virtual	vector<DirectXMesh*>&	dxGetMeshList() { return _meshList; }
 			virtual	void					dxClearModel ();
+
+			virtual void					dxSetColorWireframe(DWORD color);
 	};
 }

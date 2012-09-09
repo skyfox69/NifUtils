@@ -2,6 +2,7 @@
 #include "Configuration.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 using namespace NifUtility;
 
@@ -11,10 +12,13 @@ Configuration::Configuration()
 		_matHandling      (0),
 		_vertColHandling  (0),
 		_collTypeHandling (1),
+		_colorWireframe   (0xFFFFFFFF),
+		_colorBackground  (0xFF200020),
 		_upTangentSpace   (true),
 		_reorderProperties(true),
 		_dxShowTexture    (true),
-		_dxShowWireframe  (false)
+		_dxShowWireframe  (false),
+		_dxShowColorWire  (false)
 {
 }
 
@@ -36,6 +40,28 @@ bool Configuration::readAttribute(const string& content, const string tag, strin
 		if (posEnd != string::npos)
 		{
 			attribute = content.substr(posStart, posEnd - posStart - 2);
+			isOK = true;
+		}
+	}
+
+	return isOK;
+}
+
+bool Configuration::readAttribute(const string& content, const string tag, DWORD& attribute)
+{
+	size_t	posStart(0);
+	size_t	posEnd  (0);
+	bool	isOK    (false);
+
+	posStart = content.find(tag);
+	if (posStart != string::npos)
+	{
+		posStart += tag.length();
+		posEnd = content.find(tag, posStart);
+		if (posEnd != string::npos)
+		{
+			istringstream	tStream(content.substr(posStart, posEnd - posStart - 2).c_str());
+			tStream >> hex >> attribute;
 			isOK = true;
 		}
 	}
@@ -118,6 +144,10 @@ bool Configuration::read(const string fileName)
 
 			readAttribute(content, "ShowTexture>", _dxShowTexture);
 			readAttribute(content, "ShowWireframe>", _dxShowWireframe);
+			readAttribute(content, "ShowColorWire>", _dxShowColorWire);
+			readAttribute(content, "DirTexturePath>", _dirTexturePath);
+			readAttribute(content, "ColorWireframe>", _colorWireframe);
+			readAttribute(content, "ColorBackground>", _colorBackground);
 
 
 
@@ -170,6 +200,10 @@ bool Configuration::write(const string fileName)
 		oStr << "<DirectXView>";
 		oStr << "<ShowTexture>" << _dxShowTexture << "</ShowTexture>";
 		oStr << "<ShowWireframe>" << _dxShowWireframe << "</ShowWireframe>";
+		oStr << "<ShowColorWire>" << _dxShowColorWire << "</ShowColorWire>";
+		oStr << "<DirTexturePath>" << _dirTexturePath << "</DirTexturePath>";
+		oStr << "<ColorWireframe>" << hex << _colorWireframe << "</ColorWireframe>";
+		oStr << "<ColorBackground>" << hex << _colorBackground << "</ColorBackground>";
 		oStr << "</DirectXView>";
 
 

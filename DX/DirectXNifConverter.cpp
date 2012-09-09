@@ -1,4 +1,5 @@
 #include "..\Common\stdafx.h"
+#include "..\Common\Configuration.h"
 #include "DirectXNifConverter.h"
 #include "DirectXMeshModel.h"
 #include "DirectXVertex.h"
@@ -8,11 +9,12 @@
 #include "obj/rootcollisionnode.h"
 #include "obj/NiTriShapeData.h"
 #include "obj/NiTexturingProperty.h"
-#include "obj/NiAlphaProperty.h"
 #include "obj/NiMaterialProperty.h"
 #include "obj/NiSourceTexture.h"
 
 using namespace NifUtility;
+
+extern Configuration	glConfig;
 
 DirectXNifConverter::DirectXNifConverter()
 {
@@ -65,7 +67,11 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		vector<NiPropertyRef>	propList    (pShape->GetProperties());
 		Matrix44				locTransform(pShape->GetLocalTransform());
 		string					baseTexture;
+		DWORD					alpSource   (0);
+		DWORD					alpDest     (0);
+		DWORD					alpArg      (0);
 		bool					hasMaterial (false);
+		bool					hasAlpha    (false);
 
 		//  parse properties
 		for (vector<NiPropertyRef>::iterator pIter=propList.begin(); pIter != propList.end(); ++pIter)
@@ -75,15 +81,22 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			{
 				TexDesc		baseTex((DynamicCast<NiTexturingProperty>(*pIter))->GetTexture(BASE_MAP));
 				
-				baseTexture = "H:\\tmp\\Morrowind\\DataFiles\\Textures\\" + baseTex.source->GetTextureFileName();
-				//baseTexture = baseTexture.substr(0, baseTexture.length() - 3) + "dds";
+				baseTexture = glConfig._dirTexturePath + "\\" + baseTex.source->GetTextureFileName();
+				baseTexture = baseTexture.substr(0, baseTexture.length() - 3) + "dds";
 			}
 			//  NiAlphaProperty
 			else if (DynamicCast<NiAlphaProperty>(*pIter) != NULL)
 			{
+				NiAlphaProperty*	pProp(DynamicCast<NiAlphaProperty>(*pIter));
 
+				alpSource = BlendFuncToDXBlend(pProp->GetSourceBlendFunc());
+				alpDest   = BlendFuncToDXBlend(pProp->GetDestBlendFunc());
 
+				alpSource = D3DBLEND_SRCALPHA;
+				alpDest   = D3DBLEND_INVSRCALPHA;
 
+				alpArg    = D3DTA_TEXTURE;
+				hasAlpha  = true;
 			}
 			//  NiMaterialProperty
 			else if (DynamicCast<NiMaterialProperty>(*pIter) != NULL)
@@ -91,15 +104,11 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 				NiMaterialProperty*	pProp(DynamicCast<NiMaterialProperty>(*pIter));
 				Color3				tColor;
 
-				tColor = pProp->GetAmbientColor();
-				material.Ambient = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
-				tColor = pProp->GetDiffuseColor();
-				material.Diffuse = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
-				tColor = pProp->GetEmissiveColor();
-				material.Emissive = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
-				tColor = pProp->GetSpecularColor();
-				material.Specular = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
-				material.Power    = pProp->GetGlossiness();
+				tColor = pProp->GetAmbientColor();		material.Ambient  = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				tColor = pProp->GetDiffuseColor();		material.Diffuse  = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				tColor = pProp->GetEmissiveColor();		material.Emissive = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				tColor = pProp->GetSpecularColor();		material.Specular = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+														material.Power    = pProp->GetGlossiness();
 
 				hasMaterial = true;
 			}
@@ -134,7 +143,7 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			pBufVerticesW[i]._x     = vecVertices[i].x;
 			pBufVerticesW[i]._y     = vecVertices[i].y;
 			pBufVerticesW[i]._z     = vecVertices[i].z;
-			pBufVerticesW[i]._color = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+			pBufVerticesW[i]._color = glConfig._colorWireframe;
 		}
 		
 		//  - indices
@@ -159,7 +168,15 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 
 
 		//  append mesh to list
-		meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
+		DirectXMeshModel*	pNewMesh(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
+
+		//  alpha blending defined?
+		if (hasAlpha)
+		{
+			pNewMesh->SetAlpha(alpSource, alpDest, alpArg);
+		}
+
+		meshList.push_back(pNewMesh);
 
 	}  //  if (pData != NULL)
 
@@ -260,4 +277,33 @@ D3DXMATRIX DirectXNifConverter::Matrix44ToD3DXMATRIX(const Matrix44& matrixIn)
 	}
 
 	return matrixOut;
+}
+
+DWORD DirectXNifConverter::BlendFuncToDXBlend(const NiAlphaProperty::BlendFunc value)
+{
+	switch (value)
+	{
+		case NiAlphaProperty::BF_SRC_ALPHA:
+		case NiAlphaProperty::BF_SRC_ALPHA_SATURATE:
+		{
+			return D3DBLEND_SRCALPHA;
+		}
+
+		case NiAlphaProperty::BF_DST_ALPHA:
+		{
+			return D3DBLEND_DESTALPHA;
+		}
+
+		case NiAlphaProperty::BF_ONE_MINUS_SRC_ALPHA:
+		{
+			return D3DBLEND_INVSRCALPHA;
+		}
+
+		case NiAlphaProperty::BF_ONE_MINUS_DST_ALPHA:
+		{
+			return D3DBLEND_INVDESTALPHA;
+		}
+	}
+
+	return 0;
 }

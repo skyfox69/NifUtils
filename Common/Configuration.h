@@ -18,6 +18,9 @@ namespace NifUtility
 			string			_dirSource;
 			string			_dirDestination;
 			string			_dirCollision;
+			string			_dirTexturePath;
+			DWORD			_colorWireframe;
+			DWORD			_colorBackground;
 			int				_collMaterial;
 			int				_matHandling;
 			int				_vertColHandling;
@@ -26,9 +29,11 @@ namespace NifUtility
 			bool			_reorderProperties;
 			bool			_dxShowTexture;
 			bool			_dxShowWireframe;
+			bool			_dxShowColorWire;
 
 		private:
 			virtual	bool	readAttribute(const string& content, const string tag, string& attribute);
+			virtual	bool	readAttribute(const string& content, const string tag, DWORD& attribute);
 			virtual	bool	readAttribute(const string& content, const string tag, int& attribute);
 			virtual	bool	readAttribute(const string& content, const string tag, bool& attribute);
 

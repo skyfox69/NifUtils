@@ -1,10 +1,13 @@
 #include "..\Common\stdafx.h"
+#include "..\Common\Configuration.h"
 #include "DirectXGraphics.h"
 #include "DirectXVertex.h"
 #include "DirectXMeshAxes.h"
 #include "DirectXMeshModel.h"
 
 using namespace NifUtility;
+
+extern Configuration	glConfig;
 
 CDirectXGraphics::CDirectXGraphics()
 	:	_pd3dDevice   (NULL),
@@ -141,7 +144,7 @@ bool CDirectXGraphics::dxInitScene()
 
 	_pd3dDevice->SetRenderState(D3DRS_AMBIENT, RGB(80,80,80));
 	//_pd3dDevice->SetRenderState(D3DRS_AMBIENT, RGB(0,0,0));
-
+#if 0
 	// Turn off D3D lighting, since we are providing our own vertex colors
 	//_pd3dDevice->SetRenderState(D3DRS_LIGHTING, FALSE);
 	_pd3dDevice->SetRenderState(D3DRS_LIGHTING, true);
@@ -160,15 +163,21 @@ bool CDirectXGraphics::dxInitScene()
 	_pd3dDevice->SetRenderState(D3DRS_SRCBLEND,D3DBLEND_SRCALPHA);
 	//destination alpha (NEW)
 	_pd3dDevice->SetRenderState(D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
+	_pd3dDevice->SetRenderState(D3DRS_BLENDOP,D3DBLENDOP_ADD);
 
-	_pd3dDevice->SetTextureStageState(0,D3DTSS_ALPHAARG1,D3DTA_DIFFUSE);
-
+	//_pd3dDevice->SetTextureStageState(0,D3DTSS_ALPHAARG1,D3DTA_DIFFUSE);
+	_pd3dDevice->SetTextureStageState(0,D3DTSS_ALPHAARG1,D3DTA_TEXTURE);
+#endif
 	_pd3dDevice->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
 
 
-	_pd3dDevice->SetSamplerState(0,D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
-	_pd3dDevice->SetSamplerState(0,D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
-	_pd3dDevice->SetSamplerState(0,D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
+	for (int i(0); i < 8; ++i)
+	{
+		_pd3dDevice->SetSamplerState(i,D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+		_pd3dDevice->SetSamplerState(i,D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+		_pd3dDevice->SetSamplerState(i,D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
+		_pd3dDevice->SetSamplerState(i,D3DSAMP_MAXANISOTROPY,0);
+	}
 
 
 	D3DLIGHT9	light;
@@ -210,8 +219,8 @@ bool CDirectXGraphics::dxCleanupScene()
 bool CDirectXGraphics::dxBeginScene()
 {
 	//  clear background
-	_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0x20, 0x00, 0x20), 1.0f, 0);
-	_pd3dDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0x20, 0x20, 0x20), 1.0f, 0);
+	_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, glConfig._colorBackground, 1.0f, 0);
+	_pd3dDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, glConfig._colorBackground, 1.0f, 0);
 
 	//  Begin the scene
 	_pd3dDevice->BeginScene();
@@ -249,10 +258,22 @@ bool CDirectXGraphics::dxRenderScene()
 	matWorld = (matRotZ*matRotY*matRotX) * matTrans * matScale;
 	_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
-	//  render each mesh in list
+	//  render each mesh in list - opaque objects
 	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end(); ++pIter)
 	{
-		(*pIter)->Render(_pd3dDevice, matWorld);
+		if (!(*pIter)->HasAlpha())
+		{
+			(*pIter)->Render(_pd3dDevice, matWorld);
+		}
+	}
+
+	//  render each mesh in list - alpha objects
+	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end(); ++pIter)
+	{
+		if ((*pIter)->HasAlpha())
+		{
+			(*pIter)->Render(_pd3dDevice, matWorld);
+		}
 	}
 
 	return true;
@@ -352,6 +373,18 @@ void CDirectXGraphics::dxClearModel()
 		else
 		{
 			++pIter;
+		}
+	}
+}
+
+void CDirectXGraphics::dxSetColorWireframe(DWORD color)
+{
+	//  search for model and remove and delete object
+	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end(); ++pIter)
+	{
+		if (dynamic_cast<DirectXMeshModel*>(*pIter) != NULL)
+		{
+			(dynamic_cast<DirectXMeshModel*>(*pIter))->SetColorWireframe(color);
 		}
 	}
 }
