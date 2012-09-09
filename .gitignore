@@ -8,6 +8,6 @@ NifUtils.sdf
 NifUtils.suo
 */Debug
 
-niflib/*
+#niflib/*
 
 DX/*
