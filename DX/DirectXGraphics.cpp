@@ -166,9 +166,13 @@ bool CDirectXGraphics::dxInitScene()
 	_pd3dDevice->SetRenderState(D3DRS_NORMALIZENORMALS, TRUE);
 
 
-	_pd3dDevice->SetSamplerState(0,D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
-	_pd3dDevice->SetSamplerState(0,D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
-	_pd3dDevice->SetSamplerState(0,D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
+	for (int i(0); i < 8; ++i)
+	{
+		_pd3dDevice->SetSamplerState(i,D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+		_pd3dDevice->SetSamplerState(i,D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+		_pd3dDevice->SetSamplerState(i,D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
+		_pd3dDevice->SetSamplerState(i,D3DSAMP_MAXANISOTROPY,0);
+	}
 
 
 	D3DLIGHT9	light;
@@ -249,10 +253,22 @@ bool CDirectXGraphics::dxRenderScene()
 	matWorld = (matRotZ*matRotY*matRotX) * matTrans * matScale;
 	_pd3dDevice->SetTransform(D3DTS_WORLD, &matWorld);
 
-	//  render each mesh in list
+	//  render each mesh in list - opaque objects
 	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end(); ++pIter)
 	{
-		(*pIter)->Render(_pd3dDevice, matWorld);
+		if (!(*pIter)->HasAlpha())
+		{
+			(*pIter)->Render(_pd3dDevice, matWorld);
+		}
+	}
+
+	//  render each mesh in list - alpha objects
+	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end(); ++pIter)
+	{
+		if ((*pIter)->HasAlpha())
+		{
+			(*pIter)->Render(_pd3dDevice, matWorld);
+		}
 	}
 
 	return true;

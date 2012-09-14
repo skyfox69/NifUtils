@@ -104,15 +104,11 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 				NiMaterialProperty*	pProp(DynamicCast<NiMaterialProperty>(*pIter));
 				Color3				tColor;
 
-				tColor = pProp->GetAmbientColor();
-				material.Ambient = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
-				tColor = pProp->GetDiffuseColor();
-				material.Diffuse = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
-				tColor = pProp->GetEmissiveColor();
-				material.Emissive = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
-				tColor = pProp->GetSpecularColor();
-				material.Specular = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
-				material.Power    = pProp->GetGlossiness();
+				tColor = pProp->GetAmbientColor();		material.Ambient  = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				tColor = pProp->GetDiffuseColor();		material.Diffuse  = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				tColor = pProp->GetEmissiveColor();		material.Emissive = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+				tColor = pProp->GetSpecularColor();		material.Specular = D3DXCOLOR(tColor.r, tColor.g, tColor.b, 1.0f);
+														material.Power    = pProp->GetGlossiness();
 
 				hasMaterial = true;
 			}
