@@ -17,7 +17,7 @@ static D3DCustomVertexColor vertPts[] = {{-500.0f,   0.0f,   0.0f, 0x000000},
 static unsigned int vertIdx[] = {0, 1, 2, 3, 4, 3, 5, 3, 6, 3, 7, 3};
 
 DirectXMeshAxes::DirectXMeshAxes()
-	:	DirectXMesh(DX_NIF_SHP_SYSTEM)
+	:	DirectXMesh()
 {
 	_countVertices = 8*3;
 	_countIndices  = 12*3;

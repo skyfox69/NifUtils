@@ -6,6 +6,7 @@
 
 #include "obj/bsfadenode.h"
 #include "obj/nitrishape.h"
+#include "obj/NiAlphaProperty.h"
 
 using namespace Niflib;
 using namespace std;
@@ -22,6 +23,7 @@ namespace NifUtility
 			virtual	unsigned int	getGeometryFromTriShape(NiTriShapeRef pShape, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry);
 
 			virtual D3DXMATRIX		Matrix44ToD3DXMATRIX(const Matrix44& matrixIn);
+			virtual	DWORD			BlendFuncToDXBlend  (const unsigned int value);
 
 		public:
 									DirectXNifConverter();

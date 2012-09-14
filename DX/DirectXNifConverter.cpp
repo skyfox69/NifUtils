@@ -9,7 +9,6 @@
 #include "obj/rootcollisionnode.h"
 #include "obj/NiTriShapeData.h"
 #include "obj/NiTexturingProperty.h"
-#include "obj/NiAlphaProperty.h"
 #include "obj/NiMaterialProperty.h"
 #include "obj/NiSourceTexture.h"
 
@@ -68,7 +67,11 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		vector<NiPropertyRef>	propList    (pShape->GetProperties());
 		Matrix44				locTransform(pShape->GetLocalTransform());
 		string					baseTexture;
+		DWORD					alpSource   (0);
+		DWORD					alpDest     (0);
+		DWORD					alpArg      (0);
 		bool					hasMaterial (false);
+		bool					hasAlpha    (false);
 
 		//  parse properties
 		for (vector<NiPropertyRef>::iterator pIter=propList.begin(); pIter != propList.end(); ++pIter)
@@ -84,9 +87,16 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			//  NiAlphaProperty
 			else if (DynamicCast<NiAlphaProperty>(*pIter) != NULL)
 			{
+				NiAlphaProperty*	pProp(DynamicCast<NiAlphaProperty>(*pIter));
 
+				alpSource = BlendFuncToDXBlend(pProp->GetSourceBlendFunc());
+				alpDest   = BlendFuncToDXBlend(pProp->GetDestBlendFunc());
 
+				alpSource = D3DBLEND_SRCALPHA;
+				alpDest   = D3DBLEND_INVSRCALPHA;
 
+				alpArg    = D3DTA_TEXTURE;
+				hasAlpha  = true;
 			}
 			//  NiMaterialProperty
 			else if (DynamicCast<NiMaterialProperty>(*pIter) != NULL)
@@ -162,7 +172,15 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 
 
 		//  append mesh to list
-		meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
+		DirectXMeshModel*	pNewMesh(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
+
+		//  alpha blending defined?
+		if (hasAlpha)
+		{
+			pNewMesh->SetAlpha(alpSource, alpDest, alpArg);
+		}
+
+		meshList.push_back(pNewMesh);
 
 	}  //  if (pData != NULL)
 
@@ -263,4 +281,33 @@ D3DXMATRIX DirectXNifConverter::Matrix44ToD3DXMATRIX(const Matrix44& matrixIn)
 	}
 
 	return matrixOut;
+}
+
+DWORD DirectXNifConverter::BlendFuncToDXBlend(const unsigned int value)
+{
+	switch (value)
+	{
+		case NiAlphaProperty::BlendFunc::BF_SRC_ALPHA:
+		case NiAlphaProperty::BlendFunc::BF_SRC_ALPHA_SATURATE:
+		{
+			return D3DBLEND_SRCALPHA;
+		}
+
+		case NiAlphaProperty::BlendFunc::BF_DST_ALPHA:
+		{
+			return D3DBLEND_DESTALPHA;
+		}
+
+		case NiAlphaProperty::BlendFunc::BF_ONE_MINUS_SRC_ALPHA:
+		{
+			return D3DBLEND_INVSRCALPHA;
+		}
+
+		case NiAlphaProperty::BlendFunc::BF_ONE_MINUS_DST_ALPHA:
+		{
+			return D3DBLEND_INVDESTALPHA;
+		}
+	}
+
+	return 0;
 }

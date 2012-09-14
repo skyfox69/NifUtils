@@ -9,7 +9,7 @@ extern Configuration	glConfig;
 
 
 DirectXMeshModel::DirectXMeshModel()
-	:	DirectXMesh  (DX_NIF_SHP_MODEL),
+	:	DirectXMesh  (),
 		_pBufVertices(NULL),
 		_pBufIndices (NULL)
 {
@@ -24,7 +24,7 @@ DirectXMeshModel::DirectXMeshModel(D3DXMATRIX transform,
 								   string textureName,
 								   D3DCustomVertexColor* pBufferW
 								  )
-	:	DirectXMesh   (DX_NIF_SHP_MODEL),
+	:	DirectXMesh   (),
 		_pTexture     (NULL),
 		_pWBuffer     (NULL),
 		_pBufVertices (pBufferV),
