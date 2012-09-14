@@ -33,9 +33,6 @@ namespace NifUtility
 											);
 			virtual			~DirectXMeshModel();
 
-			virtual	void	SetVBuffer(D3DCustomVertexColNormTex* pBuffer, const unsigned int count);
-			virtual	void	SetIBuffer(unsigned short* pBuffer, const unsigned int count);
-
 			virtual	bool	Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMatrix);
 	};
 }

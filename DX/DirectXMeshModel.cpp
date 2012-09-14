@@ -46,18 +46,6 @@ DirectXMeshModel::~DirectXMeshModel()
 	if (_pWBuffer      != NULL)		_pWBuffer->Release();
 }
 
-void DirectXMeshModel::SetVBuffer(D3DCustomVertexColNormTex* pBuffer, const unsigned int count)
-{
-	_pBufVertices  = pBuffer;
-	_countVertices = count;
-}
-
-void DirectXMeshModel::SetIBuffer(unsigned short* pBuffer, const unsigned int count)
-{
-	_pBufIndices  = pBuffer;
-	_countIndices = count;
-}
-
 bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMatrix)
 {
 	//  early return on non rendering
@@ -79,9 +67,30 @@ bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMat
 		memcpy(pIAxis, _pBufIndices, _countIndices*sizeof(unsigned short));
 		_pIBuffer->Unlock();
 
+		//  load texture from file if given
 		if (!_textureName.empty())
 		{
-			D3DXCreateTextureFromFile(pd3dDevice, CString(_textureName.c_str()).GetString(), &_pTexture);
+			if (_pAlpha != NULL)
+			{
+				D3DXCreateTextureFromFileEx(pd3dDevice,
+											CString(_textureName.c_str()).GetString(),
+											D3DX_DEFAULT,
+											D3DX_DEFAULT,
+											D3DX_DEFAULT,
+											NULL,
+											D3DFMT_UNKNOWN,//D3DFMT_A8R8G8B8,
+											D3DPOOL_MANAGED,
+											D3DX_DEFAULT,
+											D3DX_DEFAULT,
+											0xFF000000,
+											NULL,
+											NULL,
+											&_pTexture);
+			}
+			else
+			{
+				D3DXCreateTextureFromFile(pd3dDevice, CString(_textureName.c_str()).GetString(), &_pTexture);
+			}
 		}
 
 		//  once used buffers are deleteable
