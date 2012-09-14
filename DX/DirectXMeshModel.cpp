@@ -115,48 +115,86 @@ bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMat
 		_pBufVerticesW = NULL;
 	}
 
+	//  render object
+	bool	renderObject(!glConfig._dxShowWireframe);
+
+	//  - with texture?
 	if (glConfig._dxShowTexture)
 	{
-		if (_pTexture != NULL)
-		{
-			pd3dDevice->SetTexture(0, _pTexture);
-		}
-		pd3dDevice->SetRenderState      (D3DRS_FILLMODE, D3DFILL_SOLID);
-	}
-	else if (!glConfig._dxShowWireframe)
-	{
-		pd3dDevice->SetRenderState      (D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-	}
-	pd3dDevice->SetMaterial         (&_material);
-	pd3dDevice->SetRenderState      (D3DRS_LIGHTING, true);
-	pd3dDevice->SetTransform        (D3DTS_WORLD, &worldMatrix);
-	pd3dDevice->MultiplyTransform   (D3DTS_WORLD, &_transform);
-	pd3dDevice->SetStreamSource     (0, _pVBuffer, 0, sizeof(D3DCustomVertexColNormTex));
-	pd3dDevice->SetIndices          (_pIBuffer);
-	pd3dDevice->SetFVF              (D3DFVF_CUSTOMVERTEX_COLNORMTEX);
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, _countVertices, 0, _countIndices/3);
-	pd3dDevice->SetTexture(0, NULL);
+		//  set texture if given
+		if (_pTexture != NULL)		pd3dDevice->SetTexture(0, _pTexture);
 
-	if ((_pWBuffer != NULL) && glConfig._dxShowWireframe)
+		//  set solid render state
+		pd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+
+		renderObject = true;
+	}
+	//  - colored wireframe?
+	else if (glConfig._dxShowColorWire)
+	{
+		//  set wireframe render state
+		pd3dDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+		renderObject = true;
+	}
+
+	//  - something to render solid/colored?
+	if (renderObject)
+	{
+		pd3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);										//  show both sides of face
+		pd3dDevice->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE);											//  enable z buffer
+
+		//  alpha properties?
+		if (_pAlpha != NULL)
+		{
+			pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);									//  enable alpha blending
+			pd3dDevice->SetRenderState(D3DRS_SRCBLEND, _pAlpha->_source);								//  source alpha
+			pd3dDevice->SetRenderState(D3DRS_DESTBLEND, _pAlpha->_destination);							//  destination alpha
+			pd3dDevice->SetTextureStageState(0,D3DTSS_ALPHAARG1, _pAlpha->_argument);					//  alpha source (diffuse/texture)
+		}
+		else
+		{
+			pd3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, false);									//  disable alpha blending
+		}
+
+		pd3dDevice->SetMaterial         (&_material);													//  set material
+		pd3dDevice->SetRenderState      (D3DRS_LIGHTING, true);											//  enable light
+		pd3dDevice->SetTransform        (D3DTS_WORLD, &worldMatrix);									//  set world transformation
+		pd3dDevice->MultiplyTransform   (D3DTS_WORLD, &_transform);										//  transform local object into world
+		pd3dDevice->SetStreamSource     (0, _pVBuffer, 0, sizeof(D3DCustomVertexColNormTex));			//  set vertices source
+		pd3dDevice->SetIndices          (_pIBuffer);													//  set indices source
+		pd3dDevice->SetFVF              (D3DFVF_CUSTOMVERTEX_COLNORMTEX);								//  set vertex style
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, _countIndices, 0, _countIndices/3);	//  render
+		pd3dDevice->SetTexture          (0, NULL);
+
+	}  //  if (renderObject)
+
+	//  - something to render pure wireframe?
+	if (glConfig._dxShowWireframe && !glConfig._dxShowColorWire)
 	{
 		D3DXMATRIX	matBias;
 
+		//  create scale matrix
 		D3DXMatrixScaling(&matBias, 1.005f, 1.005f, 1.005f);
 
-		pd3dDevice->SetRenderState      (D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-		if (!glConfig._dxShowTexture)
+		//  set object transformation if not done yet
+		if (!renderObject)
 		{
-			pd3dDevice->SetMaterial      (&_material);
-			pd3dDevice->SetTransform     (D3DTS_WORLD, &worldMatrix);
-			pd3dDevice->MultiplyTransform(D3DTS_WORLD, &_transform);
+			pd3dDevice->SetMaterial         (&_material);												//  set material
+			pd3dDevice->SetTransform        (D3DTS_WORLD, &worldMatrix);								//  set world transformation
+			pd3dDevice->MultiplyTransform   (D3DTS_WORLD, &_transform);									//  transform local object into world
 		}
-		pd3dDevice->SetRenderState      (D3DRS_LIGHTING, false);
-		pd3dDevice->MultiplyTransform   (D3DTS_WORLD, &matBias);
-		pd3dDevice->SetStreamSource     (0, _pWBuffer, 0, sizeof(D3DCustomVertexColor));
-		pd3dDevice->SetIndices          (_pIBuffer);
-		pd3dDevice->SetFVF              (D3DFVF_CUSTOMVERTEX_COLOR);
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, _countVertices, 0, _countIndices/3);
-	}
+		pd3dDevice->MultiplyTransform   (D3DTS_WORLD, &matBias);										//  re-scale object in world view
+		pd3dDevice->SetTexture          (0, NULL);														//  no texture
+		pd3dDevice->SetRenderState		(D3DRS_ALPHABLENDENABLE, false);								//  disable alpha blending
+		pd3dDevice->SetRenderState      (D3DRS_FILLMODE, D3DFILL_WIREFRAME);							//  forced wireframe
+		pd3dDevice->SetRenderState      (D3DRS_LIGHTING, false);										//  disable light
+		pd3dDevice->SetStreamSource     (0, _pWBuffer, 0, sizeof(D3DCustomVertexColor));				//  set vertices source
+		pd3dDevice->SetIndices          (_pIBuffer);													//  set indices source
+		pd3dDevice->SetFVF              (D3DFVF_CUSTOMVERTEX_COLOR);									//  set vertex style
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, _countIndices, 0, _countIndices/3);	//  render
+
+	}  //  if (glConfig._dxShowWireframe && !glConfig._dxShowColorWire)
 
 	return true;
 }

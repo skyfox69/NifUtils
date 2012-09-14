@@ -27,6 +27,7 @@ namespace NifUtility
 			bool			_reorderProperties;
 			bool			_dxShowTexture;
 			bool			_dxShowWireframe;
+			bool			_dxShowColorWire;
 
 		private:
 			virtual	bool	readAttribute(const string& content, const string tag, string& attribute);

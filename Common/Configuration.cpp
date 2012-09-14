@@ -14,7 +14,8 @@ Configuration::Configuration()
 		_upTangentSpace   (true),
 		_reorderProperties(true),
 		_dxShowTexture    (true),
-		_dxShowWireframe  (false)
+		_dxShowWireframe  (false),
+		_dxShowColorWire  (false)
 {
 }
 
@@ -118,6 +119,7 @@ bool Configuration::read(const string fileName)
 
 			readAttribute(content, "ShowTexture>", _dxShowTexture);
 			readAttribute(content, "ShowWireframe>", _dxShowWireframe);
+			readAttribute(content, "ShowColorWire>", _dxShowColorWire);
 			readAttribute(content, "DirTexturePath>", _dirTexturePath);
 
 
@@ -171,6 +173,7 @@ bool Configuration::write(const string fileName)
 		oStr << "<DirectXView>";
 		oStr << "<ShowTexture>" << _dxShowTexture << "</ShowTexture>";
 		oStr << "<ShowWireframe>" << _dxShowWireframe << "</ShowWireframe>";
+		oStr << "<ShowColorWire>" << _dxShowColorWire << "</ShowColorWire>";
 		oStr << "<DirTexturePath>" << _dirTexturePath << "</DirTexturePath>";
 		oStr << "</DirectXView>";
 
