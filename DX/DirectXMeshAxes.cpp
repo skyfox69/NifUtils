@@ -82,13 +82,15 @@ bool DirectXMeshAxes::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMatr
 		_pIBuffer->Unlock();
 	}
 
-	pd3dDevice->SetMaterial         (&_material);
-	pd3dDevice->SetRenderState      (D3DRS_LIGHTING, false);
-	pd3dDevice->SetTransform        (D3DTS_WORLD, &worldMatrix);
-	pd3dDevice->SetStreamSource     (0, _pVBuffer, 0, sizeof(D3DCustomVertexColor));
-	pd3dDevice->SetIndices          (_pIBuffer);
-	pd3dDevice->SetFVF              (D3DFVF_CUSTOMVERTEX_COLOR);
-	pd3dDevice->DrawIndexedPrimitive(D3DPT_LINELIST, 0, 0, _countIndices, 0, _countIndices/2);
+	pd3dDevice->SetTexture          (0, NULL);													//  no texture
+	pd3dDevice->SetRenderState		(D3DRS_ALPHABLENDENABLE, false);							//  disable alpha blending
+	pd3dDevice->SetRenderState      (D3DRS_FILLMODE, D3DFILL_WIREFRAME);						//  forced wireframe
+	pd3dDevice->SetRenderState      (D3DRS_LIGHTING, false);									//  disable light
+	pd3dDevice->SetTransform        (D3DTS_WORLD, &worldMatrix);								//  set world transformation
+	pd3dDevice->SetStreamSource     (0, _pVBuffer, 0, sizeof(D3DCustomVertexColor));			//  set vertices source
+	pd3dDevice->SetIndices          (_pIBuffer);												//  set indices source
+	pd3dDevice->SetFVF              (D3DFVF_CUSTOMVERTEX_COLOR);								//  set vertex style
+	pd3dDevice->DrawIndexedPrimitive(D3DPT_LINELIST, 0, 0, _countIndices, 0, _countIndices/2);	//  render
 
 	return true;
 }
