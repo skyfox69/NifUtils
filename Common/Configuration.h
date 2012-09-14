@@ -18,6 +18,7 @@ namespace NifUtility
 			string			_dirSource;
 			string			_dirDestination;
 			string			_dirCollision;
+			string			_dirTexturePath;
 			int				_collMaterial;
 			int				_matHandling;
 			int				_vertColHandling;

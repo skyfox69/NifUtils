@@ -1,4 +1,5 @@
 #include "..\Common\stdafx.h"
+#include "..\Common\Configuration.h"
 #include "DirectXNifConverter.h"
 #include "DirectXMeshModel.h"
 #include "DirectXVertex.h"
@@ -13,6 +14,8 @@
 #include "obj/NiSourceTexture.h"
 
 using namespace NifUtility;
+
+extern Configuration	glConfig;
 
 DirectXNifConverter::DirectXNifConverter()
 {
@@ -75,8 +78,8 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			{
 				TexDesc		baseTex((DynamicCast<NiTexturingProperty>(*pIter))->GetTexture(BASE_MAP));
 				
-				baseTexture = "H:\\tmp\\Morrowind\\DataFiles\\Textures\\" + baseTex.source->GetTextureFileName();
-				//baseTexture = baseTexture.substr(0, baseTexture.length() - 3) + "dds";
+				baseTexture = glConfig._dirTexturePath + "\\" + baseTex.source->GetTextureFileName();
+				baseTexture = baseTexture.substr(0, baseTexture.length() - 3) + "dds";
 			}
 			//  NiAlphaProperty
 			else if (DynamicCast<NiAlphaProperty>(*pIter) != NULL)
