@@ -164,7 +164,7 @@ bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMat
 		pd3dDevice->SetStreamSource     (0, _pVBuffer, 0, sizeof(D3DCustomVertexColNormTex));			//  set vertices source
 		pd3dDevice->SetIndices          (_pIBuffer);													//  set indices source
 		pd3dDevice->SetFVF              (D3DFVF_CUSTOMVERTEX_COLNORMTEX);								//  set vertex style
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, _countIndices, 0, _countIndices/3);	//  render
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, _countVertices, 0, _countIndices/3);	//  render
 		pd3dDevice->SetTexture          (0, NULL);
 
 	}  //  if (renderObject)
@@ -192,7 +192,7 @@ bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMat
 		pd3dDevice->SetStreamSource     (0, _pWBuffer, 0, sizeof(D3DCustomVertexColor));				//  set vertices source
 		pd3dDevice->SetIndices          (_pIBuffer);													//  set indices source
 		pd3dDevice->SetFVF              (D3DFVF_CUSTOMVERTEX_COLOR);									//  set vertex style
-		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, _countIndices, 0, _countIndices/3);	//  render
+		pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, _countVertices, 0, _countIndices/3);	//  render
 
 	}  //  if (glConfig._dxShowWireframe && !glConfig._dxShowColorWire)
 
