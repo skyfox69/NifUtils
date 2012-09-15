@@ -30,6 +30,7 @@ namespace NifUtility
 			bool			_dxShowTexture;
 			bool			_dxShowWireframe;
 			bool			_dxShowColorWire;
+			bool			_dxForceDDS;
 
 		private:
 			virtual	bool	readAttribute(const string& content, const string tag, string& attribute);

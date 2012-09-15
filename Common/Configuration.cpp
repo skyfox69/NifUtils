@@ -18,7 +18,8 @@ Configuration::Configuration()
 		_reorderProperties(true),
 		_dxShowTexture    (true),
 		_dxShowWireframe  (false),
-		_dxShowColorWire  (false)
+		_dxShowColorWire  (false),
+		_dxForceDDS       (false)
 {
 }
 
@@ -145,6 +146,7 @@ bool Configuration::read(const string fileName)
 			readAttribute(content, "ShowTexture>", _dxShowTexture);
 			readAttribute(content, "ShowWireframe>", _dxShowWireframe);
 			readAttribute(content, "ShowColorWire>", _dxShowColorWire);
+			readAttribute(content, "ForceDDS>", _dxForceDDS);
 			readAttribute(content, "DirTexturePath>", _dirTexturePath);
 			readAttribute(content, "ColorWireframe>", _colorWireframe);
 			readAttribute(content, "ColorBackground>", _colorBackground);
@@ -201,6 +203,7 @@ bool Configuration::write(const string fileName)
 		oStr << "<ShowTexture>" << _dxShowTexture << "</ShowTexture>";
 		oStr << "<ShowWireframe>" << _dxShowWireframe << "</ShowWireframe>";
 		oStr << "<ShowColorWire>" << _dxShowColorWire << "</ShowColorWire>";
+		oStr << "<ForceDDS>" << _dxForceDDS << "</ForceDDS>";
 		oStr << "<DirTexturePath>" << _dirTexturePath << "</DirTexturePath>";
 		oStr << "<ColorWireframe>" << hex << _colorWireframe << "</ColorWireframe>";
 		oStr << "<ColorBackground>" << hex << _colorBackground << "</ColorBackground>";

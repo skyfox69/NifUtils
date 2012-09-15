@@ -82,7 +82,10 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 				TexDesc		baseTex((DynamicCast<NiTexturingProperty>(*pIter))->GetTexture(BASE_MAP));
 				
 				baseTexture = glConfig._dirTexturePath + "\\" + baseTex.source->GetTextureFileName();
-				baseTexture = baseTexture.substr(0, baseTexture.length() - 3) + "dds";
+				if (glConfig._dxForceDDS)
+				{
+					baseTexture = baseTexture.substr(0, baseTexture.length() - 3) + "dds";
+				}
 			}
 			//  NiAlphaProperty
 			else if (DynamicCast<NiAlphaProperty>(*pIter) != NULL)
@@ -163,15 +166,13 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 
 
 		//  append mesh to list
-		DirectXMeshModel*	pNewMesh(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
-
+		meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
+		
 		//  alpha blending defined?
 		if (hasAlpha)
 		{
-			pNewMesh->SetAlpha(alpSource, alpDest, alpArg);
+			meshList.back()->SetAlpha(alpSource, alpDest, alpArg);
 		}
-
-		meshList.push_back(pNewMesh);
 
 	}  //  if (pData != NULL)
 
