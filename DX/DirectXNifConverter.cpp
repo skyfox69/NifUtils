@@ -143,7 +143,7 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			pBufVerticesW[i]._x     = vecVertices[i].x;
 			pBufVerticesW[i]._y     = vecVertices[i].y;
 			pBufVerticesW[i]._z     = vecVertices[i].z;
-			pBufVerticesW[i]._color = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+			pBufVerticesW[i]._color = glConfig._colorWireframe;
 		}
 		
 		//  - indices
@@ -279,27 +279,27 @@ D3DXMATRIX DirectXNifConverter::Matrix44ToD3DXMATRIX(const Matrix44& matrixIn)
 	return matrixOut;
 }
 
-DWORD DirectXNifConverter::BlendFuncToDXBlend(const unsigned int value)
+DWORD DirectXNifConverter::BlendFuncToDXBlend(const NiAlphaProperty::BlendFunc value)
 {
 	switch (value)
 	{
-		case NiAlphaProperty::BlendFunc::BF_SRC_ALPHA:
-		case NiAlphaProperty::BlendFunc::BF_SRC_ALPHA_SATURATE:
+		case NiAlphaProperty::BF_SRC_ALPHA:
+		case NiAlphaProperty::BF_SRC_ALPHA_SATURATE:
 		{
 			return D3DBLEND_SRCALPHA;
 		}
 
-		case NiAlphaProperty::BlendFunc::BF_DST_ALPHA:
+		case NiAlphaProperty::BF_DST_ALPHA:
 		{
 			return D3DBLEND_DESTALPHA;
 		}
 
-		case NiAlphaProperty::BlendFunc::BF_ONE_MINUS_SRC_ALPHA:
+		case NiAlphaProperty::BF_ONE_MINUS_SRC_ALPHA:
 		{
 			return D3DBLEND_INVSRCALPHA;
 		}
 
-		case NiAlphaProperty::BlendFunc::BF_ONE_MINUS_DST_ALPHA:
+		case NiAlphaProperty::BF_ONE_MINUS_DST_ALPHA:
 		{
 			return D3DBLEND_INVDESTALPHA;
 		}

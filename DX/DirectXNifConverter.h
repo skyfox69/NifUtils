@@ -23,7 +23,7 @@ namespace NifUtility
 			virtual	unsigned int	getGeometryFromTriShape(NiTriShapeRef pShape, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry);
 
 			virtual D3DXMATRIX		Matrix44ToD3DXMATRIX(const Matrix44& matrixIn);
-			virtual	DWORD			BlendFuncToDXBlend  (const unsigned int value);
+			virtual	DWORD			BlendFuncToDXBlend  (const NiAlphaProperty::BlendFunc value);
 
 		public:
 									DirectXNifConverter();

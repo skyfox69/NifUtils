@@ -33,6 +33,8 @@ namespace NifUtility
 											);
 			virtual			~DirectXMeshModel();
 
+			virtual void	SetColorWireframe(DWORD color);
+
 			virtual	bool	Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMatrix);
 	};
 }

@@ -170,7 +170,7 @@ bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMat
 	}  //  if (renderObject)
 
 	//  - something to render pure wireframe?
-	if (glConfig._dxShowWireframe && !glConfig._dxShowColorWire)
+	if (glConfig._dxShowWireframe && !glConfig._dxShowColorWire && (_pWBuffer != NULL))
 	{
 		D3DXMATRIX	matBias;
 
@@ -197,4 +197,29 @@ bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMat
 	}  //  if (glConfig._dxShowWireframe && !glConfig._dxShowColorWire)
 
 	return true;
+}
+
+void DirectXMeshModel::SetColorWireframe(DWORD color)
+{
+	//  vertex buffer already initialized?
+	if (_pWBuffer != NULL)
+	{
+		D3DCustomVertexColor*	pVAxis(NULL);
+
+		_pWBuffer->Lock(0, 0, (void**)&pVAxis, 0);
+		for (unsigned int i(0); i < _countVertices; ++i)
+		{
+			pVAxis[i]._color = color;
+		}
+		_pWBuffer->Unlock();
+	}
+
+	//  vertex buffer not initialized yet
+	if (_pBufVerticesW != NULL)
+	{
+		for (unsigned int i(0); i < _countVertices; ++i)
+		{
+			_pBufVerticesW[i]._color = color;
+		}
+	}
 }
