@@ -89,13 +89,8 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			{
 				NiAlphaProperty*	pProp(DynamicCast<NiAlphaProperty>(*pIter));
 
-				alpSource = BlendFuncToDXBlend(pProp->GetSourceBlendFunc());
-				alpDest   = BlendFuncToDXBlend(pProp->GetDestBlendFunc());
-
-				alpSource = D3DBLEND_SRCALPHA;
-				alpDest   = D3DBLEND_INVSRCALPHA;
-
-				alpArg    = D3DTA_TEXTURE;
+				BlendFuncToDXBlend(pProp->GetSourceBlendFunc(), alpSource, alpArg);
+				BlendFuncToDXBlend(pProp->GetDestBlendFunc(), alpDest, alpArg);
 				hasAlpha  = true;
 			}
 			//  NiMaterialProperty
@@ -279,31 +274,39 @@ D3DXMATRIX DirectXNifConverter::Matrix44ToD3DXMATRIX(const Matrix44& matrixIn)
 	return matrixOut;
 }
 
-DWORD DirectXNifConverter::BlendFuncToDXBlend(const NiAlphaProperty::BlendFunc value)
+void DirectXNifConverter::BlendFuncToDXBlend(const NiAlphaProperty::BlendFunc value, DWORD& dxBlend, DWORD& dxArg)
 {
 	switch (value)
 	{
 		case NiAlphaProperty::BF_SRC_ALPHA:
 		case NiAlphaProperty::BF_SRC_ALPHA_SATURATE:
 		{
-			return D3DBLEND_SRCALPHA;
+			dxBlend = D3DBLEND_SRCALPHA;
+			dxArg   = D3DTA_TEXTURE;
+			break;
 		}
 
 		case NiAlphaProperty::BF_DST_ALPHA:
 		{
-			return D3DBLEND_DESTALPHA;
+			dxBlend = D3DBLEND_DESTALPHA;
+			dxArg   = D3DTA_TEXTURE;
+			break;
 		}
 
 		case NiAlphaProperty::BF_ONE_MINUS_SRC_ALPHA:
 		{
-			return D3DBLEND_INVSRCALPHA;
+			dxBlend = D3DBLEND_INVSRCALPHA;
+			dxArg   = D3DTA_TEXTURE;
+			break;
 		}
 
 		case NiAlphaProperty::BF_ONE_MINUS_DST_ALPHA:
 		{
-			return D3DBLEND_INVDESTALPHA;
+			dxBlend = D3DBLEND_INVDESTALPHA;
+			dxArg   = D3DTA_TEXTURE;
+			break;
 		}
 	}
 
-	return 0;
+	return;
 }
