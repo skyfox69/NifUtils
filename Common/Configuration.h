@@ -20,6 +20,7 @@ namespace NifUtility
 			string			_dirCollision;
 			string			_dirTexturePath;
 			DWORD			_colorWireframe;
+			DWORD			_colorWireCollision;
 			DWORD			_colorBackground;
 			int				_collMaterial;
 			int				_matHandling;
