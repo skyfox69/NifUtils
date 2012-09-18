@@ -229,36 +229,7 @@ bool DirectXNifConverter::ConvertModel(string fileName, vector<DirectXMesh*>& me
 
 	//  parse geometry
 	getGeometryFromNode(pRootInput, meshList, transformAry);
-/*
-	//  add own transform to list
-	transformAry.push_back(pRootInput->GetLocalTransform());
 
-	//  get list of children from input node
-	childList = pRootInput->GetChildren();
-
-	//  iterate over source nodes and convert using template
-	for (vector<NiAVObjectRef>::iterator  ppIter = childList.begin(); ppIter != childList.end(); ppIter++)
-	{
-		//  NiTriShape
-		if (DynamicCast<NiTriShape>(*ppIter) != NULL)
-		{
-			getGeometryFromTriShape(DynamicCast<NiTriShape>(*ppIter), meshList, transformAry);
-		}
-		//  RootCollisionNode
-		else if (DynamicCast<RootCollisionNode>(*ppIter) != NULL)
-		{
-			//  ignore node
-		}
-		//  NiNode (and derived classes?)
-		else if (DynamicCast<NiNode>(*ppIter) != NULL)
-		{
-			getGeometryFromNode(DynamicCast<NiNode>(*ppIter), meshList, transformAry);
-		}
-	}
-
-	//  remove own translation from list
-	transformAry.pop_back();
-*/
 	return true;
 }
 
