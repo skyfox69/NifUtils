@@ -39,6 +39,11 @@ unsigned int DirectXNifConverter::getGeometryFromNode(NiNodeRef pNode, vector<Di
 		{
 			getGeometryFromTriShape(DynamicCast<NiTriShape>(*ppIter), meshList, transformAry);
 		}
+		//  RootCollisionNode
+		else if (DynamicCast<RootCollisionNode>(*ppIter) != NULL)
+		{
+			//  ignore node
+		}
 		//  NiNode (and derived classes?)
 		else if (DynamicCast<NiNode>(*ppIter) != NULL)
 		{
@@ -133,7 +138,7 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			pBufVertices[i]._normal.x = vecNormals[i].x;
 			pBufVertices[i]._normal.y = vecNormals[i].y;
 			pBufVertices[i]._normal.z = vecNormals[i].z;
-			pBufVertices[i]._color    = D3DXCOLOR(vecColors[i].r, vecColors[i].g, vecColors[i].b, 1.0f);
+			pBufVertices[i]._color    = !vecColors.empty() ? D3DXCOLOR(vecColors[i].r, vecColors[i].g, vecColors[i].b, 1.0f) : D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 			pBufVertices[i]._u        = vecTexCoords[i].u;
 			pBufVertices[i]._v        = vecTexCoords[i].v;
 
@@ -162,8 +167,6 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			material.Ambient = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 			material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 		}
-
-
 
 		//  append mesh to list
 		meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
@@ -211,7 +214,7 @@ NiNodeRef DirectXNifConverter::getRootNodeFromNifFile(string fileName, bool& fak
 bool DirectXNifConverter::ConvertModel(string fileName, vector<DirectXMesh*>& meshList)
 {
 	NiNodeRef				pRootInput(NULL);
-	vector<NiAVObjectRef>	childList;
+//	vector<NiAVObjectRef>	childList;
 	vector<Matrix44>		transformAry;
 	bool					fakedRoot (false);
 
@@ -224,6 +227,9 @@ bool DirectXNifConverter::ConvertModel(string fileName, vector<DirectXMesh*>& me
 		return false;
 	}
 
+	//  parse geometry
+	getGeometryFromNode(pRootInput, meshList, transformAry);
+/*
 	//  add own transform to list
 	transformAry.push_back(pRootInput->GetLocalTransform());
 
@@ -252,7 +258,7 @@ bool DirectXNifConverter::ConvertModel(string fileName, vector<DirectXMesh*>& me
 
 	//  remove own translation from list
 	transformAry.pop_back();
-
+*/
 	return true;
 }
 
@@ -308,6 +314,4 @@ void DirectXNifConverter::BlendFuncToDXBlend(const NiAlphaProperty::BlendFunc va
 			break;
 		}
 	}
-
-	return;
 }
