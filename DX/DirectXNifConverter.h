@@ -18,6 +18,9 @@ namespace NifUtility
 	class DirectXNifConverter
 	{
 		protected:
+			bool					_isCollision;
+
+		protected:
 			virtual	NiNodeRef		getRootNodeFromNifFile (string fileName, bool& fakedRoot);
 			virtual	unsigned int	getGeometryFromNode    (NiNodeRef pNode, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry);
 			virtual	unsigned int	getGeometryFromTriShape(NiTriShapeRef pShape, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry);
@@ -29,7 +32,6 @@ namespace NifUtility
 									DirectXNifConverter();
 			virtual					~DirectXNifConverter();
 
-			virtual	bool			ConvertModel    (string fileName, vector<DirectXMesh*>& meshList);
-			virtual	bool			ConvertCollision(string fileName, vector<DirectXMesh*>& meshList);
+			virtual	bool			ConvertModel(string fileName, vector<DirectXMesh*>& meshList);
 	};
 }

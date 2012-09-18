@@ -8,18 +8,19 @@ using namespace NifUtility;
 
 
 Configuration::Configuration()
-	:	_collMaterial     (3741512247),
-		_matHandling      (0),
-		_vertColHandling  (0),
-		_collTypeHandling (1),
-		_colorWireframe   (0xFFFFFFFF),
-		_colorBackground  (0xFF200020),
-		_upTangentSpace   (true),
-		_reorderProperties(true),
-		_dxShowTexture    (true),
-		_dxShowWireframe  (false),
-		_dxShowColorWire  (false),
-		_dxForceDDS       (false)
+	:	_collMaterial      (3741512247),
+		_matHandling       (0),
+		_vertColHandling   (0),
+		_collTypeHandling  (1),
+		_colorWireframe    (0xFFFFFFFF),
+		_colorWireCollision(0xFFFFFF00),
+		_colorBackground   (0xFF200020),
+		_upTangentSpace    (true),
+		_reorderProperties (true),
+		_dxShowTexture     (true),
+		_dxShowWireframe   (false),
+		_dxShowColorWire   (false),
+		_dxForceDDS        (false)
 {
 }
 
@@ -149,6 +150,7 @@ bool Configuration::read(const string fileName)
 			readAttribute(content, "ForceDDS>", _dxForceDDS);
 			readAttribute(content, "DirTexturePath>", _dirTexturePath);
 			readAttribute(content, "ColorWireframe>", _colorWireframe);
+			readAttribute(content, "ColorWireCollision>", _colorWireCollision);
 			readAttribute(content, "ColorBackground>", _colorBackground);
 
 
@@ -206,6 +208,7 @@ bool Configuration::write(const string fileName)
 		oStr << "<ForceDDS>" << _dxForceDDS << "</ForceDDS>";
 		oStr << "<DirTexturePath>" << _dirTexturePath << "</DirTexturePath>";
 		oStr << "<ColorWireframe>" << hex << _colorWireframe << "</ColorWireframe>";
+		oStr << "<ColorWireCollision>" << hex << _colorWireCollision << "</ColorWireCollision>";
 		oStr << "<ColorBackground>" << hex << _colorBackground << "</ColorBackground>";
 		oStr << "</DirectXView>";
 

@@ -4,6 +4,7 @@
 #include "DirectXVertex.h"
 #include "DirectXMeshAxes.h"
 #include "DirectXMeshModel.h"
+#include "DirectXMeshCollision.h"
 
 using namespace NifUtility;
 
@@ -18,7 +19,8 @@ CDirectXGraphics::CDirectXGraphics()
 		_rotX         (0.0f),
 		_rotY         (0.0f),
 		_showAxes     (true),
-		_showModel    (true)
+		_showModel    (true),
+		_showCollision(false)
 {
 }
 
@@ -354,6 +356,24 @@ void CDirectXGraphics::dxSetShowModel(bool show)
 	}
 }
 
+void CDirectXGraphics::dxSetShowColl(bool show)
+{
+	//  early return on non-changing value
+	if (show == _showCollision)		return;
+
+	//  set flag
+	_showCollision = show;
+
+	//  search for model and toggle display
+	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end(); ++pIter)
+	{
+		if (dynamic_cast<DirectXMeshCollision*>(*pIter) != NULL)
+		{
+			(*pIter)->SetDoRender(show);
+		}
+	}
+}
+
 void CDirectXGraphics::dxAddMesh(DirectXMesh* pMesh)
 {
 	//_meshList.push_back(pMesh);
@@ -385,6 +405,18 @@ void CDirectXGraphics::dxSetColorWireframe(DWORD color)
 		if (dynamic_cast<DirectXMeshModel*>(*pIter) != NULL)
 		{
 			(dynamic_cast<DirectXMeshModel*>(*pIter))->SetColorWireframe(color);
+		}
+	}
+}
+
+void CDirectXGraphics::dxSetColorCollision(DWORD color)
+{
+	//  search for collision and remove and delete object
+	for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end(); ++pIter)
+	{
+		if (dynamic_cast<DirectXMeshCollision*>(*pIter) != NULL)
+		{
+			(dynamic_cast<DirectXMeshCollision*>(*pIter))->SetColorWireframe(color);
 		}
 	}
 }

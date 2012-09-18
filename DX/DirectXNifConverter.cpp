@@ -2,6 +2,7 @@
 #include "..\Common\Configuration.h"
 #include "DirectXNifConverter.h"
 #include "DirectXMeshModel.h"
+#include "DirectXMeshCollision.h"
 #include "DirectXVertex.h"
 
 //  Niflib includes
@@ -11,12 +12,14 @@
 #include "obj/NiTexturingProperty.h"
 #include "obj/NiMaterialProperty.h"
 #include "obj/NiSourceTexture.h"
+#include "obj/bhkCollisionObject.h"
 
 using namespace NifUtility;
 
 extern Configuration	glConfig;
 
 DirectXNifConverter::DirectXNifConverter()
+	:	_isCollision(false)
 {
 }
 
@@ -42,7 +45,19 @@ unsigned int DirectXNifConverter::getGeometryFromNode(NiNodeRef pNode, vector<Di
 		//  RootCollisionNode
 		else if (DynamicCast<RootCollisionNode>(*ppIter) != NULL)
 		{
-			//  ignore node
+			//  set collision flag
+			_isCollision = true;
+
+			//  recurse sub-tree
+			getGeometryFromNode(DynamicCast<NiNode>(*ppIter), meshList, transformAry);
+
+			//  reset collision flag
+			_isCollision = false;
+		}
+		//  RootCollisionNode
+		else if (DynamicCast<bhkCollisionObject>(*ppIter) != NULL)
+		{
+			//  special handling of Skyrims collision node
 		}
 		//  NiNode (and derived classes?)
 		else if (DynamicCast<NiNode>(*ppIter) != NULL)
@@ -64,10 +79,10 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 	if (pData != NULL)
 	{
 		D3DMATERIAL9			material;
+		vector<TexCoord>		vecTexCoords;
 		vector<Vector3>			vecVertices (pData->GetVertices());
 		vector<Triangle>		vecTriangles(pData->GetTriangles());
 		vector<Vector3>			vecNormals  (pData->GetNormals());
-		vector<TexCoord>		vecTexCoords(pData->GetUVSet(0));
 		vector<Color4>			vecColors   (pData->GetColors());
 		vector<NiPropertyRef>	propList    (pShape->GetProperties());
 		Matrix44				locTransform(pShape->GetLocalTransform());
@@ -77,6 +92,12 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		DWORD					alpArg      (0);
 		bool					hasMaterial (false);
 		bool					hasAlpha    (false);
+
+		//  get uv set
+		if (pData->GetUVSetCount() > 0)
+		{
+			vecTexCoords = pData->GetUVSet(0);
+		}
 
 		//  parse properties
 		for (vector<NiPropertyRef>::iterator pIter=propList.begin(); pIter != propList.end(); ++pIter)
@@ -131,22 +152,26 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 
 		for (unsigned int i(0); i < countV; ++i)
 		{
-			//  model
-			pBufVertices[i]._x        = vecVertices[i].x;
-			pBufVertices[i]._y        = vecVertices[i].y;
-			pBufVertices[i]._z        = vecVertices[i].z;
-			pBufVertices[i]._normal.x = vecNormals[i].x;
-			pBufVertices[i]._normal.y = vecNormals[i].y;
-			pBufVertices[i]._normal.z = vecNormals[i].z;
-			pBufVertices[i]._color    = !vecColors.empty() ? D3DXCOLOR(vecColors[i].r, vecColors[i].g, vecColors[i].b, 1.0f) : D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-			pBufVertices[i]._u        = vecTexCoords[i].u;
-			pBufVertices[i]._v        = vecTexCoords[i].v;
+			//  shape of model object => no model vertices
+			if (!_isCollision)
+			{
+				//  model
+				pBufVertices[i]._x        = vecVertices[i].x;
+				pBufVertices[i]._y        = vecVertices[i].y;
+				pBufVertices[i]._z        = vecVertices[i].z;
+				pBufVertices[i]._normal.x = vecNormals[i].x;
+				pBufVertices[i]._normal.y = vecNormals[i].y;
+				pBufVertices[i]._normal.z = vecNormals[i].z;
+				pBufVertices[i]._color    = !vecColors.empty() ? D3DXCOLOR(vecColors[i].r, vecColors[i].g, vecColors[i].b, 1.0f) : D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+				pBufVertices[i]._u        = vecTexCoords[i].u;
+				pBufVertices[i]._v        = vecTexCoords[i].v;
+			}
 
 			//  wireframe
 			pBufVerticesW[i]._x     = vecVertices[i].x;
 			pBufVerticesW[i]._y     = vecVertices[i].y;
 			pBufVerticesW[i]._z     = vecVertices[i].z;
-			pBufVerticesW[i]._color = glConfig._colorWireframe;
+			pBufVerticesW[i]._color = _isCollision ? glConfig._colorWireCollision : glConfig._colorWireframe;
 		}
 		
 		//  - indices
@@ -160,23 +185,33 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			pBufIndices[i+2] = vecTriangles[i/3].v3;
 		}
 
-		//  - material
-		if (!hasMaterial)
+		//  shape of model object
+		if (!_isCollision)
 		{
-			ZeroMemory(&material, sizeof(material));
-			material.Ambient = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-			material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
-		}
+			//  - material
+			if (!hasMaterial)
+			{
+				ZeroMemory(&material, sizeof(material));
+				material.Ambient = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+				material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
+			}
 
-		//  append mesh to list
-		meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
+			//  append mesh to list
+			meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
 		
-		//  alpha blending defined?
-		if (hasAlpha)
-		{
-			meshList.back()->SetAlpha(alpSource, alpDest, alpArg);
+			//  alpha blending defined?
+			if (hasAlpha)		meshList.back()->SetAlpha(alpSource, alpDest, alpArg);
 		}
+		else  //  if (!_isCollision)
+		//  shape of collision object
+		{
+			//  append mesh to list
+			meshList.push_back(new DirectXMeshCollision(Matrix44ToD3DXMATRIX(locTransform), pBufVerticesW, countV, pBufIndices, countI));
 
+			//  delte unused data
+			delete[] pBufVertices;
+
+		}  //  else [if (!_isCollision)]
 	}  //  if (pData != NULL)
 
 	return meshList.size();
@@ -213,10 +248,9 @@ NiNodeRef DirectXNifConverter::getRootNodeFromNifFile(string fileName, bool& fak
 
 bool DirectXNifConverter::ConvertModel(string fileName, vector<DirectXMesh*>& meshList)
 {
-	NiNodeRef				pRootInput(NULL);
-//	vector<NiAVObjectRef>	childList;
-	vector<Matrix44>		transformAry;
-	bool					fakedRoot (false);
+	NiNodeRef			pRootInput(NULL);
+	vector<Matrix44>	transformAry;
+	bool				fakedRoot (false);
 
 	//  test on existing file names
 	if (fileName.empty())		return false;
@@ -229,13 +263,6 @@ bool DirectXNifConverter::ConvertModel(string fileName, vector<DirectXMesh*>& me
 
 	//  parse geometry
 	getGeometryFromNode(pRootInput, meshList, transformAry);
-
-	return true;
-}
-
-bool DirectXNifConverter::ConvertCollision(string fileName, vector<DirectXMesh*>& meshList)
-{
-
 
 	return true;
 }

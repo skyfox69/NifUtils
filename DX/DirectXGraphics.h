@@ -29,6 +29,7 @@ namespace NifUtility
 			float					_rotY;
 			bool					_showAxes;
 			bool					_showModel;
+			bool					_showCollision;
 
 			virtual	bool					dxCreateRenderingContext(HWND hWnd, const int width, const int height);
 			virtual	bool					dxDestroyRenderingContext();
@@ -49,11 +50,14 @@ namespace NifUtility
 			virtual bool					dxGetShowAxes () { return _showAxes; }
 			virtual	void					dxSetShowModel(bool show);
 			virtual bool					dxGetShowModel() { return _showModel; }
+			virtual	void					dxSetShowColl (bool collision);
+			virtual bool					dxGetShowColl () { return _showCollision; }
 
 			virtual void					dxAddMesh    (DirectXMesh* pMesh);
 			virtual	vector<DirectXMesh*>&	dxGetMeshList() { return _meshList; }
 			virtual	void					dxClearModel ();
 
 			virtual void					dxSetColorWireframe(DWORD color);
+			virtual void					dxSetColorCollision(DWORD color);
 	};
 }
