@@ -1,12 +1,14 @@
 OneClickNifConvert/*
 deploy/*
 debug/*
+release/*
 ipch/*
 */*.vcxproj.user
 NifUtils.sln
 NifUtils.*sdf
 NifUtils.suo
 */Debug
+*/Release
 
 #niflib/*
 
