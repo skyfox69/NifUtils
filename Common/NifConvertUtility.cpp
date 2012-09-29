@@ -12,7 +12,6 @@
 #include "niflib.h"
 #include "obj/NiExtraData.h"
 #include "obj/NiTimeController.h"
-#include "obj/BSLightingShaderProperty.h"
 #include "obj/NiTexturingProperty.h"
 #include "obj/BSShaderTextureSet.h"
 #include "obj/NiSourceTexture.h"
@@ -158,14 +157,14 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 	for (short index(0); index < 2; ++index)
 	{
 		//  BSLightingShaderProperty
-		if (DynamicCast<BSLightingShaderProperty>(pTmplNode->getBSProperty(index)) != NULL)
+		if (DynamicCast<BSLightingShaderProperty>(pTmplNode->GetBSProperty(index)) != NULL)
 		{
-			pTmplLShader = DynamicCast<BSLightingShaderProperty>(pTmplNode->getBSProperty(index));
+			pTmplLShader = DynamicCast<BSLightingShaderProperty>(pTmplNode->GetBSProperty(index));
 		}
 		//  NiAlphaProperty
-		else if (DynamicCast<NiAlphaProperty>(pTmplNode->getBSProperty(index)) != NULL)
+		else if (DynamicCast<NiAlphaProperty>(pTmplNode->GetBSProperty(index)) != NULL)
 		{
-			pTmplAlphaProp = DynamicCast<NiAlphaProperty>(pTmplNode->getBSProperty(index));
+			pTmplAlphaProp = DynamicCast<NiAlphaProperty>(pTmplNode->GetBSProperty(index));
 		}
 	}  //  for (short index(0); index < 2; ++index)
 
@@ -187,7 +186,7 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 			pDstNode->RemoveProperty(*ppIter);
 
 			//  set new property to node
-			pDstNode->setBSProperty(bsPropIdx++, &(*pPropAlpha));
+			pDstNode->SetBSProperty(bsPropIdx++, &(*pPropAlpha));
 
 			//  own alpha, reset forced alpha
 			forceAlpha = false;
@@ -204,7 +203,8 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 			char						fileName[1000] = {0};
 			char						textName[1000] = {0};
 
-			pDstLShader = new BSLightingShaderProperty(*pTmplLShader);
+			//  clone shader property from template
+			pDstLShader = cloneBSLightingShaderProperty(pTmplLShader);
 
 			//  copy textures from template to copy
 			pDstSText->setTextures(pTmplLShader->getTextureSet()->getTextures());
@@ -274,7 +274,7 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 			pDstNode->RemoveProperty(*ppIter);
 
 			//  set new property to node
-			pDstNode->setBSProperty(bsPropIdx++, &(*pDstLShader));
+			pDstNode->SetBSProperty(bsPropIdx++, &(*pDstLShader));
 		}
 		//  NiMaterialProperty
 		else if (DynamicCast<NiMaterialProperty>(*ppIter) != NULL)
@@ -294,7 +294,7 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 		pPropAlpha->SetTestThreshold(pTmplAlphaProp->GetTestThreshold());
 
 		//  set new property to node
-		pDstNode->setBSProperty(bsPropIdx++, &(*pPropAlpha));
+		pDstNode->SetBSProperty(bsPropIdx++, &(*pPropAlpha));
 
 		//  mark alpha property
 		hasAlpha = true;
@@ -316,16 +316,16 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 	//  reorder properties
 	if (_reorderProperties)
 	{
-		NiPropertyRef	tProp01(pDstNode->getBSProperty(0));
-		NiPropertyRef	tProp02(pDstNode->getBSProperty(1));
+		NiPropertyRef	tProp01(pDstNode->GetBSProperty(0));
+		NiPropertyRef	tProp02(pDstNode->GetBSProperty(1));
 
 		//  make sure BSLightingShaderProperty comes before NiAlphaProperty - seems a 'must be'
 		if ((tProp01->GetType().GetTypeName() == "NiAlphaProperty") &&
 			(tProp02->GetType().GetTypeName() == "BSLightingShaderProperty")
 		   )
 		{
-			pDstNode->setBSProperty(0, tProp02);
-			pDstNode->setBSProperty(1, tProp01);
+			pDstNode->SetBSProperty(0, tProp02);
+			pDstNode->SetBSProperty(1, tProp01);
 		}
 	}  //  if (_reorderProperties)
 
@@ -617,3 +617,16 @@ bool NifConvertUtility::checkFileExists(string fileName)
 	return iStream.good();
 }
 
+/*---------------------------------------------------------------------------*/
+BSLightingShaderPropertyRef NifConvertUtility::cloneBSLightingShaderProperty(BSLightingShaderPropertyRef pSource)
+{
+	BSLightingShaderPropertyRef		pDest(new BSLightingShaderProperty);
+
+	//  copy all members, even inaccessable ones (HACK)
+	memcpy(pDest, pSource, sizeof(BSLightingShaderProperty));
+
+	//  reset texture set
+	pDest->setTextureSet(NULL);
+
+	return pDest;
+}

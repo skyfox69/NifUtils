@@ -20,6 +20,7 @@
 #include "obj/bsfadenode.h"
 #include "obj/nialphaproperty.h"
 #include "obj/NiTriShapeData.h"
+#include "obj/BSLightingShaderProperty.h"
 
 //  used namespaces
 using namespace Niflib;
@@ -216,6 +217,13 @@ namespace NifUtility
 		 * @param pDataObj    in: data object
 		 */
 		virtual bool updateTangentSpace(NiTriShapeDataRef pDataObj);
+
+		/**
+		 * Clone BSLightingShaderProperty
+		 * 
+		 * @param pSource    in: ptr. to source object
+		 */
+		virtual BSLightingShaderPropertyRef cloneBSLightingShaderProperty(BSLightingShaderPropertyRef pSource);
 
 		/**
 		 * Log messages
