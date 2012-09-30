@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <vector>
 
 using namespace std;
 
@@ -18,7 +18,7 @@ namespace NifUtility
 			string			_dirSource;
 			string			_dirDestination;
 			string			_dirCollision;
-			string			_dirTexturePath;
+			vector<string>	_dirTexturePath;
 			DWORD			_colorWireframe;
 			DWORD			_colorWireCollision;
 			DWORD			_colorBackground;
@@ -34,10 +34,11 @@ namespace NifUtility
 			bool			_dxForceDDS;
 
 		private:
-			virtual	bool	readAttribute(const string& content, const string tag, string& attribute);
-			virtual	bool	readAttribute(const string& content, const string tag, DWORD& attribute);
-			virtual	bool	readAttribute(const string& content, const string tag, int& attribute);
-			virtual	bool	readAttribute(const string& content, const string tag, bool& attribute);
+			virtual	bool	readAttribute(const string& content, const string tag, vector<string>& attribute, unsigned int& offsetOut, unsigned int offsetIn=0);
+			virtual	bool	readAttribute(const string& content, const string tag, string& attribute, unsigned int& offsetOut, unsigned int offsetIn=0);
+			virtual	bool	readAttribute(const string& content, const string tag, DWORD& attribute, unsigned int& offsetOut, unsigned int offsetIn=0);
+			virtual	bool	readAttribute(const string& content, const string tag, int& attribute, unsigned int& offsetOut, unsigned int offsetIn=0);
+			virtual	bool	readAttribute(const string& content, const string tag, bool& attribute, unsigned int& offsetOut, unsigned int offsetIn=0);
 
 		public:
 							Configuration();

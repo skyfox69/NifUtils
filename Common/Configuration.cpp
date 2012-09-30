@@ -28,13 +28,28 @@ Configuration::~Configuration()
 {
 }
 
-bool Configuration::readAttribute(const string& content, const string tag, string& attribute)
+bool Configuration::readAttribute(const string& content, const string tag, vector<string>& attribute, unsigned int& offsetOut, unsigned int offsetIn)
 {
-	size_t	posStart(0);
-	size_t	posEnd  (0);
+	string			tString;
+	unsigned int	offset(offsetIn);
+
+	attribute.clear();
+
+	while (readAttribute(content, tag, tString, offset, offset))
+	{
+		attribute.push_back(tString);
+	}
+
+	return !attribute.empty();
+}
+
+bool Configuration::readAttribute(const string& content, const string tag, string& attribute, unsigned int& offsetOut, unsigned int offsetIn)
+{
+	size_t	posStart(offsetIn);
+	size_t	posEnd  (offsetIn);
 	bool	isOK    (false);
 
-	posStart = content.find(tag);
+	posStart = content.find(tag, posStart);
 	if (posStart != string::npos)
 	{
 		posStart += tag.length();
@@ -42,20 +57,21 @@ bool Configuration::readAttribute(const string& content, const string tag, strin
 		if (posEnd != string::npos)
 		{
 			attribute = content.substr(posStart, posEnd - posStart - 2);
-			isOK = true;
+			offsetOut = posEnd + tag.length();
+			isOK      = true;
 		}
 	}
 
 	return isOK;
 }
 
-bool Configuration::readAttribute(const string& content, const string tag, DWORD& attribute)
+bool Configuration::readAttribute(const string& content, const string tag, DWORD& attribute, unsigned int& offsetOut, unsigned int offsetIn)
 {
-	size_t	posStart(0);
-	size_t	posEnd  (0);
+	size_t	posStart(offsetIn);
+	size_t	posEnd  (offsetIn);
 	bool	isOK    (false);
 
-	posStart = content.find(tag);
+	posStart = content.find(tag, posStart);
 	if (posStart != string::npos)
 	{
 		posStart += tag.length();
@@ -64,20 +80,21 @@ bool Configuration::readAttribute(const string& content, const string tag, DWORD
 		{
 			istringstream	tStream(content.substr(posStart, posEnd - posStart - 2).c_str());
 			tStream >> hex >> attribute;
-			isOK = true;
+			offsetOut = posEnd + tag.length();
+			isOK      = true;
 		}
 	}
 
 	return isOK;
 }
 
-bool Configuration::readAttribute(const string& content, const string tag, int& attribute)
+bool Configuration::readAttribute(const string& content, const string tag, int& attribute, unsigned int& offsetOut, unsigned int offsetIn)
 {
-	size_t	posStart(0);
-	size_t	posEnd  (0);
+	size_t	posStart(offsetIn);
+	size_t	posEnd  (offsetIn);
 	bool	isOK    (false);
 
-	posStart = content.find(tag);
+	posStart = content.find(tag, posStart);
 	if (posStart != string::npos)
 	{
 		posStart += tag.length();
@@ -85,20 +102,21 @@ bool Configuration::readAttribute(const string& content, const string tag, int& 
 		if (posEnd != string::npos)
 		{
 			attribute = atoi(content.substr(posStart, posEnd - posStart - 2).c_str());
-			isOK = true;
+			offsetOut = posEnd + tag.length();
+			isOK      = true;
 		}
 	}
 
 	return isOK;
 }
 
-bool Configuration::readAttribute(const string& content, const string tag, bool& attribute)
+bool Configuration::readAttribute(const string& content, const string tag, bool& attribute, unsigned int& offsetOut, unsigned int offsetIn)
 {
-	size_t	posStart(0);
-	size_t	posEnd  (0);
+	size_t	posStart(offsetIn);
+	size_t	posEnd  (offsetIn);
 	bool	isOK    (false);
 
-	posStart = content.find(tag);
+	posStart = content.find(tag, posStart);
 	if (posStart != string::npos)
 	{
 		posStart += tag.length();
@@ -106,7 +124,8 @@ bool Configuration::readAttribute(const string& content, const string tag, bool&
 		if (posEnd != string::npos)
 		{
 			attribute = (atoi(content.substr(posStart, posEnd - posStart - 2).c_str()) == 1);
-			isOK = true;
+			offsetOut = posEnd + tag.length();
+			isOK      = true;
 		}
 	}
 
@@ -115,10 +134,11 @@ bool Configuration::readAttribute(const string& content, const string tag, bool&
 
 bool Configuration::read(const string fileName)
 {
-	ifstream	iStr    (fileName.c_str());
-	string		content;
-	string		search;
-	bool		isOK    (false);
+	ifstream		iStr   (fileName.c_str());
+	string			content;
+	string			search;
+	unsigned int	offset (0);
+	bool			isOK   (false);
 
 	//  file opened successfully
 	if (iStr.is_open())
@@ -129,29 +149,29 @@ bool Configuration::read(const string fileName)
 			getline(iStr, content);
 
 			//  fetch attributes
-			readAttribute(content, "PathSkyrim>", _pathSkyrim);
-			readAttribute(content, "PathNifXML>", _pathNifXML);
-			readAttribute(content, "PathTemplate>", _pathTemplate);
-			readAttribute(content, "MatHandling>", _matHandling);
-			readAttribute(content, "VertexColorHandling>", _vertColHandling);
-			readAttribute(content, "UpdateTangentSpace>", _upTangentSpace);
-			readAttribute(content, "ReorderProperties>", _reorderProperties);
-			readAttribute(content, "CollTypeHandling>", _collTypeHandling);
-			readAttribute(content, "CollMaterial>", _collMaterial);
-			readAttribute(content, "LastTexture>", _lastTexture);
-			readAttribute(content, "LastTemplate>", _lastTemplate);
-			readAttribute(content, "DirSource>", _dirSource);
-			readAttribute(content, "DirDestination>", _dirDestination);
-			readAttribute(content, "DirCollision>", _dirCollision);
+			readAttribute(content, "PathSkyrim>", _pathSkyrim, offset);
+			readAttribute(content, "PathNifXML>", _pathNifXML, offset);
+			readAttribute(content, "PathTemplate>", _pathTemplate, offset);
+			readAttribute(content, "MatHandling>", _matHandling, offset);
+			readAttribute(content, "VertexColorHandling>", _vertColHandling, offset);
+			readAttribute(content, "UpdateTangentSpace>", _upTangentSpace, offset);
+			readAttribute(content, "ReorderProperties>", _reorderProperties, offset);
+			readAttribute(content, "CollTypeHandling>", _collTypeHandling, offset);
+			readAttribute(content, "CollMaterial>", _collMaterial, offset);
+			readAttribute(content, "LastTexture>", _lastTexture, offset);
+			readAttribute(content, "LastTemplate>", _lastTemplate, offset);
+			readAttribute(content, "DirSource>", _dirSource, offset);
+			readAttribute(content, "DirDestination>", _dirDestination, offset);
+			readAttribute(content, "DirCollision>", _dirCollision, offset);
 
-			readAttribute(content, "ShowTexture>", _dxShowTexture);
-			readAttribute(content, "ShowWireframe>", _dxShowWireframe);
-			readAttribute(content, "ShowColorWire>", _dxShowColorWire);
-			readAttribute(content, "ForceDDS>", _dxForceDDS);
-			readAttribute(content, "DirTexturePath>", _dirTexturePath);
-			readAttribute(content, "ColorWireframe>", _colorWireframe);
-			readAttribute(content, "ColorWireCollision>", _colorWireCollision);
-			readAttribute(content, "ColorBackground>", _colorBackground);
+			readAttribute(content, "ShowTexture>", _dxShowTexture, offset);
+			readAttribute(content, "ShowWireframe>", _dxShowWireframe, offset);
+			readAttribute(content, "ShowColorWire>", _dxShowColorWire, offset);
+			readAttribute(content, "ForceDDS>", _dxForceDDS, offset);
+			readAttribute(content, "DirTexturePath>", _dirTexturePath, offset);
+			readAttribute(content, "ColorWireframe>", _colorWireframe, offset);
+			readAttribute(content, "ColorWireCollision>", _colorWireCollision, offset);
+			readAttribute(content, "ColorBackground>", _colorBackground, offset);
 
 
 
@@ -206,10 +226,15 @@ bool Configuration::write(const string fileName)
 		oStr << "<ShowWireframe>" << _dxShowWireframe << "</ShowWireframe>";
 		oStr << "<ShowColorWire>" << _dxShowColorWire << "</ShowColorWire>";
 		oStr << "<ForceDDS>" << _dxForceDDS << "</ForceDDS>";
-		oStr << "<DirTexturePath>" << _dirTexturePath << "</DirTexturePath>";
 		oStr << "<ColorWireframe>" << hex << _colorWireframe << "</ColorWireframe>";
 		oStr << "<ColorWireCollision>" << hex << _colorWireCollision << "</ColorWireCollision>";
 		oStr << "<ColorBackground>" << hex << _colorBackground << "</ColorBackground>";
+		oStr << "<TexturePathList>";
+		for (auto pIter(_dirTexturePath.begin()), pEnd(_dirTexturePath.end()); pIter != pEnd; ++pIter)
+		{
+			oStr << "<DirTexturePath>" << *pIter << "</DirTexturePath>";
+		}
+		oStr << "</TexturePathList>";
 		oStr << "</DirectXView>";
 
 

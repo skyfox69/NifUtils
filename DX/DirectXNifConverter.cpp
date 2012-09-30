@@ -1,5 +1,6 @@
 #include "..\Common\stdafx.h"
 #include "..\Common\Configuration.h"
+#include "..\Common\FDCLibHelper.h"
 #include "DirectXNifConverter.h"
 #include "DirectXMeshModel.h"
 #include "DirectXMeshCollision.h"
@@ -106,12 +107,35 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			if (DynamicCast<NiTexturingProperty>(*pIter) != NULL)
 			{
 				TexDesc		baseTex((DynamicCast<NiTexturingProperty>(*pIter))->GetTexture(BASE_MAP));
-				
-				baseTexture = glConfig._dirTexturePath + "\\" + baseTex.source->GetTextureFileName();
-				if (glConfig._dxForceDDS)
+				string		texName(baseTex.source->GetTextureFileName());
+				ifstream	inFile;
+				char		cBuffer[1000];
+				char*		pStart(NULL);
+
+				for (auto pIter(glConfig._dirTexturePath.begin()), pEnd(glConfig._dirTexturePath.end()); pIter != pEnd; ++pIter)
 				{
-					baseTexture = baseTexture.substr(0, baseTexture.length() - 3) + "dds";
-				}
+					_snprintf(cBuffer, 1000, "%s\\%s", pIter->c_str(), texName.c_str());
+
+					//  test for '\\'
+					if ((pStart = strstr(cBuffer, "\\\\")) != NULL)
+					{
+						memmove(pStart, pStart+1, strlen(pStart));
+					}
+					
+					//  test for 'texture\texture' (case insensitive)
+					if ((pStart = (char*) strcasestr(cBuffer, "textures\\textures")) != NULL)
+					{
+						memmove(pStart, pStart+8, strlen(pStart));
+					}
+
+					//  set texture path
+					baseTexture = cBuffer;
+
+					//  test if texture file exists
+					inFile.open(baseTexture);
+					if (inFile)		break;
+
+				}  //  for (auto pIter(glConfig._dirTexturePath.begin()), ...
 			}
 			//  NiAlphaProperty
 			else if (DynamicCast<NiAlphaProperty>(*pIter) != NULL)
