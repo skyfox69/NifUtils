@@ -144,7 +144,8 @@ bool CDirectXGraphics::dxInitScene()
 								 &D3DXVECTOR3(0.0f, 0.0f, -1.0f));	// camera up vector
 	_pd3dDevice->SetTransform(D3DTS_VIEW, &matView);
 
-	_pd3dDevice->SetRenderState(D3DRS_AMBIENT, RGB(80,80,80));
+	//_pd3dDevice->SetRenderState(D3DRS_AMBIENT, RGB(80,80,80));
+	_pd3dDevice->SetRenderState(D3DRS_AMBIENT, RGB(200,200,200));
 	//_pd3dDevice->SetRenderState(D3DRS_AMBIENT, RGB(0,0,0));
 #if 0
 	// Turn off D3D lighting, since we are providing our own vertex colors

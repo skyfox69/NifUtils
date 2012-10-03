@@ -14,13 +14,15 @@
 #include "obj/NiMaterialProperty.h"
 #include "obj/NiSourceTexture.h"
 #include "obj/bhkCollisionObject.h"
+#include "obj/NiBillboardNode.h"
 
 using namespace NifUtility;
 
 extern Configuration	glConfig;
 
 DirectXNifConverter::DirectXNifConverter()
-	:	_isCollision(false)
+	:	_isCollision(false),
+		_isBillboard(false)
 {
 }
 
@@ -28,9 +30,12 @@ DirectXNifConverter::~DirectXNifConverter()
 {
 }
 
-unsigned int DirectXNifConverter::getGeometryFromNode(NiNodeRef pNode, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry)
+unsigned int DirectXNifConverter::getGeometryFromNode(NiNodeRef pNode, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry, NiAlphaPropertyRef pTmplAlphaProp)
 {
 	vector<NiAVObjectRef>	childList(pNode->GetChildren());
+
+	//  check for NiBillboardNode
+	_isBillboard = (DynamicCast<NiBillboardNode>(pNode) != NULL);
 
 	//  add own translation to list
 	transformAry.push_back(pNode->GetLocalTransform());
@@ -41,7 +46,7 @@ unsigned int DirectXNifConverter::getGeometryFromNode(NiNodeRef pNode, vector<Di
 		//  NiTriShape
 		if (DynamicCast<NiTriShape>(*ppIter) != NULL)
 		{
-			getGeometryFromTriShape(DynamicCast<NiTriShape>(*ppIter), meshList, transformAry);
+			getGeometryFromTriShape(DynamicCast<NiTriShape>(*ppIter), meshList, transformAry, pTmplAlphaProp);
 		}
 		//  RootCollisionNode
 		else if (DynamicCast<RootCollisionNode>(*ppIter) != NULL)
@@ -50,7 +55,7 @@ unsigned int DirectXNifConverter::getGeometryFromNode(NiNodeRef pNode, vector<Di
 			_isCollision = true;
 
 			//  recurse sub-tree
-			getGeometryFromNode(DynamicCast<NiNode>(*ppIter), meshList, transformAry);
+			getGeometryFromNode(DynamicCast<NiNode>(*ppIter), meshList, transformAry, pTmplAlphaProp);
 
 			//  reset collision flag
 			_isCollision = false;
@@ -63,9 +68,18 @@ unsigned int DirectXNifConverter::getGeometryFromNode(NiNodeRef pNode, vector<Di
 		//  NiNode (and derived classes?)
 		else if (DynamicCast<NiNode>(*ppIter) != NULL)
 		{
-			getGeometryFromNode(DynamicCast<NiNode>(*ppIter), meshList, transformAry);
+			//  find NiAlphaProperty and use as template in sub-nodes
+			if (DynamicCast<NiAlphaProperty>((DynamicCast<NiNode>(*ppIter))->GetPropertyByType(NiAlphaProperty::TYPE)) != NULL)
+			{
+				pTmplAlphaProp = DynamicCast<NiAlphaProperty>((DynamicCast<NiNode>(*ppIter))->GetPropertyByType(NiAlphaProperty::TYPE));
+			}
+
+			getGeometryFromNode(DynamicCast<NiNode>(*ppIter), meshList, transformAry, pTmplAlphaProp);
 		}
 	}  //  for (vector<NiAVObjectRef>::iterator ppIter = childList.begin(); ppIter != childList.end(); ppIter++)
+
+	//  reset billboard flag
+	_isBillboard = false;
 
 	//  remove own translation from list
 	transformAry.pop_back();
@@ -73,7 +87,7 @@ unsigned int DirectXNifConverter::getGeometryFromNode(NiNodeRef pNode, vector<Di
 	return meshList.size();
 }
 
-unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry)
+unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry, NiAlphaPropertyRef pTmplAlphaProp)
 {
 	NiTriShapeDataRef	pData(DynamicCast<NiTriShapeData>(pShape->GetData()));
 
@@ -86,7 +100,7 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		vector<Vector3>			vecNormals  (pData->GetNormals());
 		vector<Color4>			vecColors   (pData->GetColors());
 		vector<NiPropertyRef>	propList    (pShape->GetProperties());
-		Matrix44				locTransform(pShape->GetLocalTransform());
+		Matrix44				locTransform;
 		string					baseTexture;
 		DWORD					alpSource   (0);
 		DWORD					alpDest     (0);
@@ -112,7 +126,7 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 				char		cBuffer[1000];
 				char*		pStart(NULL);
 
-				for (auto pIter(glConfig._dirTexturePath.begin()), pEnd(glConfig._dirTexturePath.end()); pIter != pEnd; ++pIter)
+				for (vector<string>::iterator pIter(glConfig._dirTexturePath.begin()), pEnd(glConfig._dirTexturePath.end()); pIter != pEnd; ++pIter)
 				{
 					_snprintf(cBuffer, 1000, "%s\\%s", pIter->c_str(), texName.c_str());
 
@@ -131,8 +145,14 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 					//  set texture path
 					baseTexture = cBuffer;
 
+					//  test for forced dds
+					if (glConfig._dxForceDDS)
+					{
+						baseTexture = baseTexture.substr(0, baseTexture.length() - 3) + "dds";
+					}
+
 					//  test if texture file exists
-					inFile.open(baseTexture);
+					inFile.open(baseTexture.c_str());
 					if (inFile)		break;
 
 				}  //  for (auto pIter(glConfig._dirTexturePath.begin()), ...
@@ -166,8 +186,9 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		//  - transformation matrix
 		for (vector<Matrix44>::iterator pIter=transformAry.begin(); pIter != transformAry.end(); ++pIter)
 		{
-			locTransform *= *pIter;
+			locTransform = *pIter * locTransform;
 		}
+		locTransform *= pShape->GetLocalTransform();
 
 		//  - vertices
 		unsigned int				countV       (vecVertices.size());
@@ -220,8 +241,16 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 				material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
 			}
 
+			//  - alpha
+			if (!hasAlpha && (pTmplAlphaProp != NULL))
+			{
+				BlendFuncToDXBlend(pTmplAlphaProp->GetSourceBlendFunc(), alpSource, alpArg);
+				BlendFuncToDXBlend(pTmplAlphaProp->GetDestBlendFunc(), alpDest, alpArg);
+				hasAlpha  = true;
+			}
+
 			//  append mesh to list
-			meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW));
+			meshList.push_back(new DirectXMeshModel(Matrix44ToD3DXMATRIX(locTransform), material, pBufVertices, countV, pBufIndices, countI, baseTexture, pBufVerticesW, _isBillboard));
 		
 			//  alpha blending defined?
 			if (hasAlpha)		meshList.back()->SetAlpha(alpSource, alpDest, alpArg);
@@ -286,7 +315,7 @@ bool DirectXNifConverter::ConvertModel(string fileName, vector<DirectXMesh*>& me
 	}
 
 	//  parse geometry
-	getGeometryFromNode(pRootInput, meshList, transformAry);
+	getGeometryFromNode(pRootInput, meshList, transformAry, NULL);
 
 	return true;
 }

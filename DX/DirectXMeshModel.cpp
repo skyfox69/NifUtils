@@ -9,9 +9,13 @@ extern Configuration	glConfig;
 
 
 DirectXMeshModel::DirectXMeshModel()
-	:	DirectXMesh  (),
-		_pBufVertices(NULL),
-		_pBufIndices (NULL)
+	:	DirectXMesh   (),
+		_pTexture     (NULL),
+		_pWBuffer     (NULL),
+		_pBufVertices (NULL),
+		_pBufVerticesW(NULL),
+		_pBufIndices  (NULL),
+		_isBillboard  (false)
 {
 }
 
@@ -22,7 +26,8 @@ DirectXMeshModel::DirectXMeshModel(D3DXMATRIX transform,
 								   unsigned short* pBufferI,
 								   const unsigned int countI,
 								   string textureName,
-								   D3DCustomVertexColor* pBufferW
+								   D3DCustomVertexColor* pBufferW,
+								   const bool isBillboard
 								  )
 	:	DirectXMesh   (),
 		_pTexture     (NULL),
@@ -30,7 +35,8 @@ DirectXMeshModel::DirectXMeshModel(D3DXMATRIX transform,
 		_pBufVertices (pBufferV),
 		_pBufVerticesW(pBufferW),
 		_pBufIndices  (pBufferI),
-		_textureName  (textureName)
+		_textureName  (textureName),
+		_isBillboard  (isBillboard)
 {
 	_transform     = transform;
 	_material      = material;

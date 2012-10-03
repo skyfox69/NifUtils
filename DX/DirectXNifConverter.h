@@ -19,11 +19,12 @@ namespace NifUtility
 	{
 		protected:
 			bool					_isCollision;
+			bool					_isBillboard;
 
 		protected:
 			virtual	NiNodeRef		getRootNodeFromNifFile (string fileName, bool& fakedRoot);
-			virtual	unsigned int	getGeometryFromNode    (NiNodeRef pNode, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry);
-			virtual	unsigned int	getGeometryFromTriShape(NiTriShapeRef pShape, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry);
+			virtual	unsigned int	getGeometryFromNode    (NiNodeRef pNode, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry, NiAlphaPropertyRef pTmplAlphaProp);
+			virtual	unsigned int	getGeometryFromTriShape(NiTriShapeRef pShape, vector<DirectXMesh*>& meshList, vector<Matrix44>& transformAry, NiAlphaPropertyRef pTmplAlphaProp);
 
 			virtual D3DXMATRIX		Matrix44ToD3DXMATRIX(const Matrix44& matrixIn);
 			virtual	void			BlendFuncToDXBlend  (const NiAlphaProperty::BlendFunc value, DWORD& dxBlend, DWORD& dxArg);

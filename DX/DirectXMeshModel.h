@@ -19,6 +19,7 @@ namespace NifUtility
 			D3DCustomVertexColor*		_pBufVerticesW;
 			unsigned short*				_pBufIndices;
 			string						_textureName;
+			bool						_isBillboard;
 
 		public:
 							DirectXMeshModel();
@@ -29,7 +30,8 @@ namespace NifUtility
 											 unsigned short* pBufferI,
 											 const unsigned int countI,
 											 string textureName,
-											 D3DCustomVertexColor* pBufferW=NULL
+											 D3DCustomVertexColor* pBufferW=NULL,
+											 const bool isBillboard=false
 											);
 			virtual			~DirectXMeshModel();
 

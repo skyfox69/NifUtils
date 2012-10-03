@@ -41,7 +41,7 @@ BOOL DlgMultiPath::OnInitDialog()
 
 	CListBox*	pList((CListBox*) GetDlgItem(IDC_LIST_PATH));
 
-	for (auto pIter(_pathList.begin()), pEnd(_pathList.end()); pIter != pEnd; ++pIter)
+	for (vector<string>::iterator pIter(_pathList.begin()), pEnd(_pathList.end()); pIter != pEnd; ++pIter)
 	{
 		pList->AddString(CString(pIter->c_str()));
 	}

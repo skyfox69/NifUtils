@@ -230,7 +230,7 @@ bool Configuration::write(const string fileName)
 		oStr << "<ColorWireCollision>" << hex << _colorWireCollision << "</ColorWireCollision>";
 		oStr << "<ColorBackground>" << hex << _colorBackground << "</ColorBackground>";
 		oStr << "<TexturePathList>";
-		for (auto pIter(_dirTexturePath.begin()), pEnd(_dirTexturePath.end()); pIter != pEnd; ++pIter)
+		for (vector<string>::iterator pIter(_dirTexturePath.begin()), pEnd(_dirTexturePath.end()); pIter != pEnd; ++pIter)
 		{
 			oStr << "<DirTexturePath>" << *pIter << "</DirTexturePath>";
 		}
