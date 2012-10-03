@@ -252,9 +252,9 @@ bool CDirectXGraphics::dxRenderScene()
 	D3DXMATRIX		matTrans;
 	D3DXMATRIX		matWorld;
 
-	D3DXMatrixRotationX(&matRotX, (_vecViewCam.x+_rotX)*3.14159f/180.0f);
-	D3DXMatrixRotationY(&matRotY, (_vecViewCam.y)*3.14159f/180.0f);
-	D3DXMatrixRotationZ(&matRotZ, (_vecViewCam.z+_rotY)*3.14159f/180.0f);
+	D3DXMatrixRotationX(&matRotX, (_vecViewCam.x+_rotX)*D3DX_PI/180.0f);
+	D3DXMatrixRotationY(&matRotY, (_vecViewCam.y)*D3DX_PI/180.0f);
+	D3DXMatrixRotationZ(&matRotZ, (_vecViewCam.z+_rotY)*D3DX_PI/180.0f);
 	D3DXMatrixScaling(&matScale, -_zoom, -_zoom, -_zoom);
 	D3DXMatrixTranslation(&matTrans, _posX*50, 0, _posY*50);
 
