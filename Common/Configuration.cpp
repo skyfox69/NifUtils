@@ -15,6 +15,7 @@ Configuration::Configuration()
 		_colorWireframe    (0xFFFFFFFF),
 		_colorWireCollision(0xFFFFFF00),
 		_colorBackground   (0xFF200020),
+		_colorSelected     (0xFFFF00FF),
 		_upTangentSpace    (true),
 		_reorderProperties (true),
 		_dxShowTexture     (true),
@@ -172,6 +173,7 @@ bool Configuration::read(const string fileName)
 			readAttribute(content, "ColorWireframe>", _colorWireframe, offset);
 			readAttribute(content, "ColorWireCollision>", _colorWireCollision, offset);
 			readAttribute(content, "ColorBackground>", _colorBackground, offset);
+			readAttribute(content, "ColorSelected>", _colorSelected, offset);
 
 
 
@@ -229,6 +231,7 @@ bool Configuration::write(const string fileName)
 		oStr << "<ColorWireframe>" << hex << _colorWireframe << "</ColorWireframe>";
 		oStr << "<ColorWireCollision>" << hex << _colorWireCollision << "</ColorWireCollision>";
 		oStr << "<ColorBackground>" << hex << _colorBackground << "</ColorBackground>";
+		oStr << "<ColorSelected>" << hex << _colorSelected << "</ColorSelected>";
 		oStr << "<TexturePathList>";
 		for (vector<string>::iterator pIter(_dirTexturePath.begin()), pEnd(_dirTexturePath.end()); pIter != pEnd; ++pIter)
 		{

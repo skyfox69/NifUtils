@@ -35,6 +35,8 @@ namespace NifUtility
 											);
 			virtual			~DirectXMeshModel();
 
+			virtual	string	GetTextureName   () { return _textureName; }
+
 			virtual void	SetColorWireframe(DWORD color);
 
 			virtual	bool	Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMatrix);

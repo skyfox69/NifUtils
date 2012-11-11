@@ -22,6 +22,7 @@ namespace NifUtility
 			DWORD			_colorWireframe;
 			DWORD			_colorWireCollision;
 			DWORD			_colorBackground;
+			DWORD			_colorSelected;
 			int				_collMaterial;
 			int				_matHandling;
 			int				_vertColHandling;

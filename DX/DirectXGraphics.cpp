@@ -395,7 +395,10 @@ void CDirectXGraphics::dxClearModel()
 		{
 			++pIter;
 		}
-	}
+	}  //  for (vector<DirectXMesh*>::iterator pIter=_meshList.begin(); pIter != _meshList.end();)
+
+	//  clear last selected mesh
+	if (_pLastSelected != NULL)		_pLastSelected = NULL;
 }
 
 void CDirectXGraphics::dxSetColorWireframe(DWORD color)
@@ -419,5 +422,20 @@ void CDirectXGraphics::dxSetColorCollision(DWORD color)
 		{
 			(dynamic_cast<DirectXMeshCollision*>(*pIter))->SetColorWireframe(color);
 		}
+	}
+}
+
+void CDirectXGraphics::dxSetLastSelectedMesh(DirectXMesh* pMesh)
+{
+	if (_pLastSelected != NULL)
+	{
+		_pLastSelected->SetSelected(false);
+		_pLastSelected->SetColorWireframe(glConfig._colorWireframe);
+	}
+	_pLastSelected = pMesh;
+	if (_pLastSelected != NULL)
+	{
+		_pLastSelected->SetSelected(true);
+		_pLastSelected->SetColorWireframe(glConfig._colorSelected);
 	}
 }
