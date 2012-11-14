@@ -8,7 +8,9 @@ using namespace NifUtility;
 
 
 Configuration::Configuration()
-	:	_collMaterial      (3741512247),
+	:	_matScanTag        ("SkyrimHavokMaterial"),
+		_matScanName       ("SKY_HAV_"),
+		_collMaterial      (3741512247),
 		_matHandling       (0),
 		_vertColHandling   (0),
 		_collTypeHandling  (1),
@@ -149,6 +151,8 @@ bool Configuration::read(const string fileName)
 			//iStr >> content;
 			getline(iStr, content);
 
+			if (content.empty())	continue;
+
 			//  fetch attributes
 			readAttribute(content, "PathSkyrim>", _pathSkyrim, offset);
 			readAttribute(content, "PathNifXML>", _pathNifXML, offset);
@@ -164,6 +168,11 @@ bool Configuration::read(const string fileName)
 			readAttribute(content, "DirSource>", _dirSource, offset);
 			readAttribute(content, "DirDestination>", _dirDestination, offset);
 			readAttribute(content, "DirCollision>", _dirCollision, offset);
+
+			readAttribute(content, "MatScanTag>", _matScanTag, offset);
+			readAttribute(content, "MatScanName>", _matScanName, offset);
+			readAttribute(content, "MatScanPrefix>", _matScanPrefix, offset);
+			readAttribute(content, "MatScanIgnore>", _matScanIgnore, offset);
 
 			readAttribute(content, "ShowTexture>", _dxShowTexture, offset);
 			readAttribute(content, "ShowWireframe>", _dxShowWireframe, offset);
@@ -222,6 +231,23 @@ bool Configuration::write(const string fileName)
 		oStr << "<ReorderProperties>" << (_reorderProperties ? 1 : 0) << "</ReorderProperties>";
 		oStr << "<CollTypeHandling>" << _collTypeHandling << "</CollTypeHandling>";
 		oStr << "<CollMaterial>" << _collMaterial << "</CollMaterial>";
+
+		oStr << "<MaterialScan>";
+		oStr << "<MatScanTag>" << _matScanTag << "</MatScanTag>";
+		oStr << "<MatScanName>" << _matScanName << "</MatScanName>";
+		oStr << "<MatScanPrefixList>";
+		for (vector<string>::iterator pIter(_matScanPrefix.begin()), pEnd(_matScanPrefix.end()); pIter != pEnd; ++pIter)
+		{
+			oStr << "<MatScanPrefix>" << *pIter << "</MatScanPrefix>";
+		}
+		oStr << "</MatScanPrefixList>";
+		oStr << "<MatScanIgnoreList>";
+		for (vector<string>::iterator pIter(_matScanIgnore.begin()), pEnd(_matScanIgnore.end()); pIter != pEnd; ++pIter)
+		{
+			oStr << "<MatScanIgnore>" << *pIter << "</MatScanIgnore>";
+		}
+		oStr << "</MatScanIgnoreList>";
+		oStr << "</MaterialScan>";
 
 		oStr << "<DirectXView>";
 		oStr << "<ShowTexture>" << _dxShowTexture << "</ShowTexture>";

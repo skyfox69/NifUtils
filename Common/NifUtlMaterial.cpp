@@ -1,4 +1,6 @@
 #include "NifUtlMaterial.h"
+#include <WTypes.h>
+#include "..\Common\Configuration.h"
 
 #include <iostream>
 #include <fstream>
@@ -6,6 +8,7 @@
 //  used namespaces
 using namespace NifUtility;
 
+extern Configuration	glConfig;
 
 /*---------------------------------------------------------------------------*/
 NifUtlMaterialList::NifUtlMaterialList()
@@ -34,6 +37,8 @@ void NifUtlMaterialList::initializeMaterialMap(string pathToXML)
 {
 	ifstream	streamIn;
 	char		cbuffer[10000] = {0};
+	char		txtTag [200]   = {0};
+	char		txtName[200]   = {0};
 	bool		isMaterialSection(false);
 
 	//  reset old settings
@@ -45,6 +50,9 @@ void NifUtlMaterialList::initializeMaterialMap(string pathToXML)
 	sprintf(cbuffer, "^%cOpening '%s': %s", (streamIn.good() ? '0' : '2'), pathToXML.c_str(), (streamIn.good() ? "OK" : "FAILED"));
 	_userMessages.push_back(cbuffer);
 
+	sprintf(txtTag, "<enum name=\"%s\" storage=\"uint\">", glConfig._matScanTag.c_str());
+	sprintf(txtName, "name=\"%s", glConfig._matScanName.c_str());
+
 	//  on valid input
 	while (streamIn.good())
 	{
@@ -52,7 +60,7 @@ void NifUtlMaterialList::initializeMaterialMap(string pathToXML)
 		streamIn.getline(cbuffer, 10000);
 
 		//  search start of material definition
-		if (strstr(cbuffer, "<enum name=\"HavokMaterial\" storage=\"uint\">") != NULL)
+		if (strstr(cbuffer, txtTag) != NULL)
 		{
 			isMaterialSection = true;
 		}
@@ -62,11 +70,12 @@ void NifUtlMaterialList::initializeMaterialMap(string pathToXML)
 		{
 			//  valid material definition for SKYrim?
 			if ((strstr(cbuffer, "<option value=\"") != NULL) &&
-				(strstr(cbuffer, "name=\"SKY_HAV_") != NULL))
+				(strstr(cbuffer, txtName) != NULL))
 			{
 				NifUtlMaterial	matNew;
 				char*			pStart(strstr(cbuffer, "value="));
 				char*			pEnd  (strstr(cbuffer, "\" name="));
+				bool			doSkip(false);
 
 				//  read material code
 				matNew._code = (unsigned int) atof(pStart + 7);
@@ -81,8 +90,30 @@ void NifUtlMaterialList::initializeMaterialMap(string pathToXML)
 				pStart = pEnd + 2;
 				pEnd   = strstr(pStart, "</option>");
 				*pEnd  = 0;
-				if (strncmp(pStart, "Material", 8) == 0)		pStart += 8;	//  skip leading 'Material'
-				if (pStart[0] == ' ')							pStart += 1;	//  skip leading space
+
+				//  parse skipping entries
+				for (vector<string>::iterator pIter(glConfig._matScanIgnore.begin()), pEnd(glConfig._matScanIgnore.end()); pIter != pEnd; ++pIter)
+				{
+					if (strstr(pStart, pIter->c_str()) != NULL)
+					{
+						doSkip = true;
+						break;
+					}
+				}
+				if (doSkip)		continue;
+
+				//  parse prefix list
+				for (vector<string>::iterator pIter(glConfig._matScanPrefix.begin()), pEnd(glConfig._matScanPrefix.end()); pIter != pEnd; ++pIter)
+				{
+					if (strncmp(pStart, pIter->c_str(), pIter->length()) == 0)
+					{
+						pStart += pIter->length();	//  skip leading prefix
+						break;
+					}
+				}
+
+				//  skip leading spaces
+				for (; *pStart == ' '; ++pStart);
 
 				matNew._name = pStart;
 

@@ -18,6 +18,10 @@ namespace NifUtility
 			string			_dirSource;
 			string			_dirDestination;
 			string			_dirCollision;
+			string			_matScanTag;
+			string			_matScanName;
+			vector<string>	_matScanPrefix;
+			vector<string>	_matScanIgnore;
 			vector<string>	_dirTexturePath;
 			DWORD			_colorWireframe;
 			DWORD			_colorWireCollision;
