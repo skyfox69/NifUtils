@@ -1,9 +1,16 @@
+Version 0.1.54.*
+================
+
+* Added:  Common: write default config file if not existing
+* Added:  ChunkMerge: support of new SkyrimHavokMaterial in Nif.xml
+
+
 Version 0.1.53.*
 ================
 
 * Fixed:  Common: copy transform (translation, rotation and scale) from input root node to output root node
 * Fixed:  Common: don't consider root transformation for collision data
-* Fixed:  ChunkMerge: 'Mesh Data' as collision source was ignore
+* Fixed:  ChunkMerge: 'Mesh Data' as collision source was ignored
 
 
 Version 0.1.52.*

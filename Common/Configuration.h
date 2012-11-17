@@ -37,6 +37,7 @@ namespace NifUtility
 			bool			_dxShowWireframe;
 			bool			_dxShowColorWire;
 			bool			_dxForceDDS;
+			bool			_hasFile;
 
 		private:
 			virtual	bool	readAttribute(const string& content, const string tag, vector<string>& attribute, unsigned int& offsetOut, unsigned int offsetIn=0);

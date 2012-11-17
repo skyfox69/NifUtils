@@ -23,12 +23,14 @@ Configuration::Configuration()
 		_dxShowTexture     (true),
 		_dxShowWireframe   (false),
 		_dxShowColorWire   (false),
-		_dxForceDDS        (false)
+		_dxForceDDS        (false),
+		_hasFile           (false)
 {
 }
 
 Configuration::~Configuration()
 {
+	if (!_hasFile)		write();
 }
 
 bool Configuration::readAttribute(const string& content, const string tag, vector<string>& attribute, unsigned int& offsetOut, unsigned int offsetIn)
@@ -141,7 +143,6 @@ bool Configuration::read(const string fileName)
 	string			content;
 	string			search;
 	unsigned int	offset (0);
-	bool			isOK   (false);
 
 	//  file opened successfully
 	if (iStr.is_open())
@@ -191,14 +192,14 @@ bool Configuration::read(const string fileName)
 		//  close file
 		iStr.close();
 
-		isOK = true;
+		_hasFile = true;
 
 	}  //  if (oStr.is_open())
 
 	//  remember file name
 	_configName = fileName;
 
-	return isOK;
+	return _hasFile;
 }
 
 bool Configuration::write()
