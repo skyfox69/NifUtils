@@ -18,10 +18,15 @@ namespace NifUtility
 			string			_dirSource;
 			string			_dirDestination;
 			string			_dirCollision;
+			string			_matScanTag;
+			string			_matScanName;
+			vector<string>	_matScanPrefix;
+			vector<string>	_matScanIgnore;
 			vector<string>	_dirTexturePath;
 			DWORD			_colorWireframe;
 			DWORD			_colorWireCollision;
 			DWORD			_colorBackground;
+			DWORD			_colorSelected;
 			int				_collMaterial;
 			int				_matHandling;
 			int				_vertColHandling;
@@ -32,6 +37,7 @@ namespace NifUtility
 			bool			_dxShowWireframe;
 			bool			_dxShowColorWire;
 			bool			_dxForceDDS;
+			bool			_hasFile;
 
 		private:
 			virtual	bool	readAttribute(const string& content, const string tag, vector<string>& attribute, unsigned int& offsetOut, unsigned int offsetIn=0);

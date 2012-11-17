@@ -8,24 +8,29 @@ using namespace NifUtility;
 
 
 Configuration::Configuration()
-	:	_collMaterial      (3741512247),
+	:	_matScanTag        ("SkyrimHavokMaterial"),
+		_matScanName       ("SKY_HAV_"),
+		_collMaterial      (3741512247),
 		_matHandling       (0),
 		_vertColHandling   (0),
 		_collTypeHandling  (1),
 		_colorWireframe    (0xFFFFFFFF),
 		_colorWireCollision(0xFFFFFF00),
 		_colorBackground   (0xFF200020),
+		_colorSelected     (0xFFFF00FF),
 		_upTangentSpace    (true),
 		_reorderProperties (true),
 		_dxShowTexture     (true),
 		_dxShowWireframe   (false),
 		_dxShowColorWire   (false),
-		_dxForceDDS        (false)
+		_dxForceDDS        (false),
+		_hasFile           (false)
 {
 }
 
 Configuration::~Configuration()
 {
+	if (!_hasFile)		write();
 }
 
 bool Configuration::readAttribute(const string& content, const string tag, vector<string>& attribute, unsigned int& offsetOut, unsigned int offsetIn)
@@ -138,7 +143,6 @@ bool Configuration::read(const string fileName)
 	string			content;
 	string			search;
 	unsigned int	offset (0);
-	bool			isOK   (false);
 
 	//  file opened successfully
 	if (iStr.is_open())
@@ -147,6 +151,8 @@ bool Configuration::read(const string fileName)
 		{
 			//iStr >> content;
 			getline(iStr, content);
+
+			if (content.empty())	continue;
 
 			//  fetch attributes
 			readAttribute(content, "PathSkyrim>", _pathSkyrim, offset);
@@ -164,6 +170,11 @@ bool Configuration::read(const string fileName)
 			readAttribute(content, "DirDestination>", _dirDestination, offset);
 			readAttribute(content, "DirCollision>", _dirCollision, offset);
 
+			readAttribute(content, "MatScanTag>", _matScanTag, offset);
+			readAttribute(content, "MatScanName>", _matScanName, offset);
+			readAttribute(content, "MatScanPrefix>", _matScanPrefix, offset);
+			readAttribute(content, "MatScanIgnore>", _matScanIgnore, offset);
+
 			readAttribute(content, "ShowTexture>", _dxShowTexture, offset);
 			readAttribute(content, "ShowWireframe>", _dxShowWireframe, offset);
 			readAttribute(content, "ShowColorWire>", _dxShowColorWire, offset);
@@ -172,6 +183,7 @@ bool Configuration::read(const string fileName)
 			readAttribute(content, "ColorWireframe>", _colorWireframe, offset);
 			readAttribute(content, "ColorWireCollision>", _colorWireCollision, offset);
 			readAttribute(content, "ColorBackground>", _colorBackground, offset);
+			readAttribute(content, "ColorSelected>", _colorSelected, offset);
 
 
 
@@ -180,14 +192,14 @@ bool Configuration::read(const string fileName)
 		//  close file
 		iStr.close();
 
-		isOK = true;
+		_hasFile = true;
 
 	}  //  if (oStr.is_open())
 
 	//  remember file name
 	_configName = fileName;
 
-	return isOK;
+	return _hasFile;
 }
 
 bool Configuration::write()
@@ -221,6 +233,23 @@ bool Configuration::write(const string fileName)
 		oStr << "<CollTypeHandling>" << _collTypeHandling << "</CollTypeHandling>";
 		oStr << "<CollMaterial>" << _collMaterial << "</CollMaterial>";
 
+		oStr << "<MaterialScan>";
+		oStr << "<MatScanTag>" << _matScanTag << "</MatScanTag>";
+		oStr << "<MatScanName>" << _matScanName << "</MatScanName>";
+		oStr << "<MatScanPrefixList>";
+		for (vector<string>::iterator pIter(_matScanPrefix.begin()), pEnd(_matScanPrefix.end()); pIter != pEnd; ++pIter)
+		{
+			oStr << "<MatScanPrefix>" << *pIter << "</MatScanPrefix>";
+		}
+		oStr << "</MatScanPrefixList>";
+		oStr << "<MatScanIgnoreList>";
+		for (vector<string>::iterator pIter(_matScanIgnore.begin()), pEnd(_matScanIgnore.end()); pIter != pEnd; ++pIter)
+		{
+			oStr << "<MatScanIgnore>" << *pIter << "</MatScanIgnore>";
+		}
+		oStr << "</MatScanIgnoreList>";
+		oStr << "</MaterialScan>";
+
 		oStr << "<DirectXView>";
 		oStr << "<ShowTexture>" << _dxShowTexture << "</ShowTexture>";
 		oStr << "<ShowWireframe>" << _dxShowWireframe << "</ShowWireframe>";
@@ -229,6 +258,7 @@ bool Configuration::write(const string fileName)
 		oStr << "<ColorWireframe>" << hex << _colorWireframe << "</ColorWireframe>";
 		oStr << "<ColorWireCollision>" << hex << _colorWireCollision << "</ColorWireCollision>";
 		oStr << "<ColorBackground>" << hex << _colorBackground << "</ColorBackground>";
+		oStr << "<ColorSelected>" << hex << _colorSelected << "</ColorSelected>";
 		oStr << "<TexturePathList>";
 		for (vector<string>::iterator pIter(_dirTexturePath.begin()), pEnd(_dirTexturePath.end()); pIter != pEnd; ++pIter)
 		{

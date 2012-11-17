@@ -18,6 +18,7 @@ namespace NifUtility
 			LPDIRECT3D9				_pD3D;				//  Used to create the D3DDevice
 			LPDIRECT3DDEVICE9		_pd3dDevice;		//  Our rendering device
 			D3DXVECTOR3				_vecViewCam;		//  Position of camera
+			DirectXMesh*			_pLastSelected;		//  ptr. to last selected mesh
 			vector<DirectXMesh*>	_meshList;
 			CRect					_rectOrig;
 			float					_posX;
@@ -52,6 +53,9 @@ namespace NifUtility
 			virtual bool					dxGetShowModel() { return _showModel; }
 			virtual	void					dxSetShowColl (bool collision);
 			virtual bool					dxGetShowColl () { return _showCollision; }
+
+			virtual	void					dxSetLastSelectedMesh(DirectXMesh* pMesh);
+			virtual	DirectXMesh*			dxGetLastSelectedMesh() { return _pLastSelected; }
 
 			virtual void					dxAddMesh    (DirectXMesh* pMesh);
 			virtual	vector<DirectXMesh*>&	dxGetMeshList() { return _meshList; }

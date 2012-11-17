@@ -176,7 +176,7 @@ bool DirectXMeshModel::Render(LPDIRECT3DDEVICE9 pd3dDevice, D3DXMATRIX& worldMat
 	}  //  if (renderObject)
 
 	//  - something to render pure wireframe?
-	if (glConfig._dxShowWireframe && !glConfig._dxShowColorWire && (_pWBuffer != NULL))
+	if (((glConfig._dxShowWireframe && !glConfig._dxShowColorWire) || _isSelected) && (_pWBuffer != NULL))
 	{
 		D3DXMATRIX	matBias;
 

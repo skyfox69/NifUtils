@@ -100,7 +100,7 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		vector<Vector3>			vecNormals  (pData->GetNormals());
 		vector<Color4>			vecColors   (pData->GetColors());
 		vector<NiPropertyRef>	propList    (pShape->GetProperties());
-		Matrix44				locTransform;
+		Matrix44				locTransform(pShape->GetLocalTransform());
 		string					baseTexture;
 		DWORD					alpSource   (0);
 		DWORD					alpDest     (0);
@@ -186,9 +186,8 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 		//  - transformation matrix
 		for (vector<Matrix44>::iterator pIter=transformAry.begin(); pIter != transformAry.end(); ++pIter)
 		{
-			locTransform = *pIter * locTransform;
+			locTransform *= *pIter;
 		}
-		locTransform *= pShape->GetLocalTransform();
 
 		//  - vertices
 		unsigned int				countV       (vecVertices.size());
@@ -265,6 +264,10 @@ unsigned int DirectXNifConverter::getGeometryFromTriShape(NiTriShapeRef pShape, 
 			delete[] pBufVertices;
 
 		}  //  else [if (!_isCollision)]
+
+		//  add additional info to object
+		meshList.back()->SetInfo(pShape->GetName(), pShape->GetType().GetTypeName(), pShape->internal_block_number);
+
 	}  //  if (pData != NULL)
 
 	return meshList.size();

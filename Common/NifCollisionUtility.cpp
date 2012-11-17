@@ -520,7 +520,7 @@ bool NifCollisionUtility::injectCollisionData(vector<hkGeometry>& geometryMap, b
 	hkpMoppCompilerInput					mci;
 	vector<int>								geometryIdxVec;
 	vector<bhkCMSDMaterial>					tMtrlVec;
-	HavokMaterial							material   (HAV_MAT_STONE);
+	SkyrimHavokMaterial						material   (SKY_HAV_MAT_STONE);
 	int										subPartId  (0);
 	int										tChunkSize (0);
 
@@ -536,12 +536,12 @@ bool NifCollisionUtility::injectCollisionData(vector<hkGeometry>& geometryMap, b
 		size_t		matIdx(0);
 
 		//  determine material index
-		material = (HavokMaterial) geoIter->m_triangles[0].m_material;
+		material = (SkyrimHavokMaterial) geoIter->m_triangles[0].m_material;
 
 		//  material already known?
 		for (matIdx=0; matIdx < tMtrlVec.size(); ++matIdx)
 		{
-			if (tMtrlVec[matIdx].material == material)		break;
+			if (tMtrlVec[matIdx].skyrimMaterial == material)		break;
 		}
 
 		//  add new material?
@@ -550,7 +550,7 @@ bool NifCollisionUtility::injectCollisionData(vector<hkGeometry>& geometryMap, b
 			bhkCMSDMaterial		tChunkMat;
 
 			//  create single material
-			tChunkMat.material       = material;
+			tChunkMat.skyrimMaterial = material;
 			tChunkMat.unknownInteger = 1;
 
 			//  add material to list

@@ -9,7 +9,8 @@ DirectXMesh::DirectXMesh()
 		_pIBuffer     (NULL),
 		_countVertices(0),
 		_countIndices (0),
-		_doRender     (true)
+		_doRender     (true),
+		_isSelected   (false)
 {
 	ZeroMemory(&_material, sizeof(_material));
 	_material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f);
@@ -35,4 +36,16 @@ void DirectXMesh::SetAlpha(const DWORD source, const DWORD destination, const DW
 	_pAlpha->_source      = source;
 	_pAlpha->_destination = destination;
 	_pAlpha->_argument    = argument;
+}
+
+void DirectXMesh::SetInfo(const string name, const string type, const int blockNumber)
+{
+	_name        = name;
+	_type        = type;
+	_blockNumber = blockNumber;
+}
+
+void DirectXMesh::SetSelected(const bool selected)
+{
+	_isSelected = selected;
 }

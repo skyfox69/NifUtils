@@ -207,7 +207,7 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 			pDstLShader = cloneBSLightingShaderProperty(pTmplLShader);
 
 			//  copy textures from template to copy
-			pDstSText->setTextures(pTmplLShader->getTextureSet()->getTextures());
+			pDstSText->SetTextures(pTmplLShader->GetTextureSet()->GetTextures());
 
 			//  set new texture names
 			sprintf(fileName, "%s", (const char*) _pathTexture.c_str());
@@ -229,7 +229,7 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 			strcat(fileName, "dds");
 
 			//  set new texture map
-			pDstSText->setTexture(0, fileName);
+			pDstSText->SetTexture(0, fileName);
 
 			logMessage(NCU_MSG_TYPE_TEXTURE, string("Txt-Used: ") + fileName);
 			if (!checkFileExists(fileName))
@@ -241,7 +241,7 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 			strcat(fileName, "_n.dds");
 
 			//  set new normal map
-			pDstSText->setTexture(1, fileName);
+			pDstSText->SetTexture(1, fileName);
 
 			if (!checkFileExists(fileName))
 			{
@@ -249,16 +249,16 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 			}
 
 			//  add texture set to texture property
-			pDstLShader->setTextureSet(pDstSText);
+			pDstLShader->SetTextureSet(pDstSText);
 
 			//  check for existing vertex colors
-			if ((pDstGeo != NULL) && (pDstGeo->GetColors().size() <= 0) && ((pDstLShader->getShaderFlags2() & Niflib::SLSF2_VERTEX_COLORS) != 0))
+			if ((pDstGeo != NULL) && (pDstGeo->GetColors().size() <= 0) && ((pDstLShader->GetShaderFlags2() & Niflib::SLSF2_VERTEX_COLORS) != 0))
 			{
 				switch (_vcHandling)
 				{
 					case NCU_VC_REMOVE_FLAG:
 					{
-						pDstLShader->setShaderFlags2((SkyrimShaderPropertyFlags2) (pDstLShader->getShaderFlags2() & ~Niflib::SLSF2_VERTEX_COLORS));
+						pDstLShader->SetShaderFlags2((SkyrimShaderPropertyFlags2) (pDstLShader->GetShaderFlags2() & ~Niflib::SLSF2_VERTEX_COLORS));
 						break;
 					}
 
@@ -309,7 +309,7 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 		//  force flag in BSLightingShaderProperty
 		if (pDstLShader != NULL)
 		{
-			pDstLShader->setShaderFlags2((SkyrimShaderPropertyFlags2) (pDstLShader->getShaderFlags2() | Niflib::SLSF2_VERTEX_COLORS));
+			pDstLShader->SetShaderFlags2((SkyrimShaderPropertyFlags2) (pDstLShader->GetShaderFlags2() | Niflib::SLSF2_VERTEX_COLORS));
 		}
 	}
 
@@ -506,8 +506,8 @@ bool NifConvertUtility::updateTangentSpace(NiTriShapeDataRef pDataObj)
 	}  //  for (unsigned int i(0); i < vecVertices.size(); ++i)
 
 	//  set tangents and binormals to object
-	pDataObj->SetBinormals(vecBiNormals);
-	pDataObj->SetTangents (vecTangents);
+	pDataObj->SetBitangents(vecBiNormals);
+	pDataObj->SetTangents  (vecTangents);
 
 	return true;
 }
@@ -626,7 +626,7 @@ BSLightingShaderPropertyRef NifConvertUtility::cloneBSLightingShaderProperty(BSL
 	memcpy(pDest, pSource, sizeof(BSLightingShaderProperty));
 
 	//  reset texture set
-	pDest->setTextureSet(NULL);
+	pDest->SetTextureSet(NULL);
 
 	return pDest;
 }
