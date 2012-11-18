@@ -26,6 +26,8 @@ Configuration::Configuration()
 		_dxForceDDS        (false),
 		_hasFile           (false)
 {
+	_matScanPrefix.push_back("Material");
+	_matScanIgnore.push_back("Unknown");
 }
 
 Configuration::~Configuration()
