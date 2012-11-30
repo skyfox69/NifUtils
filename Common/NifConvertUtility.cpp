@@ -205,6 +205,7 @@ NiTriShapeRef NifConvertUtility::convertNiTriShape(NiTriShapeRef pSrcNode, NiTri
 
 			//  clone shader property from template
 			pDstLShader = cloneBSLightingShaderProperty(pTmplLShader);
+			//pDstLShader = new BSLightingShaderProperty();
 
 			//  copy textures from template to copy
 			pDstSText->SetTextures(pTmplLShader->GetTextureSet()->GetTextures());
@@ -621,12 +622,16 @@ bool NifConvertUtility::checkFileExists(string fileName)
 BSLightingShaderPropertyRef NifConvertUtility::cloneBSLightingShaderProperty(BSLightingShaderPropertyRef pSource)
 {
 	BSLightingShaderPropertyRef		pDest(new BSLightingShaderProperty);
+	BSShaderTextureSetRef			pTSet(pSource->GetTextureSet());
+
+	//  force empty texture set to source (HACK)
+	pSource->SetTextureSet(NULL);
 
 	//  copy all members, even inaccessable ones (HACK)
 	memcpy(pDest, pSource, sizeof(BSLightingShaderProperty));
 
-	//  reset texture set
-	pDest->SetTextureSet(NULL);
+	//  reset source texture set
+	pSource->SetTextureSet(pTSet);
 
 	return pDest;
 }

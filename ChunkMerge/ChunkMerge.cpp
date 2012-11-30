@@ -103,10 +103,13 @@ BOOL CChunkMergeApp::InitInstance()
 	hkMemoryRouter*		pMemoryRouter(hkMemoryInitUtil::initDefault(hkMallocAllocator::m_defaultMallocAllocator, hkMemorySystem::FrameInfo(500000)));
 	hkBaseSystem::init(pMemoryRouter, errorReport);
 
-  LPWSTR* argv;
-  int     argc(0);
+	LPWSTR* argv;
+	int     argc(0);
 
-  argv = CommandLineToArgvW(m_lpCmdLine, &argc);
+	if (argc > 0)
+	{
+		argv = CommandLineToArgvW(m_lpCmdLine, &argc);
+	}
 
 	//  nif.xml - not given or overwritten
 	if ((glConfig._pathNifXML.empty()) || (argc >= 3))
@@ -139,7 +142,7 @@ BOOL CChunkMergeApp::InitInstance()
 	}  //  if ((glConfig._pathTemplate.empty()) || (argc >= 2))
 
 	//  path to Skyrim - not given or overwritten
-	if ((glConfig._pathSkyrim.empty()) || ((argc >= 1) && (wcsstr(argv[0], L"ChunkMerge.exe") == NULL)))
+	if ((glConfig._pathSkyrim.empty()) || (argc >= 1))
 	{
 		if ((argc >= 1) && (wcsstr(argv[0], L"ChunkMerge.exe") == NULL))
 		{
@@ -151,7 +154,10 @@ BOOL CChunkMergeApp::InitInstance()
 		}
 	}  //  if ((glConfig._pathSkyrim.empty()) || ((argc >= 1) && (wcsstr(argv[0], L"OneClickNifConvert.exe") == NULL)))
 
-  LocalFree(argv);
+	if (argc > 0)
+	{
+		LocalFree(argv);
+	}
 
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();

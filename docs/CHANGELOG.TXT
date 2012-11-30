@@ -1,3 +1,10 @@
+Version 0.1.55.*
+================
+
+* Fixed:  ChunkMerge: set high-bit of bsNumUvSets (by-passing niflib 'feature')
+* Fixed:  ChunkMerge: command line parameter parsing when running from 'C:\Programs (x86)\...'
+
+
 Version 0.1.54.*
 ================
 
